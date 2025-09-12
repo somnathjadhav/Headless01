@@ -1,0 +1,7 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="20" cy="20" r="15" fill="#1DB954"/>
+  <path d="M12 15C12 13.3 13.3 12 15 12C16.7 12 18 13.3 18 15C18 16.7 16.7 18 15 18C13.3 18 12 16.7 12 15Z" fill="#FFFFFF"/>
+  <path d="M22 12C22 10.3 23.3 9 25 9C26.7 9 28 10.3 28 12C28 13.7 26.7 15 25 15C23.3 15 22 13.7 22 12Z" fill="#FFFFFF"/>
+  <path d="M12 25C12 23.3 13.3 22 15 22C16.7 22 18 23.3 18 25C18 26.7 16.7 28 15 28C13.3 28 12 26.7 12 25Z" fill="#FFFFFF"/>
+  <text x="40" y="25" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1DB954">Spotify</text>
+</svg>

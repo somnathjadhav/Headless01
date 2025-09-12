@@ -1,0 +1,5 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="40" fill="#000000"/>
+  <path d="M10 10L20 5L30 10L40 5L50 10L60 5L70 10L80 5L90 10L100 5L110 10" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+  <text x="10" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#FFFFFF">SONY</text>
+</svg>

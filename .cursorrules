@@ -1,0 +1,85 @@
+# Cursor Rules for Headless WooCommerce Frontend
+
+## WordPress Backend Integration Rules
+
+### CRITICAL: All WordPress Backend Endpoints Must Be Added to Headless Pro Plugin
+- **NEVER create separate WordPress plugins or files for backend endpoints**
+- **ALWAYS add new endpoints to the existing Headless Pro WordPress plugin**
+- **ALL WordPress REST API endpoints must be defined in the Headless Pro plugin only**
+- **Use the `eternitty/v1` namespace for all custom endpoints**
+
+### WordPress Backend Endpoint Standards
+- All endpoints should follow the pattern: `/wp-json/eternitty/v1/{endpoint-name}` or `/wp-json/eternitty/v2/{endpoint-name}`
+- Use `register_rest_route('eternitty/v1', '/{endpoint-name}', ...)` for core features
+- Use `register_rest_route('eternitty/v2', '/{endpoint-name}', ...)` for advanced features
+- Always include proper permission callbacks
+- Use consistent naming conventions for WordPress options (prefix with `eternitty_`)
+
+### Frontend Integration Rules
+- Frontend should always fetch from WordPress backend first
+- Provide fallback to environment variables if WordPress backend is unavailable
+- Use the `/api/recaptcha/config` pattern for frontend API endpoints
+- Always handle loading states and error cases gracefully
+
+### File Organization Rules
+- **WordPress backend code**: Add to existing Headless Pro plugin only
+- **Frontend API endpoints**: Create in `/src/pages/api/` directory
+- **Frontend components**: Create in `/src/components/` directory
+- **Frontend hooks**: Create in `/src/hooks/` directory
+- **Documentation**: Create `.md` files in project root
+
+### Integration Examples
+When adding new features that require WordPress backend integration:
+
+1. **WordPress Backend**: Add endpoints to Headless Pro plugin
+2. **Frontend API**: Create corresponding API endpoint in `/src/pages/api/`
+3. **Frontend Hook**: Create hook to fetch from WordPress backend
+4. **Frontend Component**: Create component that uses the hook
+5. **Documentation**: Create integration guide
+
+### Prohibited Actions
+- ❌ Creating separate WordPress plugins
+- ❌ Adding code to `functions.php` (use Headless Pro plugin instead)
+- ❌ Creating standalone WordPress integration files
+- ❌ Using different namespace than `eternitty/v1`
+
+### Required Actions
+- ✅ Add all WordPress endpoints to Headless Pro plugin
+- ✅ Use consistent naming conventions
+- ✅ Provide proper error handling and fallbacks
+- ✅ Document integration steps
+- ✅ Test both WordPress backend and frontend endpoints
+
+## Code Quality Standards
+- Use TypeScript where possible
+- Follow existing code patterns and conventions
+- Add proper error handling and logging
+- Include comprehensive documentation
+- Test all integrations thoroughly
+
+## Current WordPress Endpoints
+
+### eternitty/v1 namespace (Core Features)
+- `/site-info` - Site information
+- `/theme-options` - Theme configuration
+- `/header-footer` - Header and footer settings
+- `/recaptcha` - reCAPTCHA configuration (to be added)
+- `/google-oauth` - Google OAuth configuration (to be added)
+- `/google-oauth/callback` - Google OAuth callback handler (to be added)
+- `/google-oauth/url` - Google OAuth URL generation (to be added)
+- `/integrations` - All integration settings (to be added)
+
+### eternitty/v2 namespace (Advanced Features)
+- `/analytics` - Analytics data (requires authentication)
+- `/bulk` - Bulk operations
+- `/health` - Health check
+- `/webhooks` - Webhook management
+- `/websocket` - WebSocket functionality
+
+## Frontend API Endpoints
+- `/api/recaptcha/config` - reCAPTCHA configuration
+- `/api/google-oauth/config` - Google OAuth configuration
+- `/api/google-oauth/callback` - Google OAuth callback handler
+- `/api/google-oauth/url` - Google OAuth URL generation
+- `/api/theme-options` - Theme options with fallbacks
+- `/api/site-info` - Site information with fallbacks

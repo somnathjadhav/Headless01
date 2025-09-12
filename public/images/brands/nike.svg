@@ -1,0 +1,5 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 5C10 2.23858 12.2386 0 15 0H25C27.7614 0 30 2.23858 30 5V35C30 37.7614 27.7614 40 25 40H15C12.2386 40 10 37.7614 10 35V5Z" fill="#000000"/>
+  <path d="M15 8L20 15L25 8H30L22 20L30 32H25L20 25L15 32H10L18 20L10 8H15Z" fill="#FFFFFF"/>
+  <text x="35" y="25" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">NIKE</text>
+</svg>

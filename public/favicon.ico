@@ -1,0 +1,6 @@
+# WordPress Customizer Favicon Reference
+# The favicon is configured in WordPress Customizer at:
+# https://woo.local/wp-content/uploads/2025/09/favicon-woo.png
+# 
+# This file ensures proper favicon loading in the frontend
+# The actual favicon is served from the WordPress backend

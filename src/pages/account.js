@@ -75,6 +75,43 @@ export default function Account() {
             
             setUserData(updatedUserData);
             setFormData(updatedUserData);
+            
+            // Set up addresses from profile data
+            const userAddresses = [];
+            
+            // Add shipping address if available
+            if (profile.shipping && (profile.shipping.address_1 || profile.shipping.city)) {
+              userAddresses.push({
+                id: 1,
+                type: 'shipping',
+                isDefault: true,
+                name: `${profile.shipping.first_name || ''} ${profile.shipping.last_name || ''}`.trim(),
+                street: profile.shipping.address_1 || '',
+                city: profile.shipping.city || '',
+                state: profile.shipping.state || '',
+                zipCode: profile.shipping.postcode || '',
+                country: profile.shipping.country || '',
+                phone: profile.billing?.phone || ''
+              });
+            }
+            
+            // Add billing address if available
+            if (profile.billing && (profile.billing.address_1 || profile.billing.city)) {
+              userAddresses.push({
+                id: 2,
+                type: 'billing',
+                isDefault: false,
+                name: `${profile.billing.first_name || ''} ${profile.billing.last_name || ''}`.trim(),
+                street: profile.billing.address_1 || '',
+                city: profile.billing.city || '',
+                state: profile.billing.state || '',
+                zipCode: profile.billing.postcode || '',
+                country: profile.billing.country || '',
+                phone: profile.billing.phone || ''
+              });
+            }
+            
+            setAddresses(userAddresses);
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -86,32 +123,7 @@ export default function Account() {
   }, [isAuthenticated, user]);
   
   // Address management state
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      type: 'shipping',
-      isDefault: true,
-      name: userData.firstName + ' ' + userData.lastName,
-      street: '123 Main Street',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'United States',
-      phone: '+1 (555) 123-4567'
-    },
-    {
-      id: 2,
-      type: 'billing',
-      isDefault: false,
-      name: userData.firstName + ' ' + userData.lastName,
-      street: '123 Main Street',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'United States',
-      phone: '+1 (555) 123-4567'
-    }
-  ]);
+  const [addresses, setAddresses] = useState([]);
   
   const [newAddress, setNewAddress] = useState({
     type: 'shipping',

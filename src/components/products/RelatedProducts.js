@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { HeartIcon, EyeIcon, ArrowPathIcon, ShoppingBagIcon } from '../icons';
 import { useWooCommerce } from '../../context/WooCommerceContext';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useWishlistAuth } from '../../hooks/useWishlistAuth';
+import LoginPromptModal from '../modals/LoginPromptModal';
 import QuickPreviewModal from '../woocommerce/QuickPreviewModal';
 
 export default function RelatedProducts({ productId, categoryId }) {
@@ -13,6 +15,12 @@ export default function RelatedProducts({ productId, categoryId }) {
   const [showQuickView, setShowQuickView] = useState(null);
   const { addToCart, addToWishlist, removeFromWishlist, wishlist, cart } = useWooCommerce();
   const { formatPrice } = useCurrency();
+  const { 
+    handleWishlistToggle, 
+    showLoginPrompt, 
+    closeLoginPrompt, 
+    getWishlistButtonStyles 
+  } = useWishlistAuth();
 
   // Fetch related products
   useEffect(() => {
@@ -48,15 +56,10 @@ export default function RelatedProducts({ productId, categoryId }) {
     addToCart(product, 1);
   };
 
-  // Handle wishlist toggle
-  const handleWishlistToggle = (product) => {
+  // Handle wishlist toggle with authentication
+  const handleWishlistToggleWithAuth = (product) => {
     const isInWishlist = wishlist.some(item => item.id === product.id);
-    
-    if (isInWishlist) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
-    }
+    handleWishlistToggle(addToWishlist, removeFromWishlist, product, isInWishlist)();
   };
 
   // Handle quick view
@@ -187,16 +190,14 @@ export default function RelatedProducts({ productId, categoryId }) {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleWishlistToggle(product);
+                      handleWishlistToggleWithAuth(product);
                     }}
                     className={`w-8 h-8 rounded-full shadow-md flex items-center justify-center transition-all duration-200 ${
-                      isInWishlist 
-                        ? 'bg-pink-500 hover:bg-pink-600' 
-                        : 'bg-white hover:bg-gray-50'
+                      getWishlistButtonStyles(isInWishlist).container
                     }`}
                   >
                     <HeartIcon className={`w-4 h-4 ${
-                      isInWishlist ? 'text-white' : 'text-gray-600'
+                      getWishlistButtonStyles(isInWishlist).icon
                     }`} />
                   </button>
                   <button 
@@ -321,6 +322,14 @@ export default function RelatedProducts({ productId, categoryId }) {
           onClose={() => setShowQuickView(null)}
         />
       )}
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={showLoginPrompt}
+        onClose={closeLoginPrompt}
+        title="Sign in to use wishlist"
+        message="Please sign in to add items to your wishlist and save them for later."
+      />
     </div>
   );
 }

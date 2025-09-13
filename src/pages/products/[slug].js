@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useWooCommerce } from '../../context/WooCommerceContext';
+import { useWishlistAuth } from '../../hooks/useWishlistAuth';
 import SEO from '../../components/layout/SEO';
 import { generateProductStructuredData, generateBreadcrumbStructuredData } from '../../lib/structuredData';
 import { 
@@ -16,6 +17,7 @@ import ProductOptions from '../../components/products/ProductOptions';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ErrorMessage from '../../components/ui/ErrorMessage';
+import LoginPromptModal from '../../components/modals/LoginPromptModal';
 
 export async function getServerSideProps({ params, req }) {
   const { slug } = params;
@@ -69,6 +71,12 @@ export default function ProductDetailPage({ product: initialProduct, slug: initi
     wishlist,
     cart
   } = useWooCommerce();
+  
+  const { 
+    handleWishlistToggle, 
+    showLoginPrompt, 
+    closeLoginPrompt 
+  } = useWishlistAuth();
 
   const [selectedVariation, setSelectedVariation] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -139,17 +147,12 @@ export default function ProductDetailPage({ product: initialProduct, slug: initi
     }
   };
 
-  // Handle wishlist toggle
-  const handleWishlistToggle = () => {
+  // Handle wishlist toggle with authentication
+  const handleWishlistToggleWithAuth = () => {
     if (!product) return;
     
     const isInWishlist = wishlist.some(item => item.id === product.id);
-    
-    if (isInWishlist) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
-    }
+    handleWishlistToggle(addToWishlist, removeFromWishlist, product, isInWishlist)();
   };
 
   // Handle review form submission
@@ -268,7 +271,7 @@ export default function ProductDetailPage({ product: initialProduct, slug: initi
               <ProductInfo 
                 product={product}
                 isInWishlist={isInWishlist}
-                onWishlistToggle={handleWishlistToggle}
+                onWishlistToggle={handleWishlistToggleWithAuth}
               />
 
               <ProductOptions 
@@ -355,6 +358,14 @@ export default function ProductDetailPage({ product: initialProduct, slug: initi
           )}
         </div>
       </div>
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={showLoginPrompt}
+        onClose={closeLoginPrompt}
+        title="Sign in to use wishlist"
+        message="Please sign in to add items to your wishlist and save them for later."
+      />
     </>
   );
 }

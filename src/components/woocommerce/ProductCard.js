@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { HeartIcon, EyeIcon, ArrowPathIcon, ShoppingBagIcon } from '../icons';
 import { useWooCommerce } from '../../context/WooCommerceContext';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useWishlistAuth } from '../../hooks/useWishlistAuth';
+import LoginPromptModal from '../modals/LoginPromptModal';
 import QuickPreviewModal from './QuickPreviewModal';
 
 export default function ProductCard({ product }) {
@@ -10,6 +12,12 @@ export default function ProductCard({ product }) {
   const [showQuickView, setShowQuickView] = useState(false);
   const { addToWishlist, removeFromWishlist, wishlist, addToCart, cart } = useWooCommerce();
   const { formatPrice } = useCurrency();
+  const { 
+    handleWishlistToggle, 
+    showLoginPrompt, 
+    closeLoginPrompt, 
+    getWishlistButtonStyles 
+  } = useWishlistAuth();
   
   // Extract product data with fallbacks
   const {
@@ -101,20 +109,14 @@ export default function ProductCard({ product }) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              if (isInWishlist) {
-                removeFromWishlist(id);
-              } else {
-                addToWishlist(product);
-              }
+              handleWishlistToggle(addToWishlist, removeFromWishlist, product, isInWishlist)();
             }}
             className={`w-8 h-8 rounded-full shadow-md flex items-center justify-center transition-all duration-200 ${
-              isInWishlist 
-                ? 'bg-pink-500 hover:bg-pink-600' 
-                : 'bg-white hover:bg-gray-50'
+              getWishlistButtonStyles(isInWishlist).container
             }`}
           >
             <HeartIcon className={`w-4 h-4 ${
-              isInWishlist ? 'text-white' : 'text-gray-600'
+              getWishlistButtonStyles(isInWishlist).icon
             }`} />
           </button>
           <button 
@@ -232,6 +234,14 @@ export default function ProductCard({ product }) {
         product={product}
         isOpen={showQuickView}
         onClose={() => setShowQuickView(false)}
+      />
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={showLoginPrompt}
+        onClose={closeLoginPrompt}
+        title="Sign in to use wishlist"
+        message="Please sign in to add items to your wishlist and save them for later."
       />
     </div>
   );

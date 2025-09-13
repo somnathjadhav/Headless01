@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import { XIcon, HeartIcon, EyeIcon, ShoppingBagIcon } from '../icons';
 import { useWooCommerce } from '../../context/WooCommerceContext';
+import { useWishlistAuth } from '../../hooks/useWishlistAuth';
+import LoginPromptModal from '../modals/LoginPromptModal';
 
 export default function QuickPreviewModal({ product, isOpen, onClose }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart, clearCart, backupCart, addToWishlist, isInWishlist, cart } = useWooCommerce();
+  const { 
+    handleWishlistAction, 
+    showLoginPrompt, 
+    closeLoginPrompt, 
+    getWishlistButtonStyles 
+  } = useWishlistAuth();
 
   if (!isOpen || !product) return null;
 
@@ -146,14 +154,14 @@ export default function QuickPreviewModal({ product, isOpen, onClose }) {
 
                 {/* Wishlist Button */}
                 <button
-                  onClick={handleAddToWishlist}
+                  onClick={handleWishlistAction(handleAddToWishlist, product)}
                   className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-colors ${
-                    isInWishlist(product.id)
-                      ? 'border-red-500 text-red-500'
-                      : 'border-gray-300 text-gray-600 hover:border-red-500 hover:text-red-500'
+                    getWishlistButtonStyles(isInWishlist(product.id)).container
                   }`}
                 >
-                  <HeartIcon className="w-5 h-5" />
+                  <HeartIcon className={`w-5 h-5 ${
+                    getWishlistButtonStyles(isInWishlist(product.id)).icon
+                  }`} />
                 </button>
               </div>
 
@@ -176,6 +184,14 @@ export default function QuickPreviewModal({ product, isOpen, onClose }) {
           </div>
         </div>
       </div>
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={showLoginPrompt}
+        onClose={closeLoginPrompt}
+        title="Sign in to use wishlist"
+        message="Please sign in to add items to your wishlist and save them for later."
+      />
     </div>
   );
 }

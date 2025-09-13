@@ -33,6 +33,56 @@ export const isValidPassword = (password) => {
   return hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
 };
 
+// Password strength scoring and analysis
+export const getPasswordStrength = (password) => {
+  if (!password) {
+    return {
+      score: 0,
+      level: 'Very Weak',
+      checks: {
+        length: false,
+        lowercase: false,
+        uppercase: false,
+        numbers: false,
+        special: false,
+      },
+      isValid: false
+    };
+  }
+
+  const checks = {
+    length: password.length >= 8,
+    lowercase: /[a-z]/.test(password),
+    uppercase: /[A-Z]/.test(password),
+    numbers: /\d/.test(password),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  };
+
+  let score = 0;
+  Object.values(checks).forEach(check => {
+    if (check) score += 1;
+  });
+
+  // Additional points for length
+  if (password.length >= 12) score += 1;
+  if (password.length >= 16) score += 1;
+
+  // Determine strength level
+  let level;
+  if (score <= 2) level = 'Very Weak';
+  else if (score <= 3) level = 'Weak';
+  else if (score <= 4) level = 'Fair';
+  else if (score <= 5) level = 'Good';
+  else level = 'Strong';
+
+  return {
+    score,
+    level,
+    checks,
+    isValid: isValidPassword(password)
+  };
+};
+
 // Product ID validation
 export const isValidProductId = (id) => {
   return /^\d+$/.test(id) && parseInt(id) > 0;

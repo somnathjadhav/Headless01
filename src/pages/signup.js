@@ -7,6 +7,7 @@ import { useSiteInfo } from '../hooks/useSiteInfo';
 import GeometricDesign from '../components/ui/GeometricDesign';
 import SimpleCaptcha from '../components/ui/SimpleCaptcha';
 import GoogleReCaptcha from '../components/ui/GoogleReCaptcha';
+import PasswordStrengthMeter from '../components/ui/PasswordStrengthMeter';
 import { useRecaptchaConfig } from '../hooks/useRecaptchaConfig';
 import GoogleLoginButton from '../components/auth/GoogleLoginButton';
 import { 
@@ -357,6 +358,7 @@ export default function SignUp() {
               {formErrors.password && (
                 <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>
               )}
+              <PasswordStrengthMeter password={formData.password} />
             </div>
 
             {/* Confirm Password Field */}

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export default function ProductImageGallery({ images, name }) {
@@ -167,10 +168,12 @@ export default function ProductImageGallery({ images, name }) {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <img
+          <Image
             ref={imageRef}
             src={selectedImage.src}
             alt={selectedImage.alt || name}
+            width={600}
+            height={750}
             className={`w-full h-full object-cover transition-transform duration-300 ${
               isZoomed ? 'scale-150' : 'scale-100'
             }`}

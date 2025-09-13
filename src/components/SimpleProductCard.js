@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCurrency } from '../context/CurrencyContext';
 
 /**
@@ -15,9 +16,11 @@ export default function SimpleProductCard({ product, onAddToCart }) {
     <div className="bg-white border rounded-lg p-4 shadow-sm">
       {/* Product Image */}
       <Link href={`/products/${product.slug || product.id}`}>
-        <img 
+        <Image 
           src={product.images?.[0]?.src || '/placeholder.jpg'} 
           alt={product.name}
+          width={300}
+          height={192}
           className="w-full h-48 object-cover rounded mb-3 cursor-pointer hover:opacity-90 transition-opacity"
         />
       </Link>

@@ -21,7 +21,7 @@ const nextConfig = {
   
   // Enhanced image optimization
   images: {
-    domains: ['staging.eternitty.com', 'woo.local'],
+    domains: ['staging.eternitty.com', 'woo.local', 'localhost', 'localhost:10008'],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -118,9 +118,9 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://vercel.live",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: https: blob:",
+              "img-src 'self' data: https: http: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://woo.local https://staging.eternitty.com https://www.google.com https://www.gstatic.com",
+              "connect-src 'self' https://woo.local https://staging.eternitty.com http://localhost:10008 https://www.google.com https://www.gstatic.com",
               "frame-src 'self' https://www.google.com https://www.gstatic.com https://vercel.live",
               "object-src 'none'",
               "base-uri 'self'",

@@ -9,6 +9,7 @@ import DynamicFavicon from '../components/ui/DynamicFavicon';
 import DynamicGoogleFonts from '../components/ui/DynamicGoogleFonts';
 import Layout from '../components/layout/Layout';
 import WordPressStorageSync from '../components/WordPressStorageSync';
+import TypographyPreview from '../components/TypographyPreview';
 
 /**
  * Main App Component
@@ -26,6 +27,7 @@ function MyApp({ Component, pageProps, router }) {
               <DynamicFavicon />
               <DynamicGoogleFonts />
               <WordPressStorageSync />
+              <TypographyPreview />
               {isBlogDetailPage ? (
                 <Component {...pageProps} />
               ) : (

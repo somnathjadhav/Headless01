@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { XIcon, HeartIcon, EyeIcon, ShoppingBagIcon } from '../icons';
 import { useWooCommerce } from '../../context/WooCommerceContext';
 import { useWishlistAuth } from '../../hooks/useWishlistAuth';
@@ -71,16 +72,20 @@ export default function QuickPreviewModal({ product, isOpen, onClose }) {
             {/* Left Side - Product Image */}
             <div className="w-1/2 p-6">
               <div className="relative">
-                <img
+                <Image
                   src={product.images?.[0]?.src || '/placeholder-product.svg'}
                   alt={product.name}
+                  width={500}
+                  height={500}
                   className="w-full h-auto rounded-lg"
                 />
                 {/* Additional Image */}
                 {product.images?.[1] && (
-                  <img
+                  <Image
                     src={product.images[1].src}
                     alt={product.name}
+                    width={64}
+                    height={64}
                     className="absolute top-2 left-2 w-16 h-16 object-cover rounded border-2 border-white shadow-sm"
                   />
                 )}

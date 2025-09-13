@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { HeartIcon, EyeIcon, ArrowPathIcon, ShoppingBagIcon } from '../icons';
 import { useWooCommerce } from '../../context/WooCommerceContext';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -67,9 +68,11 @@ export default function ProductCard({ product }) {
       <div className="relative aspect-square overflow-hidden bg-gray-100">
         <Link href={`/products/${product.slug || id}`}>
           {/* Main Image */}
-          <img
+          <Image
             src={mainImage}
             alt={name}
+            width={400}
+            height={400}
             className={`w-full h-full object-cover transition-transform duration-300 cursor-pointer ${
               isHovered ? 'scale-110' : 'scale-100'
             }`}
@@ -77,9 +80,11 @@ export default function ProductCard({ product }) {
           
           {/* Hover Image */}
           {hoverImage !== mainImage && (
-            <img
+            <Image
               src={hoverImage}
               alt={name}
+              width={400}
+              height={400}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 cursor-pointer ${
                 isHovered ? 'opacity-100' : 'opacity-0'
               }`}

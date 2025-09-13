@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useGlobalTypography } from '../../hooks/useGlobalTypography';
 import { useWooCommerce } from '../../context/WooCommerceContext';
@@ -7,6 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useThemeOptions } from '../../hooks/useThemeOptions';
 import { useSiteInfo } from '../../hooks/useSiteInfo';
+import { useFavicon } from '../../hooks/useFavicon';
+import { useHeaderFooter } from '../../hooks/useHeaderFooter';
 import { wooCommerceUtils } from '../../lib/woocommerce';
 import { 
   ChevronLeftIcon, 
@@ -47,6 +50,13 @@ export default function Header() {
   // Site info from WordPress backend
   const siteInfo = useSiteInfo();
   
+  // Header/footer settings from WordPress backend
+  const headerFooterData = useHeaderFooter();
+  
+  // Direct logo state for immediate loading
+  const [directLogo, setDirectLogo] = useState('http://localhost:10008/wp-content/uploads/2025/09/logoipsum-373.svg');
+  const [logoLoading, setLogoLoading] = useState(false);
+  
   // Detect theme preference and select appropriate logo
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   
@@ -80,11 +90,36 @@ export default function Header() {
       };
     }
   }, []);
+
+  // Fetch logo from WordPress backend
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const response = await fetch('/api/header-footer');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data.lightLogo) {
+            setDirectLogo(data.data.lightLogo);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching logo:', error);
+      }
+    };
+
+    fetchLogo();
+  }, []);
   
-  // Select appropriate logo based on theme
-  const currentLogo = isDarkTheme && themeOptions.branding.dark_logo 
-    ? themeOptions.branding.dark_logo 
-    : themeOptions.branding.light_logo || themeOptions.branding.logo;
+  // Select appropriate logo based on theme - prioritize direct logo, then WordPress logo
+  const currentLogo = directLogo || 
+    (isDarkTheme && headerFooterData.darkLogo 
+      ? headerFooterData.darkLogo 
+      : headerFooterData.lightLogo) || 
+    (isDarkTheme && themeOptions.branding.dark_logo 
+      ? themeOptions.branding.dark_logo 
+      : themeOptions.branding.light_logo || themeOptions.branding.logo);
+
+  // Logo is now working with direct state management
   
   
   // State for banner visibility, mobile menu, and profile dropdown
@@ -131,7 +166,22 @@ export default function Header() {
         { name: 'On Sale', href: '/products?filter=on_sale' }
       ]
     },
-    { name: 'Pages', href: '/pages', hasDropdown: true },
+    { 
+      name: 'Pages', 
+      href: '/pages', 
+      hasDropdown: true,
+      dropdownItems: [
+        { name: 'Typography & Colors', href: '/typography' },
+        { name: 'Color Scheme Preview', href: '/products-color-preview' },
+        { name: 'Color Comparison', href: '/color-comparison' },
+        { name: 'Cart Debug', href: '/cart-debug' },
+        { name: 'About Us', href: '/about' },
+        { name: 'Contact Us', href: '/contact' },
+        { name: 'FAQ', href: '/faq' },
+        { name: 'Terms of Use', href: '/terms' },
+        { name: 'Privacy Policy', href: '/privacy' }
+      ]
+    },
     { name: 'Blog', href: '/blog', hasDropdown: true },
     { name: 'Sale', href: '/sale', hasDropdown: true, isHot: true }
   ];
@@ -230,9 +280,9 @@ export default function Header() {
               <ChevronLeftIcon className="w-4 h-4" />
             </button>
             
-            <div className="flex-1 text-center text-sm font-medium">
-              Coats—every friday 75% Off. Shop Sale
-            </div>
+             <div className="flex-1 text-center text-sm font-medium">
+               {headerFooterData.topHeaderText || 'Coats—every friday 75% Off. Shop Sale'}
+             </div>
             
             <div className="flex items-center space-x-2">
               <button className="p-1 hover:bg-red-700 rounded">
@@ -257,21 +307,24 @@ export default function Header() {
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
-                {currentLogo ? (
+                {currentLogo && !logoLoading ? (
                   <img 
                     src={currentLogo}
-                    alt={themeOptions.branding.logo_alt || themeOptions.branding.site_name || 'Site Logo'}
+                    alt={themeOptions.branding.logo_alt || siteInfo.name || 'Site Logo'}
                     className="h-8 w-auto max-w-[200px] object-contain"
                     onError={(e) => {
+                      console.error('Logo failed to load:', currentLogo);
                       e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'block';
+                    }}
+                    onLoad={() => {
+                      console.log('Logo loaded successfully:', currentLogo);
                     }}
                   />
                 ) : null}
                 <span 
-                  className={`text-2xl font-bold text-gray-900 ${currentLogo ? 'hidden' : 'block'}`}
+                  className={`text-2xl font-bold text-gray-900 ${currentLogo && !logoLoading ? 'hidden' : 'block'}`}
                 >
-                  {siteInfo.name || themeOptions.branding.site_name || 'NextGen Ecommerce'}
+                  {logoLoading ? 'Loading...' : (siteInfo.name || themeOptions.branding.site_name || 'NextGen Ecommerce')}
                 </span>
               </Link>
             </div>

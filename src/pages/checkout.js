@@ -39,7 +39,7 @@ export default function Checkout() {
     firstName: user?.name?.split(' ')[0] || '',
     lastName: user?.name?.split(' ').slice(1).join(' ') || '',
     company: '',
-    country: '',
+    country: 'IN',
     address1: '',
     address2: '',
     city: '',
@@ -54,7 +54,7 @@ export default function Checkout() {
     shippingFirstName: '',
     shippingLastName: '',
     shippingCompany: '',
-    shippingCountry: '',
+    shippingCountry: 'IN',
     shippingAddress1: '',
     shippingAddress2: '',
     shippingCity: '',
@@ -716,13 +716,7 @@ export default function Checkout() {
                     className="w-full h-11 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent" 
                     required
                   >
-                    <option value="US">United States (US)</option>
                     <option value="IN">India</option>
-                    <option value="CA">Canada</option>
-                    <option value="GB">United Kingdom</option>
-                    <option value="AU">Australia</option>
-                    <option value="DE">Germany</option>
-                    <option value="FR">France</option>
                   </select>
                 </div>
 
@@ -774,16 +768,43 @@ export default function Checkout() {
                       className="w-full h-11 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent" 
                       required
                     >
-                      <option value="CA">California</option>
-                      <option value="NY">New York</option>
-                      <option value="TX">Texas</option>
-                      <option value="FL">Florida</option>
-                      <option value="IL">Illinois</option>
-                      <option value="PA">Pennsylvania</option>
-                      <option value="OH">Ohio</option>
-                      <option value="GA">Georgia</option>
-                      <option value="NC">North Carolina</option>
-                      <option value="MI">Michigan</option>
+                      <option value="">Select State</option>
+                      <option value="AN">Andaman and Nicobar Islands</option>
+                      <option value="AP">Andhra Pradesh</option>
+                      <option value="AR">Arunachal Pradesh</option>
+                      <option value="AS">Assam</option>
+                      <option value="BR">Bihar</option>
+                      <option value="CH">Chandigarh</option>
+                      <option value="CT">Chhattisgarh</option>
+                      <option value="DN">Dadra and Nagar Haveli</option>
+                      <option value="DD">Daman and Diu</option>
+                      <option value="DL">Delhi</option>
+                      <option value="GA">Goa</option>
+                      <option value="GJ">Gujarat</option>
+                      <option value="HR">Haryana</option>
+                      <option value="HP">Himachal Pradesh</option>
+                      <option value="JK">Jammu and Kashmir</option>
+                      <option value="JH">Jharkhand</option>
+                      <option value="KA">Karnataka</option>
+                      <option value="KL">Kerala</option>
+                      <option value="LD">Lakshadweep</option>
+                      <option value="MP">Madhya Pradesh</option>
+                      <option value="MH">Maharashtra</option>
+                      <option value="MN">Manipur</option>
+                      <option value="ML">Meghalaya</option>
+                      <option value="MZ">Mizoram</option>
+                      <option value="NL">Nagaland</option>
+                      <option value="OR">Odisha</option>
+                      <option value="PY">Puducherry</option>
+                      <option value="PB">Punjab</option>
+                      <option value="RJ">Rajasthan</option>
+                      <option value="SK">Sikkim</option>
+                      <option value="TN">Tamil Nadu</option>
+                      <option value="TG">Telangana</option>
+                      <option value="TR">Tripura</option>
+                      <option value="UP">Uttar Pradesh</option>
+                      <option value="UT">Uttarakhand</option>
+                      <option value="WB">West Bengal</option>
                     </select>
                   </div>
                 </div>
@@ -932,13 +953,7 @@ export default function Checkout() {
                       className="w-full h-11 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent" 
                       required
                     >
-                      <option value="US">United States (US)</option>
                       <option value="IN">India</option>
-                      <option value="CA">Canada</option>
-                      <option value="GB">United Kingdom</option>
-                      <option value="AU">Australia</option>
-                      <option value="DE">Germany</option>
-                      <option value="FR">France</option>
                     </select>
                   </div>
 
@@ -990,16 +1005,43 @@ export default function Checkout() {
                         className="w-full h-11 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent" 
                         required
                       >
-                        <option value="CA">California</option>
-                        <option value="NY">New York</option>
-                        <option value="TX">Texas</option>
-                        <option value="FL">Florida</option>
-                        <option value="IL">Illinois</option>
-                        <option value="PA">Pennsylvania</option>
-                        <option value="OH">Ohio</option>
-                        <option value="GA">Georgia</option>
-                        <option value="NC">North Carolina</option>
-                        <option value="MI">Michigan</option>
+                        <option value="">Select State</option>
+                        <option value="AN">Andaman and Nicobar Islands</option>
+                        <option value="AP">Andhra Pradesh</option>
+                        <option value="AR">Arunachal Pradesh</option>
+                        <option value="AS">Assam</option>
+                        <option value="BR">Bihar</option>
+                        <option value="CH">Chandigarh</option>
+                        <option value="CT">Chhattisgarh</option>
+                        <option value="DN">Dadra and Nagar Haveli</option>
+                        <option value="DD">Daman and Diu</option>
+                        <option value="DL">Delhi</option>
+                        <option value="GA">Goa</option>
+                        <option value="GJ">Gujarat</option>
+                        <option value="HR">Haryana</option>
+                        <option value="HP">Himachal Pradesh</option>
+                        <option value="JK">Jammu and Kashmir</option>
+                        <option value="JH">Jharkhand</option>
+                        <option value="KA">Karnataka</option>
+                        <option value="KL">Kerala</option>
+                        <option value="LD">Lakshadweep</option>
+                        <option value="MP">Madhya Pradesh</option>
+                        <option value="MH">Maharashtra</option>
+                        <option value="MN">Manipur</option>
+                        <option value="ML">Meghalaya</option>
+                        <option value="MZ">Mizoram</option>
+                        <option value="NL">Nagaland</option>
+                        <option value="OR">Odisha</option>
+                        <option value="PY">Puducherry</option>
+                        <option value="PB">Punjab</option>
+                        <option value="RJ">Rajasthan</option>
+                        <option value="SK">Sikkim</option>
+                        <option value="TN">Tamil Nadu</option>
+                        <option value="TG">Telangana</option>
+                        <option value="TR">Tripura</option>
+                        <option value="UP">Uttar Pradesh</option>
+                        <option value="UT">Uttarakhand</option>
+                        <option value="WB">West Bengal</option>
                       </select>
                     </div>
                   </div>

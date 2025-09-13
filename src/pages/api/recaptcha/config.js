@@ -62,7 +62,7 @@ export default async function handler(req, res) {
 
     // Fallback to environment variables if WordPress backend doesn't have reCAPTCHA settings
     // ENABLED: reCAPTCHA is now enabled
-    if (!recaptchaConfig.enabled) {
+    if (!recaptchaConfig.site_key || !recaptchaConfig.secret_key) {
       const envSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
       const envSecretKey = process.env.RECAPTCHA_SECRET_KEY;
       
@@ -93,6 +93,9 @@ export default async function handler(req, res) {
       site_key: envSiteKey || null,
       secret_key: envSecretKey || null
     };
+    
+    console.log('🔍 Fallback config - Site Key:', envSiteKey ? 'Found' : 'Missing');
+    console.log('🔍 Fallback config - Secret Key:', envSecretKey ? 'Found' : 'Missing');
     
     return res.status(200).json({
       success: true,

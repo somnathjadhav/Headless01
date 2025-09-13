@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>reCAPTCHA Test</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+    <h1>reCAPTCHA Test</h1>
+    <p>Testing your site key: 6Ld3C8grAAAAAP0zZ7zyu6OIuThxSCSOUTwjG0qv</p>
+    
+    <form>
+        <div class="g-recaptcha" 
+             data-sitekey="6Ld3C8grAAAAAP0zZ7zyu6OIuThxSCSOUTwjG0qv">
+        </div>
+        <br>
+        <input type="submit" value="Test Submit">
+    </form>
+    
+    <script>
+        console.log('reCAPTCHA test loaded');
+        console.log('Site key:', '6Ld3C8grAAAAAP0zZ7zyu6OIuThxSCSOUTwjG0qv');
+        
+        // Check if reCAPTCHA loads
+        window.onload = function() {
+            setTimeout(function() {
+                const recaptcha = document.querySelector('.g-recaptcha iframe');
+                if (recaptcha) {
+                    console.log('✅ reCAPTCHA iframe found - it should be working!');
+                } else {
+                    console.log('❌ reCAPTCHA iframe not found - domain/key issue');
+                }
+            }, 2000);
+        };
+    </script>
+</body>
+</html>

@@ -29,6 +29,10 @@ export default async function handler(req, res) {
           secret_key: recaptchaData.secret_key || null
         };
         console.log('✅ Found reCAPTCHA settings from WordPress backend');
+        console.log('🔍 WordPress source - Site Key:', recaptchaData.site_key ? 'Found' : 'Missing');
+        console.log('🔍 WordPress source - Secret Key:', recaptchaData.secret_key ? 'Found' : 'Missing');
+      } else {
+        console.log('⚠️ WordPress reCAPTCHA endpoint not accessible:', recaptchaResponse.status);
       }
     } catch (error) {
       console.log('⚠️ Could not fetch reCAPTCHA settings from WordPress backend:', error.message);
@@ -73,12 +77,22 @@ export default async function handler(req, res) {
           secret_key: envSecretKey
         };
         console.log('✅ reCAPTCHA enabled using environment variables');
+        console.log('🔍 Environment source - Site Key:', envSiteKey ? 'Found' : 'Missing');
+        console.log('🔍 Environment source - Secret Key:', envSecretKey ? 'Found' : 'Missing');
       }
     }
 
+    // Add source information
+    const responseData = {
+      ...recaptchaConfig,
+      source: recaptchaConfig.site_key && recaptchaConfig.secret_key ? 
+        (recaptchaConfig.site_key === process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ? 'environment' : 'wordpress') : 
+        'none'
+    };
+
     return res.status(200).json({
       success: true,
-      data: recaptchaConfig
+      data: responseData
     });
 
   } catch (error) {
@@ -97,9 +111,14 @@ export default async function handler(req, res) {
     console.log('🔍 Fallback config - Site Key:', envSiteKey ? 'Found' : 'Missing');
     console.log('🔍 Fallback config - Secret Key:', envSecretKey ? 'Found' : 'Missing');
     
+    const fallbackResponseData = {
+      ...fallbackConfig,
+      source: fallbackConfig.site_key && fallbackConfig.secret_key ? 'environment' : 'none'
+    };
+
     return res.status(200).json({
       success: true,
-      data: fallbackConfig
+      data: fallbackResponseData
     });
   }
 }

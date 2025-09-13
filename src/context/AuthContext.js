@@ -134,10 +134,29 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     const user = localStorage.getItem('auth_user');
+    const authVersion = localStorage.getItem('auth_version');
+    const currentVersion = '2.0.0'; // Increment this when auth data structure changes
+    
+    // Clear old cached data if version doesn't match
+    if (authVersion !== currentVersion) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_version');
+      return;
+    }
     
     if (token && user) {
       try {
         const userData = JSON.parse(user);
+        
+        // Additional validation: Check if user data contains old hardcoded values
+        if (userData.name === 'John Doe' || userData.email === 'john.doe@example.com') {
+          console.log('🧹 Clearing old hardcoded user data from cache');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('auth_user');
+          return;
+        }
+        
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
           payload: { token, user: userData }
@@ -166,9 +185,10 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (data.success) {
-        // Store in localStorage
+        // Store in localStorage with version
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('auth_user', JSON.stringify(data.user));
+        localStorage.setItem('auth_version', '2.0.0');
         
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
@@ -257,9 +277,10 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (data.success) {
-        // Store in localStorage
+        // Store in localStorage with version
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('auth_user', JSON.stringify(data.user));
+        localStorage.setItem('auth_version', '2.0.0');
         
         dispatch({
           type: AUTH_ACTIONS.GOOGLE_LOGIN_SUCCESS,

@@ -444,24 +444,20 @@ export default function Checkout() {
       if (data.success) {
         setOrderId(data.order.id);
         setOrderSuccess(true);
+        clearCart();
         
-        // Clear cart and restore backup after showing success state
-        setTimeout(() => {
-          clearCart();
-          
-          // Restore cart backup if it exists (from Buy Now functionality)
-          if (cartBackup) {
-            console.log('🛒 Restoring cart backup after order completion');
-            setTimeout(() => {
-              restoreCart();
-            }, 100); // Small delay to ensure cart is cleared first
-          }
-          
-          // Redirect to order success page after 2 seconds
+        // Restore cart backup if it exists (from Buy Now functionality)
+        if (cartBackup) {
+          console.log('🛒 Restoring cart backup after order completion');
           setTimeout(() => {
-            router.push(`/order-success?orderId=${data.order.id}`);
-          }, 2000);
-        }, 100); // Small delay to ensure success state is shown first
+            restoreCart();
+          }, 100); // Small delay to ensure cart is cleared first
+        }
+        
+        // Redirect to order success page after 2 seconds
+        setTimeout(() => {
+          router.push(`/order-success?orderId=${data.order.id}`);
+        }, 2000);
       } else {
         setError(data.message || 'Failed to create order. Please try again.');
       }
@@ -481,6 +477,19 @@ export default function Checkout() {
         message="Please sign in to proceed with checkout and complete your order securely."
         redirectTo="checkout"
       />
+    );
+  }
+
+  // Show loading state when order is being processed
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Processing Your Order</h2>
+          <p className="text-gray-600">Please wait while we process your order...</p>
+        </div>
+      </div>
     );
   }
 

@@ -1,4 +1,4 @@
-# 🎯 Eternitty Headless WooCommerce Setup Guide
+# 🎯 Eternitty Headless WooCommerce Setup Guide.
 
 This guide will help you set up your headless WooCommerce project with Faust.js and the custom "Eternitty" theme.
 

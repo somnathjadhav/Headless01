@@ -196,10 +196,12 @@ export default async function handler(req, res) {
         !responseText.includes('Invalid username') &&
         !responseText.includes('The password you entered') &&
         !responseText.includes('Lost your password') &&
-        // Check for successful login indicators
+        // Check for successful login indicators (any one is sufficient)
         (responseText.includes('Dashboard') || 
          responseText.includes('wp-admin') ||
-         responseText.includes('Log out'))
+         responseText.includes('Log out') ||
+         responseText.includes('wp-content') ||
+         responseText.includes('admin-bar'))
       );
 
       if (isLoggedIn) {

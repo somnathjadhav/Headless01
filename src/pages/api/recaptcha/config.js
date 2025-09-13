@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     
     // Try to get reCAPTCHA settings from WordPress backend
     let recaptchaConfig = {
-      enabled: false, // DISABLED: reCAPTCHA is disabled for now
+      enabled: true, // ENABLED: reCAPTCHA is now enabled
       site_key: null,
       secret_key: null
     };
@@ -61,18 +61,18 @@ export default async function handler(req, res) {
     }
 
     // Fallback to environment variables if WordPress backend doesn't have reCAPTCHA settings
-    // DISABLED: reCAPTCHA is disabled for now
+    // ENABLED: reCAPTCHA is now enabled
     if (!recaptchaConfig.enabled) {
       const envSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
       const envSecretKey = process.env.RECAPTCHA_SECRET_KEY;
       
       if (envSiteKey && envSecretKey) {
         recaptchaConfig = {
-          enabled: false, // DISABLED: reCAPTCHA is disabled for now
+          enabled: true, // ENABLED: reCAPTCHA is now enabled
           site_key: envSiteKey,
           secret_key: envSecretKey
         };
-        console.log('⚠️ reCAPTCHA is disabled (environment variables found but disabled)');
+        console.log('✅ reCAPTCHA enabled using environment variables');
       }
     }
 
@@ -89,7 +89,7 @@ export default async function handler(req, res) {
     const envSecretKey = process.env.RECAPTCHA_SECRET_KEY;
     
     const fallbackConfig = {
-      enabled: false, // DISABLED: reCAPTCHA is disabled for now
+      enabled: true, // ENABLED: reCAPTCHA is now enabled
       site_key: envSiteKey || null,
       secret_key: envSecretKey || null
     };

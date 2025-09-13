@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import SEO from '../components/layout/SEO';
 import { useAuth } from '../context/AuthContext';
 import GeometricDesign from '../components/ui/GeometricDesign';
+import SimpleCaptcha from '../components/ui/SimpleCaptcha';
+import GoogleReCaptcha from '../components/ui/GoogleReCaptcha';
+import { useRecaptchaConfig } from '../hooks/useRecaptchaConfig';
 
 export default function SystemStatus() {
   const { user, isAuthenticated: authIsAuthenticated, login, logout: authLogout } = useAuth();
+  const { isEnabled: isRecaptchaEnabled, isLoading: isRecaptchaLoading } = useRecaptchaConfig();
   const [systemStatus, setSystemStatus] = useState({
     wordpress: { status: 'checking', message: 'Checking...', details: {} },
     woocommerce: { status: 'checking', message: 'Checking...', details: {} },
@@ -15,6 +19,9 @@ export default function SystemStatus() {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     // Only start checking status if authenticated
@@ -30,6 +37,47 @@ export default function SystemStatus() {
   const isAdminUser = (user) => {
     if (!user || !user.roles) return false;
     return user.roles.includes('administrator') || user.roles.includes('admin');
+  };
+
+  // Verify reCAPTCHA token
+  const verifyRecaptcha = async (token) => {
+    try {
+      const response = await fetch('/api/recaptcha/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setCaptchaVerified(true);
+        setRecaptchaToken(token);
+        return true;
+      } else {
+        setCaptchaVerified(false);
+        setRecaptchaToken(null);
+        return false;
+      }
+    } catch (error) {
+      console.error('reCAPTCHA verification error:', error);
+      setCaptchaVerified(false);
+      setRecaptchaToken(null);
+      return false;
+    }
+  };
+
+  const handleRecaptchaExpire = () => {
+    setCaptchaVerified(false);
+    setRecaptchaToken(null);
+  };
+
+  const handleRecaptchaError = (error) => {
+    console.error('reCAPTCHA error:', error);
+    setCaptchaVerified(false);
+    setRecaptchaToken(null);
   };
 
   const checkSystemStatus = async () => {
@@ -206,11 +254,19 @@ export default function SystemStatus() {
   // WordPress admin authentication
   const handleLogin = async (e) => {
     e.preventDefault();
+    setFormErrors({});
+    
+    // Check reCAPTCHA only if it's enabled
+    if (isRecaptchaEnabled && (!captchaVerified || !recaptchaToken)) {
+      setFormErrors({ captcha: 'Please complete the reCAPTCHA verification' });
+      return;
+    }
+    
     setIsLoggingIn(true);
     setLoginError('');
 
     try {
-      const result = await login(loginForm.email, loginForm.password);
+      const result = await login(loginForm.email, loginForm.password, recaptchaToken);
       
       if (result.success) {
         // For now, let's allow access to any authenticated user
@@ -295,6 +351,42 @@ export default function SystemStatus() {
                   className="w-full px-4 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm border-gray-300"
                   placeholder="Enter password"
                 />
+              </div>
+
+              {/* reCAPTCHA */}
+              <div>
+                {isRecaptchaLoading ? (
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Security Check *
+                    </label>
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-600">Loading security check...</span>
+                        </div>
+                        <div className="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <span className="text-sm text-gray-500">Loading...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : isRecaptchaEnabled ? (
+                  <GoogleReCaptcha 
+                    onVerify={verifyRecaptcha}
+                    onExpire={handleRecaptchaExpire}
+                    onError={handleRecaptchaError}
+                    error={formErrors.captcha}
+                  />
+                ) : (
+                  <SimpleCaptcha 
+                    onVerify={verifyRecaptcha}
+                    error={formErrors.captcha}
+                  />
+                )}
+                {formErrors.captcha && (
+                  <p className="mt-2 text-sm text-red-600">{formErrors.captcha}</p>
+                )}
               </div>
 
               {/* Log In Button */}

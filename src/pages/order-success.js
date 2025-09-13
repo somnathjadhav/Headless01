@@ -76,13 +76,15 @@ export default function OrderSuccess() {
   // Fetch order details and site info
   useEffect(() => {
     const fetchOrderData = async () => {
-      if (!orderId) {
-        // Fallback data is already set in the first useEffect
+      // Wait for router to be ready and check if orderId exists
+      if (!router.isReady || !orderId) {
+        console.log('Router not ready or no orderId:', { isReady: router.isReady, orderId });
         return;
       }
 
       try {
         setLoading(true);
+        console.log('Fetching order data for orderId:', orderId);
         
         // Fetch order details and site info in parallel
         const [orderResponse, siteResponse] = await Promise.all([
@@ -93,6 +95,7 @@ export default function OrderSuccess() {
         if (orderResponse.ok) {
           const orderData = await orderResponse.json();
           if (orderData.success) {
+            console.log('Order data fetched successfully:', orderData.order);
             setOrderDetails(orderData.order);
           } else {
             throw new Error(orderData.message || 'Failed to fetch order');
@@ -115,7 +118,7 @@ export default function OrderSuccess() {
     };
 
     fetchOrderData();
-  }, [orderId]);
+  }, [router.isReady, orderId]);
 
   // Restore cart backup when component mounts (after order completion)
   useEffect(() => {

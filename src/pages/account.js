@@ -149,7 +149,7 @@ export default function Account() {
 
     fetchOrders();
   }, [activeTab, isAuthenticated, user?.id]);
-
+  
   // Fetch user profile data when authenticated
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -220,7 +220,7 @@ export default function Account() {
 
     fetchUserProfile();
   }, [isAuthenticated, user]);
-
+  
   // Show loading while checking authentication
   if (isInitializing) {
     return (
@@ -523,53 +523,39 @@ export default function Account() {
       {/* Main Container with Boxed Layout */}
       <div className="max-w-7xl mx-auto bg-white min-h-screen shadow-2xl">
         {/* Header Section */}
-        <div className="bg-gradient-to-r from-black via-gray-900 to-gray-800 text-white relative" style={{ marginTop: '20px' }}>
+        <div className="bg-gradient-to-r from-black via-gray-900 to-gray-800 text-white relative">
           <div className="container mx-auto px-6 pt-6 pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="relative">
+              <div className="relative">
                   <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center animate-float">
                     <UserIcon className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
                 </div>
-                <div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
+              </div>
+          <div>
                   <h1 className="text-2xl font-medium mb-1">Welcome back, <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{userData.firstName || 'User'}!</span></h1>
                   <p className="text-white text-opacity-90 text-sm">@{userData.firstName?.toLowerCase() || 'user'} • Member since {new Date().getFullYear()}</p>
                   <div className="flex items-center space-x-3 mt-2">
                     <div className="flex items-center space-x-1">
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                       <span className="text-xs">Online</span>
-                    </div>
+                </div>
                     <div className="flex items-center space-x-1">
                       <CheckIcon className="w-3 h-3" />
                       <span className="text-xs">Verified</span>
-                    </div>
-                  </div>
-                </div>
+              </div>
+            </div>
+              </div>
               </div>
               <div className="text-right">
                 <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl px-4 py-2 mb-3 border border-white border-opacity-20">
                   <span className="text-xs font-medium">Active Member</span>
-                </div>
-                <div className="text-xs text-white text-opacity-90 space-y-1">
-                  <div className="flex items-center justify-end space-x-2">
-                    <span>{orders.length} Total Orders</span>
-                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                  </div>
-                  <div className="flex items-center justify-end space-x-2">
-                    <span>{wishlist.length} Wishlist Items</span>
-                    <div className="w-1.5 h-1.5 bg-pink-400 rounded-full"></div>
-                  </div>
-                  <div className="flex items-center justify-end space-x-2">
-                    <span>{addresses.length} Saved Addresses</span>
-                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                  </div>
-                </div>
               </div>
-            </div>
+              </div>
           </div>
         </div>
+      </div>
 
         {/* Spacing between header and content */}
         <div className="h-4 bg-gray-50"></div>
@@ -643,7 +629,7 @@ export default function Account() {
                         <div className="flex items-center space-x-1">
                           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                           <span className="text-xs">Account Active</span>
-                        </div>
+                    </div>
                         <div className="flex items-center space-x-1">
                           <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                           <span className="text-xs">Premium Member</span>
@@ -675,14 +661,14 @@ export default function Account() {
                         <p className="text-xs text-gray-500">All time</p>
                         <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
                           <div className="bg-black h-1.5 rounded-full w-0 transition-all duration-1000 group-hover:w-3/4"></div>
-                        </div>
+                      </div>
                       </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                         <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
                           <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
                         </svg>
-                      </div>
+                    </div>
                     </div>
                   </div>
 
@@ -696,11 +682,11 @@ export default function Account() {
                         <p className="text-xs text-gray-500">Saved for later</p>
                         <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
                           <div className="bg-pink-600 h-1.5 rounded-full w-3/4 transition-all duration-1000"></div>
-                        </div>
+                      </div>
                       </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-pink-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                         <HeartIcon className="w-6 h-6 text-pink-600" />
-                      </div>
+                    </div>
                     </div>
                   </div>
 
@@ -714,7 +700,7 @@ export default function Account() {
                         <p className="text-xs text-gray-500">Ready to use</p>
                         <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
                           <div className="bg-green-600 h-1.5 rounded-full w-1/2 transition-all duration-1000"></div>
-                        </div>
+                      </div>
                       </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                         <MapPinIcon className="w-6 h-6 text-green-600" />
@@ -732,11 +718,11 @@ export default function Account() {
                         <p className="text-xs text-gray-500">Verified member</p>
                         <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
                           <div className="bg-green-600 h-1.5 rounded-full w-full transition-all duration-1000"></div>
-                        </div>
+                      </div>
                       </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                         <CheckIcon className="w-6 h-6 text-green-600" />
-                      </div>
+                    </div>
                     </div>
                   </div>
                 </div>
@@ -1319,16 +1305,16 @@ export default function Account() {
                           {/* Compact Order Header */}
                           <div className="px-4 py-3 border-b border-gray-100">
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
+                                <div className="flex items-center space-x-3">
                                 <span className={`px-3 py-1 text-xs font-medium rounded-lg ${
                                   order.status === 'completed' ? 'bg-green-100 text-green-800' :
                                   order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
                                   order.status === 'shipped' ? 'bg-gray-100 text-gray-800' :
                                   order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                                   'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                </span>
+                          }`}>
+                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          </span>
                                 <div>
                                   <h4 className="font-medium text-gray-900 text-sm">Order #{order.number || order.id}</h4>
                                   <p className="text-xs text-gray-500">
@@ -1356,7 +1342,7 @@ export default function Account() {
                                     <div className="relative overflow-hidden rounded-lg bg-gray-50">
                                       <img
                                         src={item.image || '/placeholder-product.svg'}
-                                        alt={item.name}
+                                alt={item.name}
                                         className="w-12 h-12 object-cover"
                                       />
                                       {item.quantity > 1 && (
@@ -1378,20 +1364,20 @@ export default function Account() {
                                     <p className="text-xs text-gray-500">
                                       {item.quantity} × ₹{item.price}
                                     </p>
-                                  </div>
-                                  <div className="text-right">
+                              </div>
+                              <div className="text-right">
                                     <p className="font-medium text-gray-900 text-sm">₹{item.total}</p>
-                                  </div>
-                                </div>
-                              ))}
+                              </div>
+                            </div>
+                          ))}
                               {order.items?.length > 2 && (
                                 <div className="text-center py-2">
                                   <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600">
                                     +{order.items.length - 2} more item{(order.items.length - 2) !== 1 ? 's' : ''}
                                   </span>
-                                </div>
+                        </div>
                               )}
-                            </div>
+                          </div>
 
                             {/* Compact Order Footer */}
                             <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
@@ -1409,33 +1395,33 @@ export default function Account() {
                                   </div>
                                 )}
                               </div>
-                              <button 
-                                onClick={() => openOrderModal(order)}
+                                <button
+                                  onClick={() => openOrderModal(order)}
                                 className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-black rounded-md hover:bg-gray-800 transition-colors"
-                              >
+                                >
                                 <EyeIcon className="w-3 h-3 mr-1" />
                                 View Details
-                              </button>
+                                </button>
                             </div>
-                          </div>
                         </div>
-                      ))}
+                      </div>
+                    ))}
                     </div>
                   )}
-                  
-                  {filteredOrders.length > 5 && (
+                    
+                      {filteredOrders.length > 5 && (
                         <div className="text-center pt-6 border-t border-gray-100">
-                          <Link
-                            href="/orders"
+                        <Link
+                          href="/orders"
                             className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                          >
+                        >
                             <span>View All {filteredOrders.length} Orders</span>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
-                          </Link>
-                        </div>
-                      )}
+                        </Link>
+                  </div>
+                )}
                 </div>
               </div>
             )}
@@ -1728,14 +1714,14 @@ export default function Account() {
                   {/* Display Existing Addresses */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {addresses.map((address) => (
-                      <div key={address.id} className="border border-gray-200 rounded-lg p-6">
-                      <div className="flex items-start justify-between mb-4">
+                      <div key={address.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="text-base font-medium text-gray-900 mb-2">
+                          <h3 className="text-sm font-medium text-gray-900 mb-1">
                             {address.type === 'shipping' ? 'Shipping Address' : 'Billing Address'}
                             {address.isDefault && <span className="ml-2 text-xs text-green-600">(Default)</span>}
                           </h3>
-                          <div className="space-y-1 text-gray-600">
+                          <div className="space-y-1 text-xs text-gray-600">
                             <p>{address.name}</p>
                             <p>{address.street}</p>
                             <p>{address.city}, {address.state} {address.zipCode}</p>
@@ -1746,13 +1732,13 @@ export default function Account() {
                         <div className="flex space-x-2">
                           <button 
                             onClick={() => handleSetDefaultAddress(address.id)}
-                            className="text-black hover:text-gray-800 text-sm font-medium"
+                            className="text-black hover:text-gray-800 text-xs font-medium"
                           >
                             {address.isDefault ? 'Default' : 'Set Default'}
                           </button>
                           <button 
                             onClick={() => handleDeleteAddress(address.id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
+                            className="text-red-600 hover:text-red-800 text-xs font-medium"
                           >
                             Delete
                           </button>
@@ -1849,12 +1835,12 @@ export default function Account() {
                             <h4 className="text-sm font-medium text-gray-900">Email Notifications</h4>
                             <p className="text-xs text-gray-500">Receive updates about orders and promotions</p>
                           </div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input type="checkbox" className="sr-only peer" defaultChecked aria-label="Email notifications toggle" />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                        </label>
-                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" defaultChecked aria-label="Email notifications toggle" />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                    </label>
+                  </div>
 
                       <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                         <div className="flex items-center space-x-3">
@@ -1863,16 +1849,16 @@ export default function Account() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
                           </div>
-                          <div>
+                    <div>
                             <h4 className="text-sm font-medium text-gray-900">SMS Notifications</h4>
                             <p className="text-xs text-gray-500">Receive order updates via text message</p>
                           </div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input type="checkbox" className="sr-only peer" aria-label="SMS notifications toggle" />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                        </label>
-                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" aria-label="SMS notifications toggle" />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                    </label>
+                  </div>
 
                       <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                         <div className="flex items-center space-x-3">
@@ -1881,10 +1867,10 @@ export default function Account() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 7h6m-6 4h6m-6 4h6M9 3v1m6 0v1M9 19v1m6 0v1" />
                             </svg>
                           </div>
-                          <div>
+                    <div>
                             <h4 className="text-sm font-medium text-gray-900">Push Notifications</h4>
                             <p className="text-xs text-gray-500">Get instant updates on your device</p>
-                          </div>
+                    </div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input type="checkbox" className="sr-only peer" defaultChecked aria-label="Push notifications toggle" />
@@ -1914,9 +1900,9 @@ export default function Account() {
                           </div>
                         </div>
                         <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
-                          Enable
-                        </button>
-                      </div>
+                      Enable
+                    </button>
+                  </div>
 
                       <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                         <div className="flex items-center space-x-3">
@@ -2010,19 +1996,19 @@ export default function Account() {
                 <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                   <div>
-                      <h2 className="text-xl font-medium text-gray-900 mb-1">Security Settings</h2>
+                      <h2 className="text-lg font-medium text-gray-900 mb-1">Security Settings</h2>
                       <p className="text-gray-600">Manage your account security and privacy</p>
                     </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                      <ShieldIcon className="w-6 h-6 text-green-600" />
+                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <ShieldIcon className="w-6 h-6 text-gray-600" />
                     </div>
                   </div>
                 </div>
 
                 <div className="p-8 space-y-8">
                   {/* Password Security */}
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-6 flex items-center">
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
                       <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
@@ -2038,124 +2024,138 @@ export default function Account() {
                       }`}>
                         <div className="flex items-center">
                           {passwordMessage.type === 'success' ? (
-                            <svg className="w-6 h-6 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           ) : (
-                            <svg className="w-6 h-6 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           )}
-                          <div>
-                            <p className="font-medium text-lg">
+                      <div>
+                            <p className="font-medium text-sm">
                               {passwordMessage.type === 'success' ? 'Success!' : 'Error'}
                             </p>
-                            <p className="text-base mt-1">{passwordMessage.text}</p>
+                            <p className="text-xs mt-1">{passwordMessage.text}</p>
                           </div>
                         </div>
                       </div>
                     )}
                     
-                    <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-2xl">
-                      <div>
-                        <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                    <div className="bg-gray-50 rounded-lg p-6">
+                      <form onSubmit={handlePasswordSubmit} className="max-w-4xl">
+                        {/* Current Password - Full Width */}
+                        <div className="mb-4">
+                          <label htmlFor="currentPassword" className="block text-xs font-medium text-gray-700 mb-1">
                           Current Password *
                         </label>
-                        <div className="relative">
-                          <input
-                            id="currentPassword"
-                            type={showPasswords.current ? 'text' : 'password'}
-                            value={passwordData.currentPassword}
-                            onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
-                            className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors ${
-                              passwordErrors.currentPassword ? 'border-red-300' : 'border-gray-300'
-                            }`}
-                            placeholder="Enter your current password"
-                          />
-                          <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                            onClick={() => togglePasswordVisibility('current')}
-                          >
-                            {showPasswords.current ? (
-                              <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-                            ) : (
-                              <EyeIcon className="h-5 w-5 text-gray-400" />
-                            )}
-                          </button>
-                        </div>
-                        {passwordErrors.currentPassword && (
-                          <p className="mt-1 text-sm text-red-600">{passwordErrors.currentPassword}</p>
-                        )}
+                          <div className="relative">
+                        <input
+                          id="currentPassword"
+                              type={showPasswords.current ? 'text' : 'password'}
+                              value={passwordData.currentPassword}
+                              onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                              className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm ${
+                                passwordErrors.currentPassword ? 'border-red-300' : 'border-gray-300'
+                              }`}
+                          placeholder="Enter your current password"
+                        />
+                            <button
+                              type="button"
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                              onClick={() => togglePasswordVisibility('current')}
+                            >
+                              {showPasswords.current ? (
+                                <EyeSlashIcon className="h-4 w-4 text-gray-400" />
+                              ) : (
+                                <EyeIcon className="h-4 w-4 text-gray-400" />
+                              )}
+                            </button>
                       </div>
+                          {passwordErrors.currentPassword && (
+                            <p className="mt-1 text-xs text-red-600">{passwordErrors.currentPassword}</p>
+                          )}
+                        </div>
+
+                        {/* New Password and Confirm Password - Two Columns */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="newPassword" className="block text-xs font-medium text-gray-700 mb-1">
                           New Password *
                         </label>
-                        <div className="relative">
-                          <input
-                            id="newPassword"
-                            type={showPasswords.new ? 'text' : 'password'}
-                            value={passwordData.newPassword}
-                            onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
-                            className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors ${
-                              passwordErrors.newPassword ? 'border-red-300' : 'border-gray-300'
-                            }`}
-                            placeholder="Enter your new password"
-                          />
-                          <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                            onClick={() => togglePasswordVisibility('new')}
-                          >
-                            {showPasswords.new ? (
-                              <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-                            ) : (
-                              <EyeIcon className="h-5 w-5 text-gray-400" />
-                            )}
-                          </button>
+                            <div className="relative">
+                        <input
+                          id="newPassword"
+                                type={showPasswords.new ? 'text' : 'password'}
+                                value={passwordData.newPassword}
+                                onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                                className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm ${
+                                  passwordErrors.newPassword ? 'border-red-300' : 'border-gray-300'
+                                }`}
+                          placeholder="Enter your new password"
+                        />
+                              <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                onClick={() => togglePasswordVisibility('new')}
+                              >
+                                {showPasswords.new ? (
+                                  <EyeSlashIcon className="h-4 w-4 text-gray-400" />
+                                ) : (
+                                  <EyeIcon className="h-4 w-4 text-gray-400" />
+                                )}
+                              </button>
                         </div>
-                        {passwordErrors.newPassword && (
-                          <p className="mt-1 text-sm text-red-600">{passwordErrors.newPassword}</p>
-                        )}
-                        <PasswordStrengthMeter password={passwordData.newPassword} />
+                            {passwordErrors.newPassword && (
+                              <p className="mt-1 text-xs text-red-600">{passwordErrors.newPassword}</p>
+                            )}
                       </div>
+                          
                       <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="confirmPassword" className="block text-xs font-medium text-gray-700 mb-1">
                           Confirm New Password *
                         </label>
-                        <div className="relative">
-                          <input
-                            id="confirmPassword"
-                            type={showPasswords.confirm ? 'text' : 'password'}
-                            value={passwordData.confirmPassword}
-                            onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-                            className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors ${
-                              passwordErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                            }`}
-                            placeholder="Confirm your new password"
-                          />
-                          <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                            onClick={() => togglePasswordVisibility('confirm')}
-                          >
-                            {showPasswords.confirm ? (
-                              <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-                            ) : (
-                              <EyeIcon className="h-5 w-5 text-gray-400" />
-                            )}
-                          </button>
-                        </div>
-                        {passwordErrors.confirmPassword && (
-                          <p className="mt-1 text-sm text-red-600">{passwordErrors.confirmPassword}</p>
-                        )}
-                      </div>
-                      <button type="submit" className="inline-flex items-center space-x-2 bg-black text-white px-8 py-3 rounded-xl hover:bg-gray-800 transition-colors font-medium">
-                        <ShieldIcon className="w-4 h-4" />
-                        <span>Update Password</span>
+                            <div className="relative">
+                        <input
+                          id="confirmPassword"
+                                type={showPasswords.confirm ? 'text' : 'password'}
+                                value={passwordData.confirmPassword}
+                                onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                                className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm ${
+                                  passwordErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                                }`}
+                          placeholder="Confirm your new password"
+                        />
+                              <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                onClick={() => togglePasswordVisibility('confirm')}
+                              >
+                                {showPasswords.confirm ? (
+                                  <EyeSlashIcon className="h-4 w-4 text-gray-400" />
+                                ) : (
+                                  <EyeIcon className="h-4 w-4 text-gray-400" />
+                                )}
                       </button>
-                    </form>
+                            </div>
+                            {passwordErrors.confirmPassword && (
+                              <p className="mt-1 text-xs text-red-600">{passwordErrors.confirmPassword}</p>
+                            )}
+                    </div>
+                  </div>
+
+                        {/* Password Strength Meter - Full Width */}
+                        <div className="mb-4">
+                          <PasswordStrengthMeter password={passwordData.newPassword} />
+                      </div>
+
+                        {/* Update Button */}
+                        <button type="submit" className="inline-flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm">
+                          <ShieldIcon className="w-4 h-4" />
+                          <span>Update Password</span>
+                      </button>
+                      </form>
+                    </div>
                   </div>
 
                   {/* Two-Factor Authentication */}
@@ -2168,29 +2168,43 @@ export default function Account() {
                   <SessionManagement />
 
                   {/* Privacy Settings */}
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-6 flex items-center">
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
                       <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                       Privacy & Data
                     </h3>
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                          </div>
                         <div>
-                          <p className="font-medium text-gray-900">Data Export</p>
-                          <p className="text-sm text-gray-600">Download a copy of your account data</p>
+                            <h4 className="text-sm font-medium text-gray-900">Data Export</h4>
+                            <p className="text-xs text-gray-500">Download a copy of your account data</p>
+                        </div>
                         </div>
                         <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm">
                           Request Export
                         </button>
                       </div>
-                      <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200">
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </div>
                         <div>
-                          <p className="font-medium text-gray-900">Account Deletion</p>
-                          <p className="text-sm text-gray-600">Permanently delete your account and all data</p>
+                            <h4 className="text-sm font-medium text-gray-900">Account Deletion</h4>
+                            <p className="text-xs text-gray-500">Permanently delete your account and all data</p>
                         </div>
-                        <button className="bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors font-medium">
+                        </div>
+                        <button className="bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm">
                           Delete Account
                         </button>
                       </div>

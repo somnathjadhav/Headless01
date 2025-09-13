@@ -6,6 +6,8 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useGlobalTypography } from '../hooks/useGlobalTypography';
 import CouponInput from '../components/woocommerce/CouponInput';
 import PleaseSignIn from '../components/auth/PleaseSignIn';
+// import AddressSelector from '../components/checkout/AddressSelector';
+// import AddressModal from '../components/checkout/AddressModal';
 import { 
   CreditCardIcon, 
   TruckIcon, 
@@ -22,6 +24,15 @@ export default function Checkout() {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [error, setError] = useState('');
+  
+  // Address management state
+  const [billingAddresses, setBillingAddresses] = useState([]);
+  const [shippingAddresses, setShippingAddresses] = useState([]);
+  const [selectedBillingAddress, setSelectedBillingAddress] = useState(null);
+  const [selectedShippingAddress, setSelectedShippingAddress] = useState(null);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
+  const [addressModalType, setAddressModalType] = useState('billing');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -51,7 +62,7 @@ export default function Checkout() {
     shippingZipCode: ''
   });
 
-  // Fetch user profile data when user is authenticated
+  // Fetch user profile data and addresses when user is authenticated
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (isAuthenticated && user?.id) {
@@ -61,6 +72,58 @@ export default function Checkout() {
           
           if (data.success && data.profile) {
             const profile = data.profile;
+            
+            // Create address objects from profile data
+            const billingAddress = {
+              id: 'default-billing',
+              nickname: 'Default Billing',
+              first_name: profile.billing.first_name || profile.first_name,
+              last_name: profile.billing.last_name || profile.last_name,
+              company: profile.billing.company || profile.company,
+              address_1: profile.billing.address_1,
+              address_2: profile.billing.address_2,
+              city: profile.billing.city,
+              state: profile.billing.state,
+              postcode: profile.billing.postcode,
+              country: profile.billing.country,
+              phone: profile.billing.phone || profile.phone,
+              email: profile.billing.email || profile.email
+            };
+
+            const shippingAddress = {
+              id: 'default-shipping',
+              nickname: 'Default Shipping',
+              first_name: profile.shipping.first_name || profile.first_name,
+              last_name: profile.shipping.last_name || profile.last_name,
+              company: profile.shipping.company || profile.company,
+              address_1: profile.shipping.address_1,
+              address_2: profile.shipping.address_2,
+              city: profile.shipping.city,
+              state: profile.shipping.state,
+              postcode: profile.shipping.postcode,
+              country: profile.shipping.country,
+              phone: profile.shipping.phone || profile.phone,
+              email: profile.shipping.email || profile.email
+            };
+
+            // Set addresses (filter out empty ones)
+            const validBillingAddresses = [billingAddress].filter(addr => 
+              addr.first_name && addr.last_name && addr.address_1 && addr.city
+            );
+            const validShippingAddresses = [shippingAddress].filter(addr => 
+              addr.first_name && addr.last_name && addr.address_1 && addr.city
+            );
+
+            setBillingAddresses(validBillingAddresses);
+            setShippingAddresses(validShippingAddresses);
+            
+            // Set selected addresses
+            if (validBillingAddresses.length > 0) {
+              setSelectedBillingAddress(validBillingAddresses[0]);
+            }
+            if (validShippingAddresses.length > 0) {
+              setSelectedShippingAddress(validShippingAddresses[0]);
+            }
             
             // Update form data with profile information
             setFormData(prev => ({
@@ -170,6 +233,93 @@ export default function Checkout() {
         shippingState: prev.state,
         shippingZipCode: prev.zipCode
       }));
+    }
+  };
+
+  // Address management functions
+  const handleSelectBillingAddress = (address) => {
+    setSelectedBillingAddress(address);
+    // Update form data with selected address
+    setFormData(prev => ({
+      ...prev,
+      firstName: address.first_name,
+      lastName: address.last_name,
+      company: address.company || '',
+      country: address.country,
+      address1: address.address_1,
+      address2: address.address_2 || '',
+      city: address.city,
+      state: address.state,
+      zipCode: address.postcode,
+      phone: address.phone || '',
+      email: address.email
+    }));
+  };
+
+  const handleSelectShippingAddress = (address) => {
+    setSelectedShippingAddress(address);
+    // Update form data with selected address
+    setFormData(prev => ({
+      ...prev,
+      shippingFirstName: address.first_name,
+      shippingLastName: address.last_name,
+      shippingCompany: address.company || '',
+      shippingCountry: address.country,
+      shippingAddress1: address.address_1,
+      shippingAddress2: address.address_2 || '',
+      shippingCity: address.city,
+      shippingState: address.state,
+      shippingZipCode: address.postcode
+    }));
+  };
+
+  const handleAddNewAddress = (type) => {
+    setAddressModalType(type);
+    setEditingAddress(null);
+    setIsAddressModalOpen(true);
+  };
+
+  const handleEditAddress = (address, type) => {
+    setAddressModalType(type);
+    setEditingAddress(address);
+    setIsAddressModalOpen(true);
+  };
+
+  const handleSaveAddress = async (addressData) => {
+    try {
+      // For now, we'll just add to local state
+      // In a real implementation, you'd save to the backend
+      const newAddress = {
+        ...addressData,
+        id: editingAddress?.id || `address-${Date.now()}`
+      };
+
+      if (addressModalType === 'billing') {
+        const updatedAddresses = editingAddress 
+          ? billingAddresses.map(addr => addr.id === editingAddress.id ? newAddress : addr)
+          : [...billingAddresses, newAddress];
+        setBillingAddresses(updatedAddresses);
+        
+        // Auto-select if it's the first address or if editing the selected one
+        if (updatedAddresses.length === 1 || (editingAddress && selectedBillingAddress?.id === editingAddress.id)) {
+          setSelectedBillingAddress(newAddress);
+          handleSelectBillingAddress(newAddress);
+        }
+      } else {
+        const updatedAddresses = editingAddress 
+          ? shippingAddresses.map(addr => addr.id === editingAddress.id ? newAddress : addr)
+          : [...shippingAddresses, newAddress];
+        setShippingAddresses(updatedAddresses);
+        
+        // Auto-select if it's the first address or if editing the selected one
+        if (updatedAddresses.length === 1 || (editingAddress && selectedShippingAddress?.id === editingAddress.id)) {
+          setSelectedShippingAddress(newAddress);
+          handleSelectShippingAddress(newAddress);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving address:', error);
+      throw error;
     }
   };
 
@@ -459,6 +609,20 @@ export default function Checkout() {
                 <CreditCardIcon className="w-5 h-5 mr-2" />
                 Billing Details
               </h2>
+              
+                {/* Address Selector */}
+                <div className="mb-6">
+                  {/* <AddressSelector
+                    addresses={billingAddresses}
+                    selectedAddress={selectedBillingAddress}
+                    onSelectAddress={handleSelectBillingAddress}
+                    onAddNew={() => handleAddNewAddress('billing')}
+                    onEdit={(address) => handleEditAddress(address, 'billing')}
+                    type="billing"
+                  /> */}
+                </div>
+
+              {/* Manual Form Fields (hidden when address is selected) */}
               <div className="space-y-4">
                 {/* First Name and Last Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -661,6 +825,20 @@ export default function Checkout() {
                   <TruckIcon className="w-5 h-5 mr-2" />
                   Shipping Address
                 </h2>
+                
+                {/* Address Selector */}
+                <div className="mb-6">
+                  {/* <AddressSelector
+                    addresses={shippingAddresses}
+                    selectedAddress={selectedShippingAddress}
+                    onSelectAddress={handleSelectShippingAddress}
+                    onAddNew={() => handleAddNewAddress('shipping')}
+                    onEdit={(address) => handleEditAddress(address, 'shipping')}
+                    type="shipping"
+                  /> */}
+                </div>
+
+                {/* Manual Form Fields (hidden when address is selected) */}
                 <div className="space-y-4">
                   {/* First Name and Last Name */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -948,6 +1126,16 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* Address Modal */}
+      {/* <AddressModal
+        isOpen={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
+        onSave={handleSaveAddress}
+        address={editingAddress}
+        type={addressModalType}
+        userId={user?.id}
+      /> */}
     </div>
   );
 }

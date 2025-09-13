@@ -460,11 +460,11 @@ export default function Checkout() {
         }, 2000);
       } else {
         setError(data.message || 'Failed to create order. Please try again.');
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Order creation error:', error);
       setError('Failed to create order. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };

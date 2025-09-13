@@ -444,20 +444,24 @@ export default function Checkout() {
       if (data.success) {
         setOrderId(data.order.id);
         setOrderSuccess(true);
-        clearCart();
         
-        // Restore cart backup if it exists (from Buy Now functionality)
-        if (cartBackup) {
-          console.log('🛒 Restoring cart backup after order completion');
-          setTimeout(() => {
-            restoreCart();
-          }, 100); // Small delay to ensure cart is cleared first
-        }
-        
-        // Redirect to order success page after 2 seconds
+        // Clear cart and restore backup after showing success state
         setTimeout(() => {
-          router.push(`/order-success?orderId=${data.order.id}`);
-        }, 2000);
+          clearCart();
+          
+          // Restore cart backup if it exists (from Buy Now functionality)
+          if (cartBackup) {
+            console.log('🛒 Restoring cart backup after order completion');
+            setTimeout(() => {
+              restoreCart();
+            }, 100); // Small delay to ensure cart is cleared first
+          }
+          
+          // Redirect to order success page after 2 seconds
+          setTimeout(() => {
+            router.push(`/order-success?orderId=${data.order.id}`);
+          }, 2000);
+        }, 100); // Small delay to ensure success state is shown first
       } else {
         setError(data.message || 'Failed to create order. Please try again.');
       }

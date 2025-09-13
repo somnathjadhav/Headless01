@@ -389,7 +389,7 @@ export default function Account() {
       case 'processing':
         return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
       case 'shipped':
-        return 'bg-blue-100 text-blue-800 border border-blue-200';
+        return 'bg-gray-100 text-gray-800 border border-blue-200';
       case 'cancelled':
         return 'bg-red-100 text-red-800 border border-red-200';
       default:
@@ -487,13 +487,44 @@ export default function Account() {
     { id: 'security', name: 'Security', icon: ShieldIcon }
   ];
 
+  // Consistent styling constants
+  const styles = {
+    // Typography
+    heading: {
+      primary: 'text-xl font-medium text-gray-900',
+      secondary: 'text-lg font-medium text-gray-900',
+      tertiary: 'text-base font-medium text-gray-900',
+      body: 'text-sm text-gray-600',
+      caption: 'text-xs text-gray-500',
+      label: 'text-sm font-medium text-gray-700'
+    },
+    // Spacing
+    spacing: {
+      section: 'mb-6',
+      card: 'p-6',
+      button: 'px-4 py-2',
+      input: 'px-4 py-3',
+      small: 'p-4',
+      large: 'p-8'
+    },
+    // Colors
+    colors: {
+      primary: 'bg-black text-white',
+      secondary: 'bg-gray-100 text-gray-700',
+      success: 'bg-green-100 text-green-800',
+      warning: 'bg-yellow-100 text-yellow-800',
+      error: 'bg-red-100 text-red-800',
+      info: 'bg-gray-100 text-gray-800'
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Main Container with Boxed Layout */}
       <div className="max-w-7xl mx-auto bg-white min-h-screen shadow-2xl">
         {/* Header Section */}
-        <div className="bg-gradient-to-r from-black via-gray-900 to-gray-800 text-white relative">
-          <div className="container mx-auto px-6 pt-12 pb-8">
+        <div className="bg-gradient-to-r from-black via-gray-900 to-gray-800 text-white relative" style={{ marginTop: '20px' }}>
+          <div className="container mx-auto px-6 pt-6 pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="relative">
@@ -503,7 +534,7 @@ export default function Account() {
                   <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold mb-1">Welcome back, <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{userData.firstName || 'User'}!</span></h1>
+                  <h1 className="text-2xl font-medium mb-1">Welcome back, <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{userData.firstName || 'User'}!</span></h1>
                   <p className="text-white text-opacity-90 text-sm">@{userData.firstName?.toLowerCase() || 'user'} • Member since {new Date().getFullYear()}</p>
                   <div className="flex items-center space-x-3 mt-2">
                     <div className="flex items-center space-x-1">
@@ -540,14 +571,17 @@ export default function Account() {
           </div>
         </div>
 
-        <div className="container mx-auto px-6 py-8">
+        {/* Spacing between header and content */}
+        <div className="h-4 bg-gray-50"></div>
+
+        <div className="container mx-auto px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-5 sticky top-8 border border-gray-100" style={{borderRadius: '5px'}}>
-              <div className="mb-5">
+            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8 border border-gray-100" style={{borderRadius: '5px'}}>
+              <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-800 mb-2 text-center">Navigation</h3>
-                <div className="w-full h-0.5 bg-indigo-600 rounded-full"></div>
+                <div className="w-full h-0.5 bg-black rounded-full"></div>
               </div>
               <nav className="space-y-2">
                 {tabs.map((tab) => {
@@ -558,14 +592,14 @@ export default function Account() {
                       onClick={() => setActiveTab(tab.id)}
                       className={`w-full flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                         activeTab === tab.id
-                          ? 'bg-indigo-600 text-white shadow-md'
+                          ? 'bg-black text-white shadow-md'
                           : 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100'
                       }`}
                     >
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                         activeTab === tab.id
                           ? 'bg-white bg-opacity-20'
-                          : 'bg-gray-100 group-hover:bg-indigo-100'
+                          : 'bg-gray-100 group-hover:bg-gray-100'
                       }`}>
                         <IconComponent className="w-4 h-4" />
                       </div>
@@ -594,16 +628,16 @@ export default function Account() {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 space-y-8">
             {/* Dashboard Tab */}
             {activeTab === 'dashboard' && (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {/* Welcome Banner */}
-                <div className="relative overflow-hidden bg-indigo-600 p-6 text-white shadow-lg" style={{borderRadius: '5px'}}>
+                <div className="relative overflow-hidden bg-black p-6 text-white shadow-lg" style={{borderRadius: '5px'}}>
                   <div className="absolute inset-0 bg-black bg-opacity-10"></div>
                   <div className="relative z-10 flex items-center justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold mb-2">Welcome back, <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{userData.firstName || 'User'}!</span></h2>
+                      <h2 className="text-xl font-medium mb-2">Welcome back, <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{userData.firstName || 'User'}!</span></h2>
                       <p className="text-white text-opacity-90 text-sm mb-3">Here's what's happening with your account</p>
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-1">
@@ -630,21 +664,21 @@ export default function Account() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {/* Total Orders */}
-                  <div className="group bg-white rounded-lg p-5 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
+                  <div className="group bg-white rounded-lg p-6 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
                     <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
                     <div className="relative z-10 flex items-center justify-between">
                       <div>
                         <p className="text-xs font-medium text-gray-600 mb-1">Total Orders</p>
-                        <p className="text-2xl font-semibold text-gray-900 mb-1">{orders.length}</p>
+                        <p className="text-xl font-medium text-gray-900 mb-1">{orders.length}</p>
                         <p className="text-xs text-gray-500">All time</p>
                         <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
-                          <div className="bg-blue-600 h-1.5 rounded-full w-0 transition-all duration-1000 group-hover:w-3/4"></div>
+                          <div className="bg-black h-1.5 rounded-full w-0 transition-all duration-1000 group-hover:w-3/4"></div>
                         </div>
                       </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
                           <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
                         </svg>
@@ -653,12 +687,12 @@ export default function Account() {
                   </div>
 
                   {/* Wishlist Items */}
-                  <div className="group bg-white rounded-lg p-5 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
+                  <div className="group bg-white rounded-lg p-6 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
                     <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-pink-100 to-pink-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
                     <div className="relative z-10 flex items-center justify-between">
                       <div>
                         <p className="text-xs font-medium text-gray-600 mb-1">Wishlist Items</p>
-                        <p className="text-2xl font-semibold text-gray-900 mb-1">{wishlist.length}</p>
+                        <p className="text-xl font-medium text-gray-900 mb-1">{wishlist.length}</p>
                         <p className="text-xs text-gray-500">Saved for later</p>
                         <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
                           <div className="bg-pink-600 h-1.5 rounded-full w-3/4 transition-all duration-1000"></div>
@@ -671,12 +705,12 @@ export default function Account() {
                   </div>
 
                   {/* Saved Addresses */}
-                  <div className="group bg-white rounded-lg p-5 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
+                  <div className="group bg-white rounded-lg p-6 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
                     <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
                     <div className="relative z-10 flex items-center justify-between">
                       <div>
                         <p className="text-xs font-medium text-gray-600 mb-1">Saved Addresses</p>
-                        <p className="text-2xl font-semibold text-gray-900 mb-1">{addresses.length}</p>
+                        <p className="text-xl font-medium text-gray-900 mb-1">{addresses.length}</p>
                         <p className="text-xs text-gray-500">Ready to use</p>
                         <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
                           <div className="bg-green-600 h-1.5 rounded-full w-1/2 transition-all duration-1000"></div>
@@ -689,12 +723,12 @@ export default function Account() {
                   </div>
 
                   {/* Account Status */}
-                  <div className="group bg-white rounded-lg p-5 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
+                  <div className="group bg-white rounded-lg p-6 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
                     <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
                     <div className="relative z-10 flex items-center justify-between">
                       <div>
                         <p className="text-xs font-medium text-gray-600 mb-1">Account Status</p>
-                        <p className="text-xl font-semibold text-green-600 mb-1">Active</p>
+                        <p className="text-lg font-medium text-green-600 mb-1">Active</p>
                         <p className="text-xs text-gray-500">Verified member</p>
                         <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
                           <div className="bg-green-600 h-1.5 rounded-full w-full transition-all duration-1000"></div>
@@ -713,10 +747,10 @@ export default function Account() {
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                     <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
+                        <h3 className="text-base font-medium text-gray-900">Recent Orders</h3>
                         <Link
                           href="/orders"
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-sm text-black hover:text-gray-800 font-medium"
                         >
                           View All
                         </Link>
@@ -745,11 +779,11 @@ export default function Account() {
                                 </p>
                               </div>
                               <div className="text-right">
-                                <p className="font-semibold text-gray-900">₹{order.total}</p>
-                                <span className={`px-2 py-1 text-xs rounded-full ${
+                                <p className="text-sm font-medium text-gray-900">₹{order.total}</p>
+                                <span className={`px-3 py-1 text-xs font-medium rounded-lg ${
                                   order.status === 'completed' ? 'bg-green-100 text-green-800' :
                                   order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                                  order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                                  order.status === 'shipped' ? 'bg-gray-100 text-gray-800' :
                                   'bg-gray-100 text-gray-800'
                                 }`}>
                                   {order.status}
@@ -765,7 +799,7 @@ export default function Account() {
                   {/* Quick Actions */}
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                     <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
-                      <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                      <h3 className="text-base font-medium text-gray-900">Quick Actions</h3>
                     </div>
                     <div className="p-6">
                       <div className="grid grid-cols-2 gap-4">
@@ -826,13 +860,13 @@ export default function Account() {
                 <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-900 mb-1">Profile Information</h2>
+                      <h2 className="text-lg font-medium text-gray-900 mb-1">Profile Information</h2>
                       <p className="text-gray-600">Manage your personal information and preferences</p>
                     </div>
                   {!isEditing && (
                     <button
                       onClick={() => setIsEditing(true)}
-                        className="inline-flex items-center space-x-2 bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition-colors font-medium shadow-sm"
+                        className="inline-flex items-center space-x-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm shadow-sm"
                     >
                         <EditIcon className="w-4 h-4" />
                         <span>Edit Profile</span>
@@ -847,13 +881,13 @@ export default function Account() {
                   <div className="space-y-8">
                     {/* Personal Information Section */}
                     <div className="bg-gray-50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                      <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
                         <UserIcon className="w-5 h-5 mr-2 text-gray-600" />
                         Personal Information
                       </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                          <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+                          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
                             First Name *
                         </label>
                         <input
@@ -863,12 +897,12 @@ export default function Account() {
                           value={formData.firstName}
                           onChange={handleInputChange}
                             required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm"
                             placeholder="Enter your first name"
                         />
                       </div>
                       <div>
-                          <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+                          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
                             Last Name *
                         </label>
                         <input
@@ -878,7 +912,7 @@ export default function Account() {
                           value={formData.lastName}
                           onChange={handleInputChange}
                             required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm"
                             placeholder="Enter your last name"
                         />
                         </div>
@@ -887,7 +921,7 @@ export default function Account() {
 
                     {/* Contact Information Section */}
                     <div className="bg-gray-50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                      <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
                         <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
@@ -895,7 +929,7 @@ export default function Account() {
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                          <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                             Email Address *
                       </label>
                       <input
@@ -905,12 +939,12 @@ export default function Account() {
                         value={formData.email}
                         onChange={handleInputChange}
                             required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm"
                             placeholder="Enter your email address"
                       />
                     </div>
                     <div>
-                          <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+                          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                         Phone Number
                       </label>
                       <input
@@ -919,7 +953,7 @@ export default function Account() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm"
                             placeholder="Enter your phone number"
                       />
                         </div>
@@ -928,13 +962,13 @@ export default function Account() {
 
                     {/* Address Information Section */}
                     <div className="bg-gray-50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                      <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
                         <MapPinIcon className="w-5 h-5 mr-2 text-gray-600" />
                         Address Information
                       </h3>
                       <div className="space-y-6">
                         <div>
-                          <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+                          <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
                             Street Address
                           </label>
                           <input
@@ -943,13 +977,13 @@ export default function Account() {
                             name="address"
                             value={formData.address}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm"
                             placeholder="Enter your street address"
                           />
                         </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <div>
-                            <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
                               City
                             </label>
                             <input
@@ -958,12 +992,12 @@ export default function Account() {
                               name="city"
                               value={formData.city}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm"
                               placeholder="Enter city"
                             />
                           </div>
                           <div>
-                            <label htmlFor="state" className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">
                               State/Province
                             </label>
                             <input
@@ -972,12 +1006,12 @@ export default function Account() {
                               name="state"
                               value={formData.state}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm"
                               placeholder="Enter state"
                             />
                           </div>
                           <div>
-                            <label htmlFor="zipCode" className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-2">
                               ZIP/Postal Code
                             </label>
                             <input
@@ -986,7 +1020,7 @@ export default function Account() {
                               name="zipCode"
                               value={formData.zipCode}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm"
                               placeholder="Enter ZIP code"
                             />
                           </div>
@@ -1005,7 +1039,7 @@ export default function Account() {
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="flex-1 inline-flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                        className="flex-1 inline-flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
                       >
                         <span>Cancel</span>
                       </button>
@@ -1015,7 +1049,7 @@ export default function Account() {
                   <div className="space-y-8">
                     {/* Personal Information Display */}
                     <div className="bg-gray-50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                      <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
                         <UserIcon className="w-5 h-5 mr-2 text-gray-600" />
                         Personal Information
                       </h3>
@@ -1024,20 +1058,20 @@ export default function Account() {
                           <div className="block text-sm font-medium text-gray-500 mb-2">
                           First Name
                         </div>
-                          <p className="text-lg font-medium text-gray-900">{userData.firstName}</p>
+                          <p className="text-base font-medium text-gray-900">{userData.firstName}</p>
                       </div>
                       <div>
                           <div className="block text-sm font-medium text-gray-500 mb-2">
                           Last Name
                         </div>
-                          <p className="text-lg font-medium text-gray-900">{userData.lastName}</p>
+                          <p className="text-base font-medium text-gray-900">{userData.lastName}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Contact Information Display */}
                     <div className="bg-gray-50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                      <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
                         <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
@@ -1048,20 +1082,20 @@ export default function Account() {
                           <div className="block text-sm font-medium text-gray-500 mb-2">
                           Email Address
                         </div>
-                          <p className="text-lg font-medium text-gray-900">{userData.email}</p>
+                          <p className="text-base font-medium text-gray-900">{userData.email}</p>
                       </div>
                       <div>
                           <div className="block text-sm font-medium text-gray-500 mb-2">
                           Phone Number
                         </div>
-                          <p className="text-lg font-medium text-gray-900">{userData.phone || 'Not provided'}</p>
+                          <p className="text-base font-medium text-gray-900">{userData.phone || 'Not provided'}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Address Information Display */}
                     <div className="bg-gray-50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                      <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
                         <MapPinIcon className="w-5 h-5 mr-2 text-gray-600" />
                         Address Information
                       </h3>
@@ -1069,7 +1103,7 @@ export default function Account() {
                         <div className="block text-sm font-medium text-gray-500 mb-2">
                           Full Address
                       </div>
-                        <div className="text-lg font-medium text-gray-900 space-y-1">
+                        <div className="text-base font-medium text-gray-900 space-y-1">
                           {userData.address && <p>{userData.address}</p>}
                           <p>
                             {userData.city && userData.state && userData.zipCode 
@@ -1094,7 +1128,7 @@ export default function Account() {
                 <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-900 mb-1">Order History</h2>
+                      <h2 className="text-lg font-medium text-gray-900 mb-1">Order History</h2>
                       <p className="text-gray-600">Track and manage your recent orders</p>
                     </div>
                     <Link
@@ -1132,7 +1166,7 @@ export default function Account() {
                         <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => setOrderFilter('all')}
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                               orderFilter === 'all'
                                 ? 'bg-black text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1142,7 +1176,7 @@ export default function Account() {
                           </button>
                           <button
                             onClick={() => setOrderFilter('processing')}
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                               orderFilter === 'processing'
                                 ? 'bg-black text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1152,7 +1186,7 @@ export default function Account() {
                           </button>
                           <button
                             onClick={() => setOrderFilter('shipped')}
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                               orderFilter === 'shipped'
                                 ? 'bg-black text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1162,7 +1196,7 @@ export default function Account() {
                           </button>
                           <button
                             onClick={() => setOrderFilter('completed')}
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                               orderFilter === 'completed'
                                 ? 'bg-black text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1172,7 +1206,7 @@ export default function Account() {
                           </button>
                           <button
                             onClick={() => setOrderFilter('cancelled')}
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                               orderFilter === 'cancelled'
                                 ? 'bg-black text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1189,7 +1223,7 @@ export default function Account() {
                               setOrderSearch('');
                               setOrderFilter('all');
                             }}
-                            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium"
+                            className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
                           >
                             Clear Filters
                           </button>
@@ -1228,7 +1262,7 @@ export default function Account() {
                       <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <ExclamationIcon className="w-10 h-10 text-red-500" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Orders</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to Load Orders</h3>
                       <p className="text-gray-600 mb-6 max-w-md mx-auto">{ordersError}</p>
                     <button
                         onClick={() => window.location.reload()}
@@ -1243,7 +1277,7 @@ export default function Account() {
                       <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <TruckIcon className="w-10 h-10 text-gray-400" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No Orders Yet</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Orders Yet</h3>
                       <p className="text-gray-600 mb-8 max-w-md mx-auto">
                         You haven&apos;t placed any orders yet. Start shopping to see your order history here.
                       </p>
@@ -1264,7 +1298,7 @@ export default function Account() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">No Orders Found</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Orders Found</h3>
                       <p className="text-gray-600 mb-6 max-w-md mx-auto">
                         No orders match your current search or filter criteria.
                       </p>
@@ -1281,32 +1315,23 @@ export default function Account() {
                   ) : (
                     <div className="space-y-3">
                       {filteredOrders.slice(0, 5).map((order) => (
-                        <div key={order.id} className="group bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-xl hover:shadow-gray-100/50 transition-all duration-300 hover:-translate-y-1">
-                          {/* Order Header */}
-                          <div className="bg-gradient-to-r from-gray-50/50 to-white px-4 py-3 border-b border-gray-50">
+                        <div key={order.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200">
+                          {/* Compact Order Header */}
+                          <div className="px-4 py-3 border-b border-gray-100">
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <div className="flex items-center space-x-3">
-                                  <div className={`w-2.5 h-2.5 rounded-full ${
-                                    order.status === 'completed' ? 'bg-emerald-500' :
-                                    order.status === 'processing' ? 'bg-amber-500' :
-                                    order.status === 'shipped' ? 'bg-blue-500' :
-                                    order.status === 'cancelled' ? 'bg-red-500' :
-                                    'bg-gray-400'
-                                  }`}></div>
-                                  <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                                    order.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                                    order.status === 'processing' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                                    order.status === 'shipped' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                                    order.status === 'cancelled' ? 'bg-red-50 text-red-700 border border-red-200' :
-                                    'bg-gray-50 text-gray-700 border border-gray-200'
-                          }`}>
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
-                        </div>
+                              <div className="flex items-center space-x-3">
+                                <span className={`px-3 py-1 text-xs font-medium rounded-lg ${
+                                  order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                                  order.status === 'shipped' ? 'bg-gray-100 text-gray-800' :
+                                  order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                </span>
                                 <div>
                                   <h4 className="font-medium text-gray-900 text-sm">Order #{order.number || order.id}</h4>
-                                  <p className="text-sm text-gray-500 font-medium">
+                                  <p className="text-xs text-gray-500">
                                     {new Date(order.date).toLocaleDateString('en-US', {
                                       year: 'numeric',
                                       month: 'long',
@@ -1316,26 +1341,26 @@ export default function Account() {
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="text-2xl font-bold text-gray-900">₹{order.total}</div>
-                                <div className="text-sm text-gray-500 font-medium">{order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}</div>
+                                <div className="text-sm font-medium text-gray-900">₹{order.total}</div>
+                                <div className="text-xs text-gray-500">{order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}</div>
                               </div>
                             </div>
                           </div>
 
-                          {/* Order Items */}
+                          {/* Compact Order Items */}
                           <div className="p-4">
-                            <div className="space-y-3">
-                              {order.items?.slice(0, 3).map((item, index) => (
-                                <div key={index} className="flex items-center space-x-3 group/item">
-                                  <Link href={`/products/${item.slug || item.id}`} className="relative block">
-                                    <div className="relative overflow-hidden rounded-xl bg-gray-50">
+                            <div className="space-y-2">
+                              {order.items?.slice(0, 2).map((item, index) => (
+                                <div key={index} className="flex items-center space-x-3">
+                                  <Link href={`/products/${item.slug || item.id}`} className="relative block flex-shrink-0">
+                                    <div className="relative overflow-hidden rounded-lg bg-gray-50">
                                       <img
                                         src={item.image || '/placeholder-product.svg'}
-                                alt={item.name}
-                                        className="w-20 h-20 object-cover transition-transform duration-300 group-hover/item:scale-105"
+                                        alt={item.name}
+                                        className="w-12 h-12 object-cover"
                                       />
                                       {item.quantity > 1 && (
-                                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-black text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg">
+                                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-black text-white text-xs rounded-full flex items-center justify-center font-medium">
                                           {item.quantity}
                                         </div>
                                       )}
@@ -1344,125 +1369,73 @@ export default function Account() {
                                   <div className="flex-1 min-w-0">
                                     <Link 
                                       href={`/products/${item.slug || item.id}`}
-                                      className="block group/title"
+                                      className="block"
                                     >
-                                      <h4 className="font-semibold text-gray-900 text-base line-clamp-2 group-hover/title:text-black transition-colors">
+                                      <h4 className="font-medium text-gray-900 text-sm line-clamp-1 hover:text-black transition-colors">
                                         {item.name}
                                       </h4>
                                     </Link>
-                                    <p className="text-sm text-gray-500 font-medium mt-1">
+                                    <p className="text-xs text-gray-500">
                                       {item.quantity} × ₹{item.price}
                                     </p>
-                              </div>
-                              <div className="text-right">
-                                    <p className="font-semibold text-gray-900 text-sm">₹{item.total}</p>
-                              </div>
-                            </div>
-                          ))}
-                              {order.items?.length > 3 && (
-                                <div className="text-center py-3">
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
-                                    +{order.items.length - 3} more item{(order.items.length - 3) !== 1 ? 's' : ''}
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-medium text-gray-900 text-sm">₹{item.total}</p>
+                                  </div>
+                                </div>
+                              ))}
+                              {order.items?.length > 2 && (
+                                <div className="text-center py-2">
+                                  <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600">
+                                    +{order.items.length - 2} more item{(order.items.length - 2) !== 1 ? 's' : ''}
                                   </span>
-                        </div>
+                                </div>
                               )}
-                          </div>
-
-                            {/* Order Actions */}
-                            <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100">
-                              <div className="flex items-center space-x-6 text-sm">
-                                {order.trackingNumber && (
-                                  <div className="flex items-center space-x-2 text-gray-600">
-                                    <TruckIcon className="w-4 h-4" />
-                                    <span className="font-medium">Track: {order.trackingNumber}</span>
-                                  </div>
-                                )}
-                                {order.paymentMethod && (
-                                  <div className="flex items-center space-x-2 text-gray-600">
-                                    <CreditCardIcon className="w-4 h-4" />
-                                    <span className="font-medium">{order.paymentMethod}</span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex items-center space-x-4">
-                                {order.status === 'completed' && (
-                                  <button 
-                                    onClick={() => {
-                                      // Add all items from this order to cart
-                                      console.log('🔄 Reordering items from order:', order.id);
-                                      let addedItems = 0;
-                                      order.items?.forEach(item => {
-                                        // Ensure the item has the required structure for addToCart
-                                        const cartItem = {
-                                          id: item.id || item.product_id,
-                                          name: item.name,
-                                          price: item.price,
-                                          image: item.image,
-                                          quantity: item.quantity
-                                        };
-                                        console.log('🛒 Adding to cart:', cartItem);
-                                        addToCart(cartItem, item.quantity);
-                                        addedItems += item.quantity;
-                                      });
-                                      
-                                      // Show toaster message
-                                      if (addedItems > 0) {
-                                        // Create a simple toaster notification
-                                        const toaster = document.createElement('div');
-                                        toaster.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';
-                                        toaster.innerHTML = `
-                                          <div class="flex items-center space-x-2">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                            <span>${addedItems} item${addedItems !== 1 ? 's' : ''} added to cart!</span>
-                                          </div>
-                                        `;
-                                        document.body.appendChild(toaster);
-                                        
-                                        // Remove toaster after 3 seconds
-                                        setTimeout(() => {
-                                          toaster.style.opacity = '0';
-                                          toaster.style.transform = 'translateX(100%)';
-                                          setTimeout(() => {
-                                            document.body.removeChild(toaster);
-                                          }, 300);
-                                        }, 3000);
-                                      }
-                                    }}
-                                    className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-black hover:bg-gray-50 rounded-lg transition-all duration-200"
-                                  >
-                                    Reorder
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => openOrderModal(order)}
-                                  className="inline-flex items-center space-x-2 px-4 py-2 bg-black text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition-all duration-200 shadow-sm hover:shadow-md"
-                                >
-                                  <EyeIcon className="w-4 h-4" />
-                                  <span>View Details</span>
-                                </button>
-                              </div>
                             </div>
+
+                            {/* Compact Order Footer */}
+                            <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
+                              <div className="flex items-center space-x-4 text-xs text-gray-600">
+                                {order.paymentMethod && (
+                                  <div className="flex items-center space-x-1">
+                                    <CreditCardIcon className="w-3 h-3" />
+                                    <span>{order.paymentMethod}</span>
+                                  </div>
+                                )}
+                                {order.trackingNumber && (
+                                  <div className="flex items-center space-x-1">
+                                    <TruckIcon className="w-3 h-3" />
+                                    <span>Track: {order.trackingNumber}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <button 
+                                onClick={() => openOrderModal(order)}
+                                className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-black rounded-md hover:bg-gray-800 transition-colors"
+                              >
+                                <EyeIcon className="w-3 h-3 mr-1" />
+                                View Details
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    
-                      {filteredOrders.length > 5 && (
+                      ))}
+                    </div>
+                  )}
+                  
+                  {filteredOrders.length > 5 && (
                         <div className="text-center pt-6 border-t border-gray-100">
-                        <Link
-                          href="/orders"
+                          <Link
+                            href="/orders"
                             className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
+                          >
                             <span>View All {filteredOrders.length} Orders</span>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
+                          </Link>
+                        </div>
+                      )}
                 </div>
               </div>
             )}
@@ -1474,12 +1447,12 @@ export default function Account() {
                 <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-900 mb-1">My Wishlist</h2>
+                      <h2 className="text-lg font-medium text-gray-900 mb-1">My Wishlist</h2>
                       <p className="text-gray-600">Save products you love for later</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <HeartIcon className="w-6 h-6 text-red-500" />
-                      <span className="text-lg font-semibold text-gray-900">{wishlist.length} items</span>
+                      <span className="text-base font-medium text-gray-900">{wishlist.length} items</span>
                     </div>
                   </div>
                 </div>
@@ -1490,7 +1463,7 @@ export default function Account() {
                       <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <HeartIcon className="w-12 h-12 text-red-400" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Your wishlist is empty</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Your wishlist is empty</h3>
                       <p className="text-gray-600 mb-8 max-w-md mx-auto">
                         Start adding products you love to your wishlist. You can save items for later and get notified when prices drop.
                       </p>
@@ -1530,7 +1503,7 @@ export default function Account() {
                             </button>
                             {/* Sale Badge */}
                             {item.sale_price && (
-                              <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
+                              <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-medium">
                                 Sale
                               </div>
                             )}
@@ -1539,7 +1512,7 @@ export default function Account() {
                           {/* Product Info */}
                           <div className="p-6">
                         <Link href={`/products/${item.id}`}>
-                              <h4 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer text-sm">
+                              <h4 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-black transition-colors cursor-pointer text-sm">
                                 {item.name}
                               </h4>
                         </Link>
@@ -1548,7 +1521,7 @@ export default function Account() {
                             <div className="flex items-center space-x-2 mb-4">
                               {item.sale_price ? (
                                 <>
-                                  <span className="text-sm font-semibold text-gray-900">
+                                  <span className="text-sm font-medium text-gray-900">
                                     ₹{parseFloat(item.sale_price).toFixed(2)}
                                   </span>
                                   <span className="text-xs text-gray-500 line-through">
@@ -1556,7 +1529,7 @@ export default function Account() {
                                   </span>
                                 </>
                               ) : (
-                                <span className="text-sm font-semibold text-gray-900">
+                                <span className="text-sm font-medium text-gray-900">
                                   ₹{parseFloat(item.price || 0).toFixed(2)}
                                 </span>
                               )}
@@ -1620,7 +1593,7 @@ export default function Account() {
             {activeTab === 'addresses' && (
               <div className="bg-white rounded-lg shadow-sm border p-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">My Addresses</h2>
+                  <h2 className="text-lg font-medium text-gray-900">My Addresses</h2>
                   <button 
                     onClick={() => setIsAddingAddress(!isAddingAddress)}
                     className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
@@ -1633,7 +1606,7 @@ export default function Account() {
                   {/* Add New Address Form */}
                   {isAddingAddress && (
                     <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New Address</h3>
+                      <h3 className="text-base font-medium text-gray-900 mb-4">Add New Address</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label htmlFor="addressType" className="block text-sm font-medium text-gray-700 mb-2">
@@ -1758,9 +1731,9 @@ export default function Account() {
                       <div key={address.id} className="border border-gray-200 rounded-lg p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          <h3 className="text-base font-medium text-gray-900 mb-2">
                             {address.type === 'shipping' ? 'Shipping Address' : 'Billing Address'}
-                            {address.isDefault && <span className="ml-2 text-sm text-green-600">(Default)</span>}
+                            {address.isDefault && <span className="ml-2 text-xs text-green-600">(Default)</span>}
                           </h3>
                           <div className="space-y-1 text-gray-600">
                             <p>{address.name}</p>
@@ -1773,7 +1746,7 @@ export default function Account() {
                         <div className="flex space-x-2">
                           <button 
                             onClick={() => handleSetDefaultAddress(address.id)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            className="text-black hover:text-gray-800 text-sm font-medium"
                           >
                             {address.isDefault ? 'Default' : 'Set Default'}
                           </button>
@@ -1787,11 +1760,11 @@ export default function Account() {
                       </div>
                       <div className="flex items-center space-x-2">
                         {address.isDefault && (
-                          <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Default</span>
+                          <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-lg">Default</span>
                         )}
-                        <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                        <span className={`px-3 py-1 text-xs font-medium rounded-lg ${
                           address.type === 'shipping' 
-                            ? 'bg-blue-100 text-blue-800' 
+                            ? 'bg-gray-100 text-gray-800' 
                             : 'bg-purple-100 text-purple-800'
                         }`}>
                           {address.type === 'shipping' ? 'Shipping' : 'Billing'}
@@ -1807,11 +1780,11 @@ export default function Account() {
                       <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <MapPinIcon className="w-6 h-6 text-gray-400" />
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No addresses yet</h3>
+                      <h3 className="text-base font-medium text-gray-900 mb-2">No addresses yet</h3>
                       <p className="text-gray-500 mb-4">Add your first address to get started</p>
                       <button 
                         onClick={() => setIsAddingAddress(true)}
-                        className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+                        className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
                       >
                         Add Address
                       </button>
@@ -1824,7 +1797,7 @@ export default function Account() {
             {/* Payment Tab */}
             {activeTab === 'payment' && (
               <div className="bg-white rounded-lg shadow-sm border p-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">Payment Methods</h2>
+                <h2 className="text-xl font-medium text-gray-900 mb-6">Payment Methods</h2>
                 <div className="text-center py-12">
                   <CreditCardIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No payment methods added</h3>
@@ -1838,39 +1811,193 @@ export default function Account() {
 
             {/* Settings Tab */}
             {activeTab === 'settings' && (
-              <div className="bg-white rounded-lg shadow-sm border p-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">Account Settings</h2>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                {/* Settings Header */}
+                <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium text-gray-900">Email Notifications</h3>
-                      <p className="text-sm text-gray-500">Receive updates about orders and promotions</p>
+                      <h2 className="text-lg font-medium text-gray-900 mb-1">Account Settings</h2>
+                      <p className="text-gray-600">Manage your account preferences and notifications</p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked aria-label="Email notifications toggle" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                    </label>
+                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-8 space-y-8">
+                  {/* Notification Settings */}
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 7h6m-6 4h6m-6 4h6M9 3v1m6 0v1M9 19v1m6 0v1" />
+                      </svg>
+                      Notification Preferences
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">Email Notifications</h4>
+                            <p className="text-xs text-gray-500">Receive updates about orders and promotions</p>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" className="sr-only peer" defaultChecked aria-label="Email notifications toggle" />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">SMS Notifications</h4>
+                            <p className="text-xs text-gray-500">Receive order updates via text message</p>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" className="sr-only peer" aria-label="SMS notifications toggle" />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 7h6m-6 4h6m-6 4h6M9 3v1m6 0v1M9 19v1m6 0v1" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">Push Notifications</h4>
+                            <p className="text-xs text-gray-500">Get instant updates on your device</p>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" className="sr-only peer" defaultChecked aria-label="Push notifications toggle" />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                        </label>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div>
-                      <h3 className="font-medium text-gray-900">SMS Notifications</h3>
-                      <p className="text-sm text-gray-500">Receive order updates via text message</p>
+                  {/* Privacy Settings */}
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Privacy & Security
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <ShieldIcon className="w-5 h-5 text-red-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">Two-Factor Authentication</h4>
+                            <p className="text-xs text-gray-500">Add an extra layer of security to your account</p>
+                          </div>
+                        </div>
+                        <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
+                          Enable
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">Login Alerts</h4>
+                            <p className="text-xs text-gray-500">Get notified when someone logs into your account</p>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" className="sr-only peer" defaultChecked aria-label="Login alerts toggle" />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                        </label>
+                      </div>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" aria-label="SMS notifications toggle" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-black rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                    </label>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div>
-                      <h3 className="font-medium text-gray-900">Two-Factor Authentication</h3>
-                      <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                  {/* Account Preferences */}
+                  <div>
+                    <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Account Preferences
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">Language</h4>
+                            <p className="text-xs text-gray-500">English (US)</p>
+                          </div>
+                        </div>
+                        <button className="text-gray-600 hover:text-gray-800 text-sm font-medium">
+                          Change
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">Theme</h4>
+                            <p className="text-xs text-gray-500">Light mode</p>
+                          </div>
+                        </div>
+                        <button className="text-gray-600 hover:text-gray-800 text-sm font-medium">
+                          Change
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">Data Export</h4>
+                            <p className="text-xs text-gray-500">Download a copy of your account data</p>
+                          </div>
+                        </div>
+                        <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm">
+                          Request Export
+                        </button>
+                      </div>
                     </div>
-                    <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
-                      Enable
-                    </button>
                   </div>
                 </div>
               </div>
@@ -1883,7 +2010,7 @@ export default function Account() {
                 <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                   <div>
-                      <h2 className="text-xl font-semibold text-gray-900 mb-1">Security Settings</h2>
+                      <h2 className="text-xl font-medium text-gray-900 mb-1">Security Settings</h2>
                       <p className="text-gray-600">Manage your account security and privacy</p>
                     </div>
                     <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
@@ -1895,7 +2022,7 @@ export default function Account() {
                 <div className="p-8 space-y-8">
                   {/* Password Security */}
                   <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                    <h3 className="text-lg font-medium text-gray-900 mb-6 flex items-center">
                       <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
@@ -1920,7 +2047,7 @@ export default function Account() {
                             </svg>
                           )}
                           <div>
-                            <p className="font-semibold text-lg">
+                            <p className="font-medium text-lg">
                               {passwordMessage.type === 'success' ? 'Success!' : 'Error'}
                             </p>
                             <p className="text-base mt-1">{passwordMessage.text}</p>
@@ -1931,7 +2058,7 @@ export default function Account() {
                     
                     <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-2xl">
                       <div>
-                        <label htmlFor="currentPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
                           Current Password *
                         </label>
                         <div className="relative">
@@ -1962,7 +2089,7 @@ export default function Account() {
                         )}
                       </div>
                       <div>
-                        <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
                           New Password *
                         </label>
                         <div className="relative">
@@ -1994,7 +2121,7 @@ export default function Account() {
                         <PasswordStrengthMeter password={passwordData.newPassword} />
                       </div>
                       <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                           Confirm New Password *
                         </label>
                         <div className="relative">
@@ -2042,7 +2169,7 @@ export default function Account() {
 
                   {/* Privacy Settings */}
                   <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                    <h3 className="text-lg font-medium text-gray-900 mb-6 flex items-center">
                       <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
@@ -2054,7 +2181,7 @@ export default function Account() {
                           <p className="font-medium text-gray-900">Data Export</p>
                           <p className="text-sm text-gray-600">Download a copy of your account data</p>
                         </div>
-                        <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                        <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm">
                           Request Export
                         </button>
                       </div>
@@ -2091,7 +2218,7 @@ export default function Account() {
                       </svg>
                     </div>
                     <div>
-                      <h2 className="text-2xl font-semibold text-gray-900">Order Details</h2>
+                      <h2 className="text-2xl font-medium text-gray-900">Order Details</h2>
                       <p className="text-gray-600 mt-1">Order #{selectedOrder.id}</p>
                     </div>
                   </div>
@@ -2113,7 +2240,7 @@ export default function Account() {
                 <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-6 border border-gray-100">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                     <div className="flex items-center space-x-4">
-                      <div className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 ${getStatusColor(selectedOrder.status)}`}>
+                      <div className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 ${getStatusColor(selectedOrder.status)}`}>
                         {getStatusIcon(selectedOrder.status)}
                         <span className="capitalize">{selectedOrder.status}</span>
                       </div>
@@ -2127,7 +2254,7 @@ export default function Account() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-3xl font-bold text-gray-900">₹{selectedOrder.total.toFixed(2)}</div>
+                      <div className="text-3xl font-medium text-gray-900">₹{selectedOrder.total.toFixed(2)}</div>
                       <div className="text-sm text-gray-600">Total Amount</div>
                     </div>
                   </div>
@@ -2141,7 +2268,7 @@ export default function Account() {
                       <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                         <CreditCardIcon className="w-5 h-5 text-green-600" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">Payment Information</h3>
+                      <h3 className="text-lg font-medium text-gray-900">Payment Information</h3>
                     </div>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center py-2">
@@ -2150,7 +2277,7 @@ export default function Account() {
                       </div>
                       <div className="flex justify-between items-center py-2">
                         <span className="text-gray-600">Payment Status</span>
-                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-lg text-sm font-medium">
                           Paid
                         </span>
                       </div>
@@ -2160,10 +2287,10 @@ export default function Account() {
                   {/* Shipping Information */}
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <MapPinIcon className="w-5 h-5 text-blue-600" />
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <MapPinIcon className="w-5 h-5 text-black" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">Shipping Address</h3>
+                      <h3 className="text-lg font-medium text-gray-900">Shipping Address</h3>
                     </div>
                     <div className="text-sm text-gray-700 leading-relaxed">
                       {selectedOrder.shipping?.address_1 && (
@@ -2188,8 +2315,8 @@ export default function Account() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Order Items</h3>
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                    <h3 className="text-lg font-medium text-gray-900">Order Items</h3>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium">
                       {selectedOrder.items?.length || 0} item{(selectedOrder.items?.length || 0) !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -2205,7 +2332,7 @@ export default function Account() {
                         </Link>
                         <div className="flex-1 min-w-0">
                           <Link href={`/products/${item.slug || item.id}`}>
-                            <h4 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer truncate">
+                            <h4 className="font-medium text-gray-900 hover:text-black transition-colors cursor-pointer truncate">
                               {item.name}
                             </h4>
                           </Link>
@@ -2216,11 +2343,11 @@ export default function Account() {
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0 flex flex-col items-end space-y-2">
-                          <div className="font-semibold text-sm text-gray-900">₹{item.total.toFixed(2)}</div>
+                          <div className="font-medium text-sm text-gray-900">₹{item.total.toFixed(2)}</div>
                           {selectedOrder.status === 'completed' && (
                             <Link
                               href={`/products/${item.slug || item.id}?review=true&orderId=${selectedOrder.id}#review-form`}
-                              className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition-colors font-medium flex items-center space-x-1"
+                              className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-200 transition-colors font-medium flex items-center space-x-1"
                             >
                               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -2238,18 +2365,18 @@ export default function Account() {
                 {selectedOrder.trackingNumber && (
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
                     <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <TruckIcon className="w-5 h-5 text-blue-600" />
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <TruckIcon className="w-5 h-5 text-black" />
                       </div>
-                      <h3 className="text-lg font-semibold text-blue-900">Tracking Information</h3>
+                      <h3 className="text-lg font-medium text-gray-900">Tracking Information</h3>
                     </div>
                     <div className="bg-white rounded-xl p-4 border border-blue-200">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-sm text-blue-600 font-medium">Tracking Number</div>
-                          <div className="text-lg font-mono font-bold text-blue-900">{selectedOrder.trackingNumber}</div>
+                          <div className="text-sm text-black font-medium">Tracking Number</div>
+                          <div className="text-lg font-mono font-medium text-gray-900">{selectedOrder.trackingNumber}</div>
                         </div>
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                        <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
                           Track Package
                         </button>
                       </div>
@@ -2325,6 +2452,10 @@ export default function Account() {
           </div>
         </div>
       )}
+      
+      {/* Spacing before footer */}
+      <div className="h-4 bg-gray-50"></div>
+      
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ const initialState = {
   token: null,
   isAuthenticated: false,
   isLoading: false,
+  isInitializing: true,
   error: null
 };
 
@@ -21,7 +22,8 @@ const AUTH_ACTIONS = {
   REGISTER_START: 'REGISTER_START',
   REGISTER_SUCCESS: 'REGISTER_SUCCESS',
   REGISTER_FAILURE: 'REGISTER_FAILURE',
-  CLEAR_ERROR: 'CLEAR_ERROR'
+  CLEAR_ERROR: 'CLEAR_ERROR',
+  INITIALIZATION_COMPLETE: 'INITIALIZATION_COMPLETE'
 };
 
 // Reducer
@@ -118,6 +120,12 @@ function authReducer(state, action) {
         error: null
       };
     
+    case AUTH_ACTIONS.INITIALIZATION_COMPLETE:
+      return {
+        ...state,
+        isInitializing: false
+      };
+    
     default:
       return state;
   }
@@ -142,6 +150,7 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_version');
+      dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
       return;
     }
     
@@ -154,6 +163,7 @@ export function AuthProvider({ children }) {
           console.log('🧹 Clearing old hardcoded user data from cache');
           localStorage.removeItem('auth_token');
           localStorage.removeItem('auth_user');
+          dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
           return;
         }
         
@@ -167,6 +177,9 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('auth_user');
       }
     }
+    
+    // Mark initialization as complete
+    dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
   }, []);
 
   // Login function

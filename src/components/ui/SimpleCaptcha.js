@@ -101,7 +101,7 @@ export default function SimpleCaptcha({ onVerify, error }) {
           </div>
           <input
             type="number"
-            value={userAnswer}
+            value={userAnswer || ''}
             onChange={handleAnswerChange}
             className={`w-full px-4 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm ${
               error ? 'border-red-300' : isVerified ? 'border-green-300' : 'border-gray-300'

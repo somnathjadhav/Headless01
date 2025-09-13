@@ -17,22 +17,66 @@ export default function Cart() {
   });
 
   // Calculate total
-  const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const cartTotal = cart.reduce((total, item) => {
+    const price = parseFloat(item.price || item.regular_price || 0);
+    return total + (price * item.quantity);
+  }, 0);
 
   if (cartCount === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-        <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-blue-100 mb-6">
-          <ShoppingCartIcon className="w-12 h-12 text-blue-400" />
+      <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-12 text-center relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-100/30 to-blue-100/30 rounded-full translate-y-12 -translate-x-12"></div>
+        
+        {/* Content */}
+        <div className="relative z-10">
+          {/* Icon */}
+          <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 mb-8 animate-float">
+            <ShoppingCartIcon className="w-12 h-12 text-blue-600" />
+          </div>
+
+          {/* Title */}
+          <h3 className="text-3xl font-bold text-gray-900 mb-4 animate-fade-in">
+            Your cart is empty
+          </h3>
+          
+          {/* Description */}
+          <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto animate-slide-up">
+            Start building your perfect wardrobe with our amazing collection of products!
+          </p>
+
+          {/* Action Button */}
+          <div className="animate-slide-up">
+            <Link
+              href="/"
+              className="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-full hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            >
+              <span className="relative z-10 flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Start Shopping
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
+            </Link>
+          </div>
+
+          {/* Additional Info */}
+          <div className="mt-8 pt-6 border-t border-gray-200/50">
+            <p className="text-sm text-gray-500 mb-3">Need help getting started?</p>
+            <div className="flex justify-center gap-4 text-sm">
+              <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+                📞 Support
+              </a>
+              <span className="text-gray-300">•</span>
+              <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+                ❓ FAQ
+              </a>
+            </div>
+          </div>
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-3">Your cart is empty</h3>
-        <p className="text-gray-600 text-lg mb-6">Start building your perfect wardrobe</p>
-        <Link
-          href="/products"
-          className="inline-flex items-center px-8 py-4 bg-black text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-300 transform hover:scale-105"
-        >
-          Start Shopping
-        </Link>
       </div>
     );
   }
@@ -121,7 +165,7 @@ export default function Cart() {
             {/* Item Total */}
             <div className="text-right">
               <p className="text-lg font-medium text-gray-900" style={{fontWeight: '500'}}>
-                {formatPrice(item.price * item.quantity)}
+                {formatPrice((parseFloat(item.price || item.regular_price || 0)) * item.quantity)}
               </p>
             </div>
 

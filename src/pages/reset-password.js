@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useAuth } from '../context/AuthContext';
 import { useGlobalTypography } from '../hooks/useGlobalTypography';
 import { useSiteInfo } from '../hooks/useSiteInfo';
+import { useNotifications } from '../context/NotificationContext';
 import GeometricDesign from '../components/ui/GeometricDesign';
 import PasswordStrengthMeter from '../components/ui/PasswordStrengthMeter';
 import { 
@@ -16,7 +18,9 @@ import {
 export default function ResetPassword() {
   const router = useRouter();
   const { token, email } = router.query;
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { name: siteName, loading: siteLoading } = useSiteInfo();
+  const { showSuccess, showError, showInfo } = useNotifications();
   
   const [formData, setFormData] = useState({
     password: '',
@@ -34,15 +38,29 @@ export default function ResetPassword() {
   // Apply global typography
   useGlobalTypography();
 
+  // Check if user is already logged in
+  useEffect(() => {
+    if (authLoading) return; // Wait for auth to load
+    
+    if (isAuthenticated && user) {
+      // User is already logged in, redirect to account page
+      showInfo('You are already logged in. You can change your password in your account settings.');
+      router.push('/account?tab=security');
+      return;
+    }
+  }, [isAuthenticated, user, authLoading, router, showInfo]);
+
   // Validate token on component mount
   useEffect(() => {
+    if (authLoading) return; // Wait for auth to load
+    
     if (token && email) {
       validateToken();
     } else {
       setError('Invalid or missing reset token. Please request a new password reset.');
       setIsValidToken(false);
     }
-  }, [token, email]);
+  }, [token, email, authLoading]);
 
   const validateToken = async () => {
     try {
@@ -87,6 +105,8 @@ export default function ResetPassword() {
   const validateForm = () => {
     const errors = {};
     
+    console.log('Validating form with data:', formData); // Debug log
+    
     if (!formData.password) {
       errors.password = 'Password is required';
     } else if (formData.password.length < 8) {
@@ -96,6 +116,8 @@ export default function ResetPassword() {
       const hasLowerCase = /[a-z]/.test(formData.password);
       const hasNumbers = /\d/.test(formData.password);
       const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
+      
+      console.log('Password checks:', { hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar }); // Debug log
       
       if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
         errors.password = 'Password must contain uppercase, lowercase, number, and special character';
@@ -108,6 +130,7 @@ export default function ResetPassword() {
       errors.confirmPassword = 'Passwords do not match';
     }
     
+    console.log('Validation result:', errors); // Debug log
     return errors;
   };
 
@@ -117,9 +140,12 @@ export default function ResetPassword() {
     setError('');
     setMessage('');
     
+    console.log('Form data:', formData); // Debug log
     const errors = validateForm();
+    console.log('Validation errors:', errors); // Debug log
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
+      console.log('Form errors set:', errors); // Debug log
       return;
     }
     
@@ -141,29 +167,40 @@ export default function ResetPassword() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message || 'Password has been reset successfully. You can now sign in with your new password.');
+        const successMessage = data.message || 'Password has been reset successfully. You can now sign in with your new password.';
+        setMessage(successMessage);
+        showSuccess(successMessage);
+        console.log('Password reset successful!');
         
         // Redirect to signin page after 3 seconds
         setTimeout(() => {
           router.push('/signin?message=Password reset successful. Please sign in with your new password.');
         }, 3000);
       } else {
-        setError(data.error || 'Failed to reset password. Please try again.');
+        const errorMessage = data.error || 'Failed to reset password. Please try again.';
+        setError(errorMessage);
+        showError(errorMessage);
+        console.error(errorMessage);
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      const errorMessage = 'An error occurred. Please try again.';
+      setError(errorMessage);
+      showError(errorMessage);
+      console.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Show loading state while validating token
-  if (isValidToken === null) {
+  // Show loading state while auth is loading or validating token
+  if (authLoading || isValidToken === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Validating reset token...</p>
+          <p className="text-gray-600">
+            {authLoading ? 'Loading...' : 'Validating reset token...'}
+          </p>
         </div>
       </div>
     );
@@ -255,6 +292,18 @@ export default function ResetPassword() {
             </div>
           )}
 
+          {/* Debug Section - Development Only */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-6 p-4 bg-gray-100 rounded-lg text-xs">
+              <h4 className="font-bold mb-2">Debug Info:</h4>
+              <p>Form Data: {JSON.stringify(formData)}</p>
+              <p>Form Errors: {JSON.stringify(formErrors)}</p>
+              <p>Is Loading: {isLoading.toString()}</p>
+              <p>Error: {error || 'none'}</p>
+              <p>Message: {message || 'none'}</p>
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* New Password Field */}
             <div>
@@ -289,6 +338,10 @@ export default function ResetPassword() {
               </div>
               {formErrors.password && (
                 <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>
+              )}
+              {/* Debug: Show formErrors state */}
+              {process.env.NODE_ENV === 'development' && (
+                <p className="mt-1 text-xs text-gray-500">Debug: formErrors.password = {formErrors.password || 'null'}</p>
               )}
               <PasswordStrengthMeter password={formData.password} />
             </div>
@@ -326,6 +379,10 @@ export default function ResetPassword() {
               </div>
               {formErrors.confirmPassword && (
                 <p className="mt-1 text-sm text-red-600">{formErrors.confirmPassword}</p>
+              )}
+              {/* Debug: Show formErrors state */}
+              {process.env.NODE_ENV === 'development' && (
+                <p className="mt-1 text-xs text-gray-500">Debug: formErrors.confirmPassword = {formErrors.confirmPassword || 'null'}</p>
               )}
             </div>
 

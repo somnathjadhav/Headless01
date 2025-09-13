@@ -4,6 +4,7 @@ import { WooCommerceProvider } from '../context/WooCommerceContext';
 import { TypographyProvider } from '../context/TypographyContext';
 import { AuthProvider } from '../context/AuthContext';
 import { CurrencyProvider } from '../context/CurrencyContext';
+import { NotificationProvider } from '../context/NotificationContext';
 import DynamicFavicon from '../components/ui/DynamicFavicon';
 import DynamicGoogleFonts from '../components/ui/DynamicGoogleFonts';
 import Layout from '../components/layout/Layout';
@@ -21,16 +22,18 @@ function MyApp({ Component, pageProps, router }) {
       <AuthProvider>
         <WooCommerceProvider>
           <CurrencyProvider>
-            <DynamicFavicon />
-            <DynamicGoogleFonts />
-            <WordPressStorageSync />
-            {isBlogDetailPage ? (
-              <Component {...pageProps} />
-            ) : (
-              <Layout>
+            <NotificationProvider>
+              <DynamicFavicon />
+              <DynamicGoogleFonts />
+              <WordPressStorageSync />
+              {isBlogDetailPage ? (
                 <Component {...pageProps} />
-              </Layout>
-            )}
+              ) : (
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              )}
+            </NotificationProvider>
           </CurrencyProvider>
         </WooCommerceProvider>
       </AuthProvider>

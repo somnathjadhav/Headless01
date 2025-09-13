@@ -6,9 +6,15 @@ export default async function handler(req, res) {
   try {
     const wordpressUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || process.env.WORDPRESS_URL || 'https://woo.local';
     
+    // Check if we're in local development
+    const isLocalDevelopment = process.env.NODE_ENV === 'development' || 
+                              process.env.NEXT_PUBLIC_SITE_URL?.includes('localhost') ||
+                              process.env.NEXT_PUBLIC_SITE_URL?.includes('127.0.0.1') ||
+                              !process.env.NEXT_PUBLIC_SITE_URL;
+
     // Try to get reCAPTCHA settings from WordPress backend
     let recaptchaConfig = {
-      enabled: true, // ENABLED: reCAPTCHA is now enabled
+      enabled: !isLocalDevelopment, // Disable reCAPTCHA for local development
       site_key: null,
       secret_key: null
     };
@@ -65,20 +71,22 @@ export default async function handler(req, res) {
     }
 
     // Fallback to environment variables if WordPress backend doesn't have reCAPTCHA settings
-    // ENABLED: reCAPTCHA is now enabled
+    // Only enable if not in local development
     if (!recaptchaConfig.site_key || !recaptchaConfig.secret_key) {
       const envSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
       const envSecretKey = process.env.RECAPTCHA_SECRET_KEY;
       
-      if (envSiteKey && envSecretKey) {
+      if (envSiteKey && envSecretKey && !isLocalDevelopment) {
         recaptchaConfig = {
-          enabled: true, // ENABLED: reCAPTCHA is now enabled
+          enabled: true, // Enable reCAPTCHA only for non-local environments
           site_key: envSiteKey,
           secret_key: envSecretKey
         };
         console.log('✅ reCAPTCHA enabled using environment variables');
         console.log('🔍 Environment source - Site Key:', envSiteKey ? 'Found' : 'Missing');
         console.log('🔍 Environment source - Secret Key:', envSecretKey ? 'Found' : 'Missing');
+      } else if (isLocalDevelopment) {
+        console.log('🚫 reCAPTCHA disabled for local development');
       }
     }
 
@@ -103,7 +111,7 @@ export default async function handler(req, res) {
     const envSecretKey = process.env.RECAPTCHA_SECRET_KEY;
     
     const fallbackConfig = {
-      enabled: true, // ENABLED: reCAPTCHA is now enabled
+      enabled: !isLocalDevelopment, // Disable reCAPTCHA for local development
       site_key: envSiteKey || null,
       secret_key: envSecretKey || null
     };

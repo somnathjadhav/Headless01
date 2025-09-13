@@ -2,11 +2,14 @@ import React from 'react';
 import Link from 'next/link';
 import { useWooCommerce } from '../../context/WooCommerceContext';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useWishlistAuth } from '../../hooks/useWishlistAuth';
 import { HeartIcon, ShoppingCartIcon, TrashIcon, StarIcon } from '../icons';
+import LoginPromptModal from '../modals/LoginPromptModal';
 
 export default function Wishlist() {
   const { wishlist, addToCart, removeFromWishlist } = useWooCommerce();
   const { formatPrice } = useCurrency();
+  const { handleWishlistAction, showLoginPrompt, closeLoginPrompt } = useWishlistAuth();
 
   if (wishlist.length === 0) {
     return (
@@ -98,7 +101,7 @@ export default function Wishlist() {
               </button>
               
               <button
-                onClick={() => removeFromWishlist(item.id)}
+                onClick={handleWishlistAction(() => removeFromWishlist(item.id), item)}
                 className="group flex items-center justify-center space-x-2 text-gray-500 hover:text-red-600 px-6 py-3 rounded-lg border border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all duration-200"
               >
                 <TrashIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
@@ -121,6 +124,14 @@ export default function Wishlist() {
           Continue Shopping
         </button>
       </div>
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={showLoginPrompt}
+        onClose={closeLoginPrompt}
+        title="Sign in to manage wishlist"
+        message="Please sign in to remove items from your wishlist."
+      />
     </div>
   );
 }

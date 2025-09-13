@@ -1,17 +1,18 @@
 import React from 'react';
 
 const PasswordStrengthMeter = ({ password, show = true }) => {
-  if (!show || !password) return null;
+  if (!show) return null;
 
   // Calculate password strength
   const calculateStrength = (password) => {
+    const pwd = password || '';
     let score = 0;
     const checks = {
-      length: password.length >= 8,
-      lowercase: /[a-z]/.test(password),
-      uppercase: /[A-Z]/.test(password),
-      numbers: /\d/.test(password),
-      special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+      length: pwd.length >= 8,
+      lowercase: /[a-z]/.test(pwd),
+      uppercase: /[A-Z]/.test(pwd),
+      numbers: /\d/.test(pwd),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(pwd),
     };
 
     // Calculate score based on checks
@@ -20,16 +21,17 @@ const PasswordStrengthMeter = ({ password, show = true }) => {
     });
 
     // Additional points for length
-    if (password.length >= 12) score += 1;
-    if (password.length >= 16) score += 1;
+    if (pwd.length >= 12) score += 1;
+    if (pwd.length >= 16) score += 1;
 
     return { score, checks };
   };
 
-  const { score, checks } = calculateStrength(password);
+  const { score, checks } = calculateStrength(password || '');
 
   // Determine strength level and colors
   const getStrengthLevel = (score) => {
+    if (!password || password.length === 0) return { level: 'Enter password', color: 'bg-gray-300', textColor: 'text-gray-500' };
     if (score <= 2) return { level: 'Very Weak', color: 'bg-red-500', textColor: 'text-red-600' };
     if (score <= 3) return { level: 'Weak', color: 'bg-orange-500', textColor: 'text-orange-600' };
     if (score <= 4) return { level: 'Fair', color: 'bg-yellow-500', textColor: 'text-yellow-600' };

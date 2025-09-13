@@ -9,6 +9,7 @@ import SimpleCaptcha from '../components/ui/SimpleCaptcha';
 import GoogleReCaptcha from '../components/ui/GoogleReCaptcha';
 import { useRecaptchaConfig } from '../hooks/useRecaptchaConfig';
 import GoogleLoginButton from '../components/auth/GoogleLoginButton';
+// import { useNotifications } from '../context/NotificationContext';
 import { 
   UserIcon, 
   LockClosedIcon, 
@@ -20,7 +21,7 @@ import {
 
 export default function SignIn() {
   const router = useRouter();
-  const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
+  const { login, isAuthenticated, isLoading, isInitializing, error, clearError } = useAuth();
   const { name: siteName, loading: siteLoading } = useSiteInfo();
   const { isEnabled: isRecaptchaEnabled, isLoading: isRecaptchaLoading } = useRecaptchaConfig();
   
@@ -55,7 +56,7 @@ export default function SignIn() {
       // Clear the message from URL
       router.replace('/signin', undefined, { shallow: true });
     }
-  }, [router.query.message]);
+  }, [router.query.message, router]);
 
   // Clear error when component unmounts or error changes
   useEffect(() => {
@@ -184,8 +185,8 @@ export default function SignIn() {
     setFormErrors({ google: error });
   };
 
-  // Show loading state if authentication is being checked
-  if (isLoading) {
+  // Show loading state if authentication is being checked or initialized
+  if (isLoading || isInitializing) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

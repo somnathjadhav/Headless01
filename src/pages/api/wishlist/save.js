@@ -20,6 +20,15 @@ export default async function handler(req, res) {
     }
 
     console.log('❤️ Saving wishlist to WordPress for user:', userId, 'Items:', wishlistData.length);
+    
+    // Validate user ID format
+    if (isNaN(userId) || userId <= 0) {
+      console.log('❌ Invalid user ID format:', userId);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
 
     // Create WooCommerce client
     const client = new WooCommerceRestApi({
@@ -58,6 +67,12 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('❌ Error saving wishlist to WordPress:', error);
+    console.error('❌ Error details:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
     
     // Handle specific error cases
     if (error.response?.status === 404) {
@@ -70,7 +85,7 @@ export default async function handler(req, res) {
     if (error.response?.status === 401 || error.response?.status === 403) {
       return res.status(401).json({
         success: false,
-        message: 'Unauthorized access'
+        message: 'Unauthorized access - check WooCommerce credentials'
       });
     }
 

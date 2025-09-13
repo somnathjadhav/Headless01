@@ -535,7 +535,7 @@ export default function Header() {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between">
                                     <h4 className="text-sm font-medium text-gray-900 truncate flex-1 mr-2">{item.name}</h4>
-                                    <span className="text-sm font-medium text-gray-900 whitespace-nowrap">{formatPrice(item.price * item.quantity)}</span>
+                                    <span className="text-sm font-medium text-gray-900 whitespace-nowrap">{formatPrice((parseFloat(item.price || item.regular_price || 0)) * item.quantity)}</span>
                                   </div>
                                   <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                                 </div>
@@ -547,7 +547,10 @@ export default function Header() {
                             <div className="flex justify-between items-center mb-4">
                               <span className="text-lg font-semibold text-gray-900">Total:</span>
                               <span className="text-lg font-semibold text-gray-900">
-                                {formatPrice(cart.reduce((total, item) => total + (item.price * item.quantity), 0))}
+                                {formatPrice(cart.reduce((total, item) => {
+                                  const price = parseFloat(item.price || item.regular_price || 0);
+                                  return total + (price * item.quantity);
+                                }, 0))}
                               </span>
                             </div>
                             

@@ -14,7 +14,10 @@ export function useSimpleStore() {
 
   // Performance: Memoized cart calculations
   const cartStats = useMemo(() => {
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = cart.reduce((sum, item) => {
+      const price = parseFloat(item.price || item.regular_price || 0);
+      return sum + (price * item.quantity);
+    }, 0);
     const count = cart.reduce((sum, item) => sum + item.quantity, 0);
     return { total, count };
   }, [cart]);

@@ -3,6 +3,7 @@ import { HeartIcon, ShareIcon, StarIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useWishlistAuth } from '../../hooks/useWishlistAuth';
+import { useNotifications } from '../../context/NotificationContext';
 import LoginPromptModal from '../modals/LoginPromptModal';
 
 export default function ProductInfo({ product, isInWishlist, onWishlistToggle }) {

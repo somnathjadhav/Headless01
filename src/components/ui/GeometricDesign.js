@@ -8,6 +8,7 @@ export default function GeometricDesign() {
         src="/signup-bg.webp"
         alt="Signup background"
         fill
+        sizes="100vw"
         className="object-cover object-top"
         style={{
           objectPosition: 'center -10%', // Crops from top by 10%

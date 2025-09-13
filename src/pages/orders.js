@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useWooCommerce } from '../context/WooCommerceContext';
 import { useRouter } from 'next/router';
 import { useAuth } from '../context/AuthContext';
+import PleaseSignIn from '../components/auth/PleaseSignIn';
 import { 
   TruckIcon, 
   CheckIcon, 
@@ -133,19 +134,11 @@ export default function Orders() {
   // Show not authenticated message
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <ExclamationIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Please Sign In</h2>
-          <p className="text-gray-600 mb-6">You need to be signed in to view your orders.</p>
-          <Link
-            href="/signin"
-            className="px-6 py-3 bg-black text-white font-medium rounded-md hover:bg-gray-800 transition-colors"
-          >
-            Sign In
-          </Link>
-        </div>
-      </div>
+      <PleaseSignIn 
+        title="View Your Orders"
+        message="Please sign in to view your order history, track shipments, and manage your purchases."
+        redirectTo="orders"
+      />
     );
   }
 

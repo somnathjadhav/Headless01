@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useGlobalTypography } from '../hooks/useGlobalTypography';
 import CouponInput from '../components/woocommerce/CouponInput';
+import PleaseSignIn from '../components/auth/PleaseSignIn';
 import { 
   CreditCardIcon, 
   TruckIcon, 
@@ -35,7 +36,6 @@ export default function Checkout() {
     zipCode: '',
     phone: '',
     email: user?.email || '',
-    createAccount: false,
     shipToDifferent: false,
     orderNotes: '',
     paymentMethod: 'cod',
@@ -132,7 +132,10 @@ export default function Checkout() {
   }, [cart, isAuthenticated, router]);
 
   // Calculate totals
-  const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((total, item) => {
+    const price = parseFloat(item.price || item.regular_price || 0);
+    return total + (price * item.quantity);
+  }, 0);
   
   // Calculate coupon discount
   let couponDiscount = 0;
@@ -182,7 +185,10 @@ export default function Checkout() {
     }
 
     // Check if we have valid line items
-    const validLineItems = cart.filter(item => item.id && item.quantity && item.price && item.price !== '');
+    const validLineItems = cart.filter(item => {
+      const price = parseFloat(item.price || item.regular_price || 0);
+      return item.id && item.quantity && price > 0;
+    });
     if (validLineItems.length === 0) {
       setError('No valid products in cart. Please check product prices and try again.');
       return;
@@ -249,11 +255,14 @@ export default function Checkout() {
           country: formData.country
         },
         line_items: cart
-          .filter(item => item.id && item.quantity && item.price && item.price !== '')
+          .filter(item => {
+            const price = parseFloat(item.price || item.regular_price || 0);
+            return item.id && item.quantity && price > 0;
+          })
           .map(item => ({
             product_id: item.id,
             quantity: item.quantity,
-            price: item.price
+            price: parseFloat(item.price || item.regular_price || 0)
           })),
         shipping_lines: [
           {
@@ -313,29 +322,100 @@ export default function Checkout() {
   // Show loading or redirect if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to sign in...</p>
-        </div>
-      </div>
+      <PleaseSignIn 
+        title="Complete Your Purchase"
+        message="Please sign in to proceed with checkout and complete your order securely."
+        redirectTo="checkout"
+      />
     );
   }
 
   // Show empty cart message
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <ExclamationIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-          <p className="text-gray-600 mb-6">Add some products to your cart before checkout.</p>
-          <button
-            onClick={() => router.push('/products')}
-            className="px-6 py-3 bg-black text-white font-medium rounded-md hover:bg-gray-800 transition-colors"
-          >
-            Continue Shopping
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Checkout</h1>
+            <p className="text-gray-600 text-lg">Complete your purchase</p>
+          </div>
+
+          {/* Empty Cart Card */}
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-12 text-center relative overflow-hidden">
+              {/* Background decoration */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-100/30 to-blue-100/30 rounded-full translate-y-12 -translate-x-12"></div>
+              
+              {/* Content */}
+              <div className="relative z-10">
+                {/* Icon */}
+                <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 mb-8 animate-float">
+                  <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
+                  </svg>
+                </div>
+
+                {/* Title */}
+                <h2 className="text-3xl font-bold text-gray-900 mb-4 animate-fade-in">
+                  Your cart is empty
+                </h2>
+                
+                {/* Description */}
+                <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto animate-slide-up">
+                  Looks like you haven't added any items to your cart yet. Start shopping to discover amazing products!
+                </p>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up">
+                  <button
+                    onClick={() => router.push('/')}
+                    className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-full hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                  >
+                    <span className="relative z-10 flex items-center">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                      Browse Products
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
+                  </button>
+                  
+                  <button
+                    onClick={() => router.push('/blog')}
+                    className="px-8 py-4 bg-white/80 backdrop-blur-sm text-gray-700 font-semibold rounded-full border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-300 transform hover:scale-105"
+                  >
+                    <span className="flex items-center">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                      </svg>
+                      Read Our Blog
+                    </span>
+                  </button>
+                </div>
+
+                {/* Additional Info */}
+                <div className="mt-12 pt-8 border-t border-gray-200/50">
+                  <p className="text-sm text-gray-500 mb-4">Need help getting started?</p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center text-sm">
+                    <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+                      📞 Contact Support
+                    </a>
+                    <span className="hidden sm:inline text-gray-300">•</span>
+                    <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+                      ❓ FAQ
+                    </a>
+                    <span className="hidden sm:inline text-gray-300">•</span>
+                    <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+                      🚚 Shipping Info
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -547,15 +627,6 @@ export default function Checkout() {
 
                 {/* Additional Options */}
                 <div className="space-y-3 pt-4 border-t border-gray-200">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.createAccount}
-                      onChange={(e) => handleInputChange('createAccount', e.target.checked)}
-                      className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
-                    />
-                    <span className="ml-3 text-sm text-gray-700">Create an account?</span>
-                  </label>
                   <label className="flex items-center">
                     <input
                       type="checkbox"
@@ -823,7 +894,7 @@ export default function Checkout() {
                         <p className="text-gray-500">Qty: {item.quantity}</p>
                       </div>
                     </div>
-                    <p className="font-medium text-gray-900">{formatPrice(item.price * item.quantity)}</p>
+                    <p className="font-medium text-gray-900">{formatPrice((parseFloat(item.price || item.regular_price || 0)) * item.quantity)}</p>
                   </div>
                 ))}
               </div>

@@ -18,7 +18,10 @@ export default function CouponInput() {
     setError('');
 
     try {
-      const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+      const cartTotal = cart.reduce((total, item) => {
+        const price = parseFloat(item.price || item.regular_price || 0);
+        return total + (price * item.quantity);
+      }, 0);
       
       const response = await fetch('/api/coupons', {
         method: 'POST',

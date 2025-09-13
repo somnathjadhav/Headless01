@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useWooCommerce } from '../context/WooCommerceContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
+import PasswordStrengthMeter from '../components/ui/PasswordStrengthMeter';
+import PleaseSignIn from '../components/auth/PleaseSignIn';
+import TwoFactorAuth from '../components/auth/TwoFactorAuth';
+import SessionManagement from '../components/auth/SessionManagement';
 import { 
   UserIcon, 
   EditIcon, 
@@ -12,13 +17,15 @@ import {
   MapPinIcon,
   ExclamationIcon,
   EyeIcon,
+  EyeSlashIcon,
   CheckIcon,
   ClockIcon
 } from '../components/icons';
 
 export default function Account() {
-  const { wishlist, addToCart } = useWooCommerce();
-  const { isAuthenticated, user } = useAuth();
+  const { wishlist, addToCart, removeFromWishlist } = useWooCommerce();
+  const { isAuthenticated, user, isInitializing } = useAuth();
+  const { showSuccess, showError, showInfo } = useNotifications();
   
   // Real orders data from WooCommerce
   const [orders, setOrders] = useState([]);
@@ -51,6 +58,98 @@ export default function Account() {
 
   const [formData, setFormData] = useState(userData);
   
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState({});
+  const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+
+  // Share product function
+  const shareProduct = async (product) => {
+    const shareData = {
+      title: product.name,
+      text: `Check out this product: ${product.name}`,
+      url: `${window.location.origin}/products/${product.id}`
+    };
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        // Use native Web Share API if available
+        await navigator.share(shareData);
+        showSuccess('Product shared successfully!');
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(shareData.url);
+        showSuccess('Product link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing product:', error);
+      // Final fallback: show URL in alert
+      const fallbackUrl = shareData.url;
+      if (window.prompt('Copy this link to share:', fallbackUrl)) {
+        showSuccess('Product link ready to share!');
+      }
+    }
+  };
+
+  // Address management state
+  const [addresses, setAddresses] = useState([]);
+  
+  const [newAddress, setNewAddress] = useState({
+    type: 'shipping',
+    name: '',
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'United States',
+    phone: ''
+  });
+
+  // Authentication guard - redirect if not authenticated
+  useEffect(() => {
+    if (!isInitializing && !isAuthenticated) {
+      window.location.href = '/signin?redirect=account';
+    }
+  }, [isAuthenticated, isInitializing]);
+
+  // Fetch real orders when orders tab is active
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (activeTab === 'orders' && isAuthenticated && user?.id) {
+        try {
+          setOrdersLoading(true);
+          setOrdersError(null);
+          
+          const response = await fetch(`/api/user-orders?userId=${user.id}`);
+          const data = await response.json();
+          
+          if (data.success) {
+            setOrders(data.orders);
+          } else {
+            setOrdersError(data.message || 'Failed to fetch orders');
+          }
+        } catch (error) {
+          console.error('Error fetching orders:', error);
+          setOrdersError('Failed to fetch orders. Please try again.');
+        } finally {
+          setOrdersLoading(false);
+        }
+      }
+    };
+
+    fetchOrders();
+  }, [activeTab, isAuthenticated, user?.id]);
+
   // Fetch user profile data when authenticated
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -121,20 +220,147 @@ export default function Account() {
 
     fetchUserProfile();
   }, [isAuthenticated, user]);
+
+  // Show loading while checking authentication
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading or redirect if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <PleaseSignIn 
+        title="Access Your Account"
+        message="Please sign in to view and manage your account settings, order history, and personal information."
+        redirectTo="account"
+      />
+    );
+  }
   
-  // Address management state
-  const [addresses, setAddresses] = useState([]);
+  // Password input handlers
+  const handlePasswordChange = (field, value) => {
+    setPasswordData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear error for this field when user starts typing
+    if (passwordErrors[field]) {
+      setPasswordErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
   
-  const [newAddress, setNewAddress] = useState({
-    type: 'shipping',
-    name: '',
-    street: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'United States',
-    phone: ''
-  });
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
+
+  // Password change submission handler
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Clear previous errors and messages
+    setPasswordErrors({});
+    setPasswordMessage({ type: '', text: '' });
+    
+    // Validate password fields
+    const errors = {};
+    
+    if (!passwordData.currentPassword) {
+      errors.currentPassword = 'Please enter your current password';
+    }
+    
+    if (!passwordData.newPassword) {
+      errors.newPassword = 'Please enter a new password';
+    } else {
+      // Enhanced password validation
+      if (passwordData.newPassword.length < 8) {
+        errors.newPassword = 'Password must be at least 8 characters long';
+      } else {
+        const hasUpperCase = /[A-Z]/.test(passwordData.newPassword);
+        const hasLowerCase = /[a-z]/.test(passwordData.newPassword);
+        const hasNumbers = /\d/.test(passwordData.newPassword);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword);
+        
+        if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+          errors.newPassword = 'Password must contain uppercase, lowercase, number, and special character';
+        }
+      }
+    }
+    
+    if (!passwordData.confirmPassword) {
+      errors.confirmPassword = 'Please confirm your new password';
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      errors.confirmPassword = 'New passwords do not match';
+    }
+    
+    // If there are validation errors, show them and return
+    if (Object.keys(errors).length > 0) {
+      setPasswordErrors(errors);
+      setPasswordMessage({ type: 'error', text: 'Please fix the errors below' });
+      return;
+    }
+
+    try {
+      console.log('Updating password...');
+      console.log('User object:', user);
+      console.log('User ID:', user?.id);
+      
+      // Make API call to update password
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+          userId: user?.id,
+          userEmail: user?.email
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 401) {
+          setPasswordErrors({
+            currentPassword: data.error || 'Current password is incorrect'
+          });
+          setPasswordMessage({ type: 'error', text: 'Current password is incorrect. Please check and try again.' });
+        } else {
+          throw new Error(data.error || 'Failed to update password');
+        }
+        return;
+      }
+      
+      // Clear password fields
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      
+      setPasswordMessage({ type: 'success', text: 'Password updated successfully! You can now use your new password to log in.' });
+      
+    } catch (error) {
+      console.error('Password update error:', error);
+      setPasswordMessage({ type: 'error', text: error.message || 'Failed to update password. Please try again.' });
+    }
+  };
 
   // Filter orders based on status and search
   const filteredOrders = orders.filter(order => {
@@ -212,34 +438,6 @@ export default function Account() {
       [name]: value
     }));
   };
-
-  // Fetch real orders when orders tab is active
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (activeTab === 'orders' && isAuthenticated && user?.id) {
-        try {
-          setOrdersLoading(true);
-          setOrdersError(null);
-          
-          const response = await fetch(`/api/user-orders?userId=${user.id}`);
-          const data = await response.json();
-          
-          if (data.success) {
-            setOrders(data.orders);
-          } else {
-            setOrdersError(data.message || 'Failed to fetch orders');
-          }
-        } catch (error) {
-          console.error('Error fetching orders:', error);
-          setOrdersError('Failed to fetch orders. Please try again.');
-        } finally {
-          setOrdersLoading(false);
-        }
-      }
-    };
-
-    fetchOrders();
-  }, [activeTab, isAuthenticated, user?.id]);
   
   const handleAddAddress = () => {
     if (newAddress.name && newAddress.street && newAddress.city && newAddress.state && newAddress.zipCode) {
@@ -290,67 +488,67 @@ export default function Account() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Enhanced Header with Profile */}
-      <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
-            {/* Profile Section */}
-            <div className="flex items-center space-x-6">
-              {/* Avatar */}
-              <div className="relative">
-                <div className="w-20 h-20 bg-gradient-to-br from-black to-gray-700 rounded-2xl flex items-center justify-center shadow-lg">
-                  <span className="text-2xl font-bold text-white">
-                    {userData.firstName?.charAt(0) || 'U'}
-                  </span>
+    <div className="min-h-screen bg-gray-100">
+      {/* Main Container with Boxed Layout */}
+      <div className="max-w-7xl mx-auto bg-white min-h-screen shadow-2xl">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-black via-gray-900 to-gray-800 text-white relative">
+          <div className="container mx-auto px-6 pt-12 pb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center animate-float">
+                    <UserIcon className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full"></div>
-              </div>
-              
-              {/* User Info */}
-          <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">
-                  Welcome back, {userData.firstName}!
-                </h1>
-                <p className="text-gray-600 text-lg">
-                  {userData.email}
-                </p>
-                <div className="flex items-center space-x-4 mt-2">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Active Member
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    Member since {new Date().getFullYear()}
-                  </span>
+                <div>
+                  <h1 className="text-2xl font-semibold mb-1">Welcome back, <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{userData.firstName || 'User'}!</span></h1>
+                  <p className="text-white text-opacity-90 text-sm">@{userData.firstName?.toLowerCase() || 'user'} • Member since {new Date().getFullYear()}</p>
+                  <div className="flex items-center space-x-3 mt-2">
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      <span className="text-xs">Online</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <CheckIcon className="w-3 h-3" />
+                      <span className="text-xs">Verified</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-6 lg:gap-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">{orders.length}</div>
-                <div className="text-sm text-gray-600">Total Orders</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">{wishlist.length}</div>
-                <div className="text-sm text-gray-600">Wishlist Items</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">{addresses.length}</div>
-                <div className="text-sm text-gray-600">Saved Addresses</div>
+              <div className="text-right">
+                <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl px-4 py-2 mb-3 border border-white border-opacity-20">
+                  <span className="text-xs font-medium">Active Member</span>
+                </div>
+                <div className="text-xs text-white text-opacity-90 space-y-1">
+                  <div className="flex items-center justify-end space-x-2">
+                    <span>{orders.length} Total Orders</span>
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                  </div>
+                  <div className="flex items-center justify-end space-x-2">
+                    <span>{wishlist.length} Wishlist Items</span>
+                    <div className="w-1.5 h-1.5 bg-pink-400 rounded-full"></div>
+                  </div>
+                  <div className="flex items-center justify-end space-x-2">
+                    <span>{addresses.length} Saved Addresses</span>
+                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="lg:grid lg:grid-cols-4 lg:gap-8">
+        <div className="container mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-8">
+            <div className="bg-white rounded-lg shadow-lg p-5 sticky top-8 border border-gray-100" style={{borderRadius: '5px'}}>
+              <div className="mb-5">
+                <h3 className="text-sm font-medium text-gray-800 mb-2 text-center">Navigation</h3>
+                <div className="w-full h-0.5 bg-indigo-600 rounded-full"></div>
+              </div>
               <nav className="space-y-2">
                 {tabs.map((tab) => {
                   const IconComponent = tab.icon;
@@ -358,14 +556,36 @@ export default function Account() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors ${
+                      className={`w-full flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                         activeTab === tab.id
-                          ? 'bg-black text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100'
                       }`}
                     >
-                      <IconComponent className="w-5 h-5" />
-                      <span className="font-medium">{tab.name}</span>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                        activeTab === tab.id
+                          ? 'bg-white bg-opacity-20'
+                          : 'bg-gray-100 group-hover:bg-indigo-100'
+                      }`}>
+                        <IconComponent className="w-4 h-4" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-sm font-medium">{tab.name}</span>
+                        <div className={`text-xs ${
+                          activeTab === tab.id
+                            ? 'text-white text-opacity-80'
+                            : 'text-gray-500'
+                        }`}>
+                          {tab.id === 'dashboard' ? 'Overview' : 
+                           tab.id === 'profile' ? 'Personal info' :
+                           tab.id === 'orders' ? 'Purchase history' :
+                           tab.id === 'wishlist' ? 'Saved items' :
+                           tab.id === 'addresses' ? 'Delivery info' :
+                           tab.id === 'payment' ? 'Cards & billing' :
+                           tab.id === 'settings' ? 'Preferences' :
+                           tab.id === 'security' ? 'Privacy & safety' : ''}
+                        </div>
+                      </div>
                     </button>
                   );
                 })}
@@ -374,88 +594,115 @@ export default function Account() {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3 mt-8 lg:mt-0">
+          <div className="lg:col-span-3 space-y-6">
             {/* Dashboard Tab */}
             {activeTab === 'dashboard' && (
-              <div className="space-y-8">
-                {/* Welcome Section */}
-                <div className="bg-gradient-to-r from-black to-gray-800 rounded-2xl p-8 text-white">
-                  <div className="flex items-center justify-between">
+              <div className="space-y-6">
+                {/* Welcome Banner */}
+                <div className="relative overflow-hidden bg-indigo-600 p-6 text-white shadow-lg" style={{borderRadius: '5px'}}>
+                  <div className="absolute inset-0 bg-black bg-opacity-10"></div>
+                  <div className="relative z-10 flex items-center justify-between">
                     <div>
-                      <h2 className="text-3xl font-bold mb-2">Welcome back, {userData.firstName}!</h2>
-                      <p className="text-gray-300 text-lg">Here&apos;s what&apos;s happening with your account</p>
+                      <h2 className="text-xl font-semibold mb-2">Welcome back, <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{userData.firstName || 'User'}!</span></h2>
+                      <p className="text-white text-opacity-90 text-sm mb-3">Here's what's happening with your account</p>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                          <span className="text-xs">Account Active</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                          <span className="text-xs">Premium Member</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="hidden md:block">
-                      <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center">
-                        <UserIcon className="w-8 h-8 text-white" />
+                    <div className="relative">
+                      <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center animate-float">
+                        <UserIcon className="w-8 h-8" />
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Total Orders */}
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between">
+                  <div className="group bg-white rounded-lg p-5 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
+                    <div className="relative z-10 flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                        <p className="text-3xl font-bold text-gray-900">{orders.length}</p>
+                        <p className="text-xs font-medium text-gray-600 mb-1">Total Orders</p>
+                        <p className="text-2xl font-semibold text-gray-900 mb-1">{orders.length}</p>
+                        <p className="text-xs text-gray-500">All time</p>
+                        <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-blue-600 h-1.5 rounded-full w-0 transition-all duration-1000 group-hover:w-3/4"></div>
+                        </div>
                       </div>
-                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                        <TruckIcon className="w-6 h-6 text-blue-600" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                          <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
+                        </svg>
                       </div>
-                    </div>
-                    <div className="mt-4">
-                      <span className="text-sm text-gray-500">All time</span>
                     </div>
                   </div>
 
                   {/* Wishlist Items */}
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between">
+                  <div className="group bg-white rounded-lg p-5 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-pink-100 to-pink-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
+                    <div className="relative z-10 flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Wishlist Items</p>
-                        <p className="text-3xl font-bold text-gray-900">{wishlist.length}</p>
+                        <p className="text-xs font-medium text-gray-600 mb-1">Wishlist Items</p>
+                        <p className="text-2xl font-semibold text-gray-900 mb-1">{wishlist.length}</p>
+                        <p className="text-xs text-gray-500">Saved for later</p>
+                        <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-pink-600 h-1.5 rounded-full w-3/4 transition-all duration-1000"></div>
+                        </div>
                       </div>
-                      <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                        <HeartIcon className="w-6 h-6 text-red-600" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-pink-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <HeartIcon className="w-6 h-6 text-pink-600" />
                       </div>
-                    </div>
-                    <div className="mt-4">
-                      <span className="text-sm text-gray-500">Saved for later</span>
                     </div>
                   </div>
 
                   {/* Saved Addresses */}
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between">
+                  <div className="group bg-white rounded-lg p-5 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
+                    <div className="relative z-10 flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Saved Addresses</p>
-                        <p className="text-3xl font-bold text-gray-900">{addresses.length}</p>
+                        <p className="text-xs font-medium text-gray-600 mb-1">Saved Addresses</p>
+                        <p className="text-2xl font-semibold text-gray-900 mb-1">{addresses.length}</p>
+                        <p className="text-xs text-gray-500">Ready to use</p>
+                        <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-green-600 h-1.5 rounded-full w-1/2 transition-all duration-1000"></div>
+                        </div>
                       </div>
-                      <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                         <MapPinIcon className="w-6 h-6 text-green-600" />
                       </div>
-                    </div>
-                    <div className="mt-4">
-                      <span className="text-sm text-gray-500">Ready to use</span>
                     </div>
                   </div>
 
                   {/* Account Status */}
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between">
+                  <div className="group bg-white rounded-lg p-5 shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{borderRadius: '5px'}}>
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
+                    <div className="relative z-10 flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Account Status</p>
-                        <p className="text-lg font-bold text-green-600">Active</p>
+                        <p className="text-xs font-medium text-gray-600 mb-1">Account Status</p>
+                        <p className="text-xl font-semibold text-green-600 mb-1">Active</p>
+                        <p className="text-xs text-gray-500">Verified member</p>
+                        <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-green-600 h-1.5 rounded-full w-full transition-all duration-1000"></div>
+                        </div>
                       </div>
-                      <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                        <ShieldIcon className="w-6 h-6 text-green-600" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <CheckIcon className="w-6 h-6 text-green-600" />
                       </div>
-                    </div>
-                    <div className="mt-4">
-                      <span className="text-sm text-gray-500">Verified member</span>
                     </div>
                   </div>
                 </div>
@@ -463,7 +710,7 @@ export default function Account() {
                 {/* Recent Activity */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Recent Orders */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                     <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
@@ -516,7 +763,7 @@ export default function Account() {
                   </div>
 
                   {/* Quick Actions */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                     <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
                       <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
                     </div>
@@ -574,12 +821,12 @@ export default function Account() {
 
             {/* Enhanced Profile Tab */}
             {activeTab === 'profile' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                 {/* Profile Header */}
                 <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-1">Profile Information</h2>
+                      <h2 className="text-xl font-semibold text-gray-900 mb-1">Profile Information</h2>
                       <p className="text-gray-600">Manage your personal information and preferences</p>
                     </div>
                   {!isEditing && (
@@ -599,7 +846,7 @@ export default function Account() {
                 {isEditing ? (
                   <div className="space-y-8">
                     {/* Personal Information Section */}
-                    <div className="bg-gray-50 rounded-2xl p-6">
+                    <div className="bg-gray-50 rounded-lg p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                         <UserIcon className="w-5 h-5 mr-2 text-gray-600" />
                         Personal Information
@@ -639,7 +886,7 @@ export default function Account() {
                     </div>
 
                     {/* Contact Information Section */}
-                    <div className="bg-gray-50 rounded-2xl p-6">
+                    <div className="bg-gray-50 rounded-lg p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                         <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -680,7 +927,7 @@ export default function Account() {
                     </div>
 
                     {/* Address Information Section */}
-                    <div className="bg-gray-50 rounded-2xl p-6">
+                    <div className="bg-gray-50 rounded-lg p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                         <MapPinIcon className="w-5 h-5 mr-2 text-gray-600" />
                         Address Information
@@ -767,7 +1014,7 @@ export default function Account() {
                 ) : (
                   <div className="space-y-8">
                     {/* Personal Information Display */}
-                    <div className="bg-gray-50 rounded-2xl p-6">
+                    <div className="bg-gray-50 rounded-lg p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                         <UserIcon className="w-5 h-5 mr-2 text-gray-600" />
                         Personal Information
@@ -789,7 +1036,7 @@ export default function Account() {
                     </div>
 
                     {/* Contact Information Display */}
-                    <div className="bg-gray-50 rounded-2xl p-6">
+                    <div className="bg-gray-50 rounded-lg p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                         <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -813,7 +1060,7 @@ export default function Account() {
                     </div>
 
                     {/* Address Information Display */}
-                    <div className="bg-gray-50 rounded-2xl p-6">
+                    <div className="bg-gray-50 rounded-lg p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                         <MapPinIcon className="w-5 h-5 mr-2 text-gray-600" />
                         Address Information
@@ -847,7 +1094,7 @@ export default function Account() {
                 <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-1">Order History</h2>
+                      <h2 className="text-xl font-semibold text-gray-900 mb-1">Order History</h2>
                       <p className="text-gray-600">Track and manage your recent orders</p>
                     </div>
                     <Link
@@ -1032,11 +1279,11 @@ export default function Account() {
                       </button>
                           </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {filteredOrders.slice(0, 5).map((order) => (
-                        <div key={order.id} className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-gray-100/50 transition-all duration-300 hover:-translate-y-1">
+                        <div key={order.id} className="group bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-xl hover:shadow-gray-100/50 transition-all duration-300 hover:-translate-y-1">
                           {/* Order Header */}
-                          <div className="bg-gradient-to-r from-gray-50/50 to-white px-6 py-4 border-b border-gray-50">
+                          <div className="bg-gradient-to-r from-gray-50/50 to-white px-4 py-3 border-b border-gray-50">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-4">
                                 <div className="flex items-center space-x-3">
@@ -1058,7 +1305,7 @@ export default function Account() {
                           </span>
                         </div>
                                 <div>
-                                  <h3 className="font-bold text-gray-900 text-lg">Order #{order.number || order.id}</h3>
+                                  <h4 className="font-medium text-gray-900 text-sm">Order #{order.number || order.id}</h4>
                                   <p className="text-sm text-gray-500 font-medium">
                                     {new Date(order.date).toLocaleDateString('en-US', {
                                       year: 'numeric',
@@ -1076,10 +1323,10 @@ export default function Account() {
                           </div>
 
                           {/* Order Items */}
-                          <div className="p-6">
-                            <div className="space-y-4">
+                          <div className="p-4">
+                            <div className="space-y-3">
                               {order.items?.slice(0, 3).map((item, index) => (
-                                <div key={index} className="flex items-center space-x-4 group/item">
+                                <div key={index} className="flex items-center space-x-3 group/item">
                                   <Link href={`/products/${item.slug || item.id}`} className="relative block">
                                     <div className="relative overflow-hidden rounded-xl bg-gray-50">
                                       <img
@@ -1108,7 +1355,7 @@ export default function Account() {
                                     </p>
                               </div>
                               <div className="text-right">
-                                    <p className="font-bold text-gray-900 text-lg">₹{item.total}</p>
+                                    <p className="font-semibold text-gray-900 text-sm">₹{item.total}</p>
                               </div>
                             </div>
                           ))}
@@ -1222,12 +1469,12 @@ export default function Account() {
 
             {/* Enhanced Wishlist Tab */}
             {activeTab === 'wishlist' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                 {/* Wishlist Header */}
                 <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-1">My Wishlist</h2>
+                      <h2 className="text-xl font-semibold text-gray-900 mb-1">My Wishlist</h2>
                       <p className="text-gray-600">Save products you love for later</p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -1260,7 +1507,7 @@ export default function Account() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {wishlist.map((item) => (
-                        <div key={item.id} className="group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-gray-100/50 transition-all duration-300 hover:-translate-y-1">
+                        <div key={item.id} className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-xl hover:shadow-gray-100/50 transition-all duration-300 hover:-translate-y-1">
                           {/* Product Image */}
                           <div className="relative overflow-hidden">
                         <Link href={`/products/${item.id}`}>
@@ -1274,9 +1521,10 @@ export default function Account() {
                             <button 
                               className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-sm transition-colors"
                               onClick={() => {
-                                // Remove from wishlist functionality would go here
-                                console.log('Remove from wishlist:', item.id);
+                                removeFromWishlist(item.id);
+                                showSuccess(`${item.name} removed from wishlist`);
                               }}
+                              title="Remove from wishlist"
                             >
                               <HeartIcon className="w-4 h-4 text-red-500 fill-current" />
                             </button>
@@ -1291,24 +1539,24 @@ export default function Account() {
                           {/* Product Info */}
                           <div className="p-6">
                         <Link href={`/products/${item.id}`}>
-                              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer">
+                              <h4 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer text-sm">
                                 {item.name}
-                              </h3>
+                              </h4>
                         </Link>
                             
                             {/* Price */}
                             <div className="flex items-center space-x-2 mb-4">
                               {item.sale_price ? (
                                 <>
-                                  <span className="text-xl font-bold text-gray-900">
+                                  <span className="text-sm font-semibold text-gray-900">
                                     ₹{parseFloat(item.sale_price).toFixed(2)}
                                   </span>
-                                  <span className="text-sm text-gray-500 line-through">
+                                  <span className="text-xs text-gray-500 line-through">
                                     ₹{parseFloat(item.price || 0).toFixed(2)}
                                   </span>
                                 </>
                               ) : (
-                                <span className="text-xl font-bold text-gray-900">
+                                <span className="text-sm font-semibold text-gray-900">
                                   ₹{parseFloat(item.price || 0).toFixed(2)}
                                 </span>
                               )}
@@ -1349,10 +1597,8 @@ export default function Account() {
                         </button>
                               <button 
                                 className="px-3 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
-                                onClick={() => {
-                                  // Share functionality would go here
-                                  console.log('Share product:', item.id);
-                                }}
+                                onClick={() => shareProduct(item)}
+                                title="Share this product"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
@@ -1374,7 +1620,7 @@ export default function Account() {
             {activeTab === 'addresses' && (
               <div className="bg-white rounded-lg shadow-sm border p-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">My Addresses</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">My Addresses</h2>
                   <button 
                     onClick={() => setIsAddingAddress(!isAddingAddress)}
                     className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
@@ -1578,7 +1824,7 @@ export default function Account() {
             {/* Payment Tab */}
             {activeTab === 'payment' && (
               <div className="bg-white rounded-lg shadow-sm border p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment Methods</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Payment Methods</h2>
                 <div className="text-center py-12">
                   <CreditCardIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No payment methods added</h3>
@@ -1593,7 +1839,7 @@ export default function Account() {
             {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="bg-white rounded-lg shadow-sm border p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Settings</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Account Settings</h2>
                 <div className="space-y-6">
                   <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                     <div>
@@ -1632,12 +1878,12 @@ export default function Account() {
 
             {/* Enhanced Security Tab */}
             {activeTab === 'security' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                 {/* Security Header */}
                 <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                   <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-1">Security Settings</h2>
+                      <h2 className="text-xl font-semibold text-gray-900 mb-1">Security Settings</h2>
                       <p className="text-gray-600">Manage your account security and privacy</p>
                     </div>
                     <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
@@ -1648,121 +1894,154 @@ export default function Account() {
 
                 <div className="p-8 space-y-8">
                   {/* Password Security */}
-                  <div className="bg-gray-50 rounded-2xl p-6">
+                  <div className="bg-gray-50 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                       <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                       Password Security
                     </h3>
-                    <div className="space-y-6 max-w-2xl">
+                    
+                    {/* Prominent Password Message */}
+                    {passwordMessage.text && (
+                      <div className={`mb-6 p-4 rounded-lg border-2 ${
+                        passwordMessage.type === 'success' 
+                          ? 'bg-green-50 border-green-200 text-green-800' 
+                          : 'bg-red-50 border-red-200 text-red-800'
+                      }`}>
+                        <div className="flex items-center">
+                          {passwordMessage.type === 'success' ? (
+                            <svg className="w-6 h-6 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-6 h-6 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          )}
+                          <div>
+                            <p className="font-semibold text-lg">
+                              {passwordMessage.type === 'success' ? 'Success!' : 'Error'}
+                            </p>
+                            <p className="text-base mt-1">{passwordMessage.text}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-2xl">
                       <div>
                         <label htmlFor="currentPassword" className="block text-sm font-semibold text-gray-700 mb-2">
                           Current Password *
                         </label>
-                        <input
-                          id="currentPassword"
-                          type="password"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
-                          placeholder="Enter your current password"
-                        />
+                        <div className="relative">
+                          <input
+                            id="currentPassword"
+                            type={showPasswords.current ? 'text' : 'password'}
+                            value={passwordData.currentPassword}
+                            onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                            className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors ${
+                              passwordErrors.currentPassword ? 'border-red-300' : 'border-gray-300'
+                            }`}
+                            placeholder="Enter your current password"
+                          />
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                            onClick={() => togglePasswordVisibility('current')}
+                          >
+                            {showPasswords.current ? (
+                              <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                            ) : (
+                              <EyeIcon className="h-5 w-5 text-gray-400" />
+                            )}
+                          </button>
+                        </div>
+                        {passwordErrors.currentPassword && (
+                          <p className="mt-1 text-sm text-red-600">{passwordErrors.currentPassword}</p>
+                        )}
                       </div>
                       <div>
                         <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700 mb-2">
                           New Password *
                         </label>
-                        <input
-                          id="newPassword"
-                          type="password"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
-                          placeholder="Enter your new password"
-                        />
-                        <div className="mt-2 text-sm text-gray-600">
-                          <p>Password requirements:</p>
-                          <ul className="list-disc list-inside mt-1 space-y-1">
-                            <li>At least 8 characters long</li>
-                            <li>Contains uppercase and lowercase letters</li>
-                            <li>Contains at least one number</li>
-                            <li>Contains at least one special character</li>
-                          </ul>
+                        <div className="relative">
+                          <input
+                            id="newPassword"
+                            type={showPasswords.new ? 'text' : 'password'}
+                            value={passwordData.newPassword}
+                            onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                            className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors ${
+                              passwordErrors.newPassword ? 'border-red-300' : 'border-gray-300'
+                            }`}
+                            placeholder="Enter your new password"
+                          />
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                            onClick={() => togglePasswordVisibility('new')}
+                          >
+                            {showPasswords.new ? (
+                              <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                            ) : (
+                              <EyeIcon className="h-5 w-5 text-gray-400" />
+                            )}
+                          </button>
                         </div>
+                        {passwordErrors.newPassword && (
+                          <p className="mt-1 text-sm text-red-600">{passwordErrors.newPassword}</p>
+                        )}
+                        <PasswordStrengthMeter password={passwordData.newPassword} />
                       </div>
                       <div>
                         <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
                           Confirm New Password *
                         </label>
-                        <input
-                          id="confirmPassword"
-                          type="password"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
-                          placeholder="Confirm your new password"
-                        />
+                        <div className="relative">
+                          <input
+                            id="confirmPassword"
+                            type={showPasswords.confirm ? 'text' : 'password'}
+                            value={passwordData.confirmPassword}
+                            onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                            className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors ${
+                              passwordErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                            }`}
+                            placeholder="Confirm your new password"
+                          />
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                            onClick={() => togglePasswordVisibility('confirm')}
+                          >
+                            {showPasswords.confirm ? (
+                              <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                            ) : (
+                              <EyeIcon className="h-5 w-5 text-gray-400" />
+                            )}
+                          </button>
+                        </div>
+                        {passwordErrors.confirmPassword && (
+                          <p className="mt-1 text-sm text-red-600">{passwordErrors.confirmPassword}</p>
+                        )}
                       </div>
-                      <button className="inline-flex items-center space-x-2 bg-black text-white px-8 py-3 rounded-xl hover:bg-gray-800 transition-colors font-medium">
+                      <button type="submit" className="inline-flex items-center space-x-2 bg-black text-white px-8 py-3 rounded-xl hover:bg-gray-800 transition-colors font-medium">
                         <ShieldIcon className="w-4 h-4" />
                         <span>Update Password</span>
                       </button>
-                    </div>
+                    </form>
                   </div>
 
                   {/* Two-Factor Authentication */}
-                  <div className="bg-gray-50 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                      <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                      Two-Factor Authentication
-                    </h3>
-                      <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900">Add an extra layer of security</p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Protect your account with two-factor authentication using an authenticator app
-                        </p>
-                      </div>
-                      <button className="bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition-colors font-medium">
-                        Enable 2FA
-                      </button>
-                    </div>
-                  </div>
+                  <TwoFactorAuth 
+                    isEnabled={is2FAEnabled} 
+                    onToggle={setIs2FAEnabled} 
+                  />
 
                   {/* Login Sessions */}
-                  <div className="bg-gray-50 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                      <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      Active Login Sessions
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="bg-white p-4 rounded-xl border border-gray-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                        <div>
-                          <p className="font-medium text-gray-900">Current Session</p>
-                              <p className="text-sm text-gray-600">Chrome on macOS • {new Date().toLocaleDateString()}</p>
-                        </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                              Active
-                            </span>
-                            <button className="text-red-600 hover:text-red-800 text-sm font-medium">
-                              End Session
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <SessionManagement />
 
                   {/* Privacy Settings */}
-                  <div className="bg-gray-50 rounded-2xl p-6">
+                  <div className="bg-gray-50 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                       <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -1812,7 +2091,7 @@ export default function Account() {
                       </svg>
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900">Order Details</h2>
+                      <h2 className="text-2xl font-semibold text-gray-900">Order Details</h2>
                       <p className="text-gray-600 mt-1">Order #{selectedOrder.id}</p>
                     </div>
                   </div>
@@ -1831,7 +2110,7 @@ export default function Account() {
             <div className="overflow-y-auto max-h-[calc(95vh-200px)]">
               <div className="p-8 space-y-8">
                 {/* Order Status & Summary */}
-                <div className="bg-gradient-to-r from-gray-50 to-white rounded-2xl p-6 border border-gray-100">
+                <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-6 border border-gray-100">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                     <div className="flex items-center space-x-4">
                       <div className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 ${getStatusColor(selectedOrder.status)}`}>
@@ -1857,7 +2136,7 @@ export default function Account() {
                 {/* Order Information Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Payment Information */}
-                  <div className="bg-white border border-gray-200 rounded-2xl p-6">
+                  <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                         <CreditCardIcon className="w-5 h-5 text-green-600" />
@@ -1879,7 +2158,7 @@ export default function Account() {
                   </div>
 
                   {/* Shipping Information */}
-                  <div className="bg-white border border-gray-200 rounded-2xl p-6">
+                  <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                         <MapPinIcon className="w-5 h-5 text-blue-600" />
@@ -1902,7 +2181,7 @@ export default function Account() {
                 </div>
 
                 {/* Order Items */}
-                <div className="bg-white border border-gray-200 rounded-2xl p-6">
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center space-x-3 mb-6">
                     <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                       <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1937,7 +2216,7 @@ export default function Account() {
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0 flex flex-col items-end space-y-2">
-                          <div className="font-bold text-lg text-gray-900">₹{item.total.toFixed(2)}</div>
+                          <div className="font-semibold text-sm text-gray-900">₹{item.total.toFixed(2)}</div>
                           {selectedOrder.status === 'completed' && (
                             <Link
                               href={`/products/${item.slug || item.id}?review=true&orderId=${selectedOrder.id}#review-form`}
@@ -1957,7 +2236,7 @@ export default function Account() {
 
                 {/* Tracking Information */}
                 {selectedOrder.trackingNumber && (
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                         <TruckIcon className="w-5 h-5 text-blue-600" />
@@ -2046,6 +2325,7 @@ export default function Account() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

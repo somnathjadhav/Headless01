@@ -36,20 +36,54 @@ export default function Account() {
   // Order details modal state
   const [selectedOrder, setSelectedOrder] = useState(null);
   
-  // Mock user data - in a real app, this would come from authentication
+  // User data from authentication context
   const [userData, setUserData] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main Street',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'United States'
+    firstName: user?.name?.split(' ')[0] || '',
+    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+    email: user?.email || '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: ''
   });
 
   const [formData, setFormData] = useState(userData);
+  
+  // Fetch user profile data when authenticated
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (isAuthenticated && user?.id) {
+        try {
+          const response = await fetch(`/api/user-profile?userId=${user.id}`);
+          const data = await response.json();
+          
+          if (data.success && data.profile) {
+            const profile = data.profile;
+            const updatedUserData = {
+              firstName: profile.first_name || profile.name?.split(' ')[0] || '',
+              lastName: profile.last_name || profile.name?.split(' ').slice(1).join(' ') || '',
+              email: profile.email || user.email || '',
+              phone: profile.billing?.phone || '',
+              address: profile.billing?.address_1 || '',
+              city: profile.billing?.city || '',
+              state: profile.billing?.state || '',
+              zipCode: profile.billing?.postcode || '',
+              country: profile.billing?.country || ''
+            };
+            
+            setUserData(updatedUserData);
+            setFormData(updatedUserData);
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [isAuthenticated, user]);
   
   // Address management state
   const [addresses, setAddresses] = useState([
@@ -57,7 +91,7 @@ export default function Account() {
       id: 1,
       type: 'shipping',
       isDefault: true,
-      name: 'John Doe',
+      name: userData.firstName + ' ' + userData.lastName,
       street: '123 Main Street',
       city: 'New York',
       state: 'NY',
@@ -69,7 +103,7 @@ export default function Account() {
       id: 2,
       type: 'billing',
       isDefault: false,
-      name: 'John Doe',
+      name: userData.firstName + ' ' + userData.lastName,
       street: '123 Main Street',
       city: 'New York',
       state: 'NY',

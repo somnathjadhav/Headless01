@@ -78,24 +78,33 @@ export default async function handler(req, res) {
     // Try to find user by username or email using WordPress Users API
     console.log('🔐 Searching for user with:', email);
     
-    // First try to find by username
+    // First try to find by exact email match
     const usersResponse = await fetch(`${wordpressUrl}/wp-json/wp/v2/users?search=${encodeURIComponent(email)}`);
     
     if (usersResponse.ok) {
       const users = await usersResponse.json();
       if (users && users.length > 0) {
-        const wpUser = users[0];
-        user = {
-          id: wpUser.id,
-          name: wpUser.name,
-          email: wpUser.email || email,
-          slug: wpUser.slug,
-          first_name: wpUser.first_name || '',
-          last_name: wpUser.last_name || '',
-          roles: wpUser.roles || []
-        };
-        username = wpUser.slug;
-        console.log('🔐 Found WordPress user:', username);
+        // Find exact match by email or username
+        const wpUser = users.find(u => 
+          u.email === email || 
+          u.slug === email || 
+          u.name === email
+        ) || users[0]; // Fallback to first user if no exact match
+        
+        // Validate that this user actually exists and is active
+        if (wpUser && wpUser.id) {
+          user = {
+            id: wpUser.id,
+            name: wpUser.name,
+            email: wpUser.email || email,
+            slug: wpUser.slug,
+            first_name: wpUser.first_name || '',
+            last_name: wpUser.last_name || '',
+            roles: wpUser.roles || []
+          };
+          username = wpUser.slug;
+          console.log('🔐 Found WordPress user:', username, 'with ID:', wpUser.id);
+        }
       }
     }
 
@@ -143,7 +152,17 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('🔐 Found user:', username);
+    // Additional validation: Ensure user exists in WordPress database
+    if (!user.id || user.id <= 0) {
+      console.log('🔐 Invalid user ID for:', username);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email/username or password',
+        error: 'INVALID_USER'
+      });
+    }
+
+    console.log('🔐 Found valid user:', username, 'with ID:', user.id);
 
     // Now attempt to authenticate using WordPress login
     const loginUrl = `${wordpressUrl}/wp-login.php`;
@@ -164,16 +183,23 @@ export default async function handler(req, res) {
         redirect: 'manual' // Don't follow redirects
       });
 
-      // Check if login was successful by looking at cookies or response
+      // Check if login was successful by looking at cookies and response
       const cookies = loginResponse.headers.get('set-cookie');
       const responseText = await loginResponse.text();
       
-      // WordPress sets specific cookies on successful login
+      // More strict validation for successful login
       const isLoggedIn = cookies && (
-        cookies.includes('wordpress_logged_in_') || 
-        cookies.includes('wordpress_') ||
-        responseText.includes('Dashboard') ||
-        responseText.includes('wp-admin')
+        // Check for specific WordPress logged-in cookie
+        cookies.includes('wordpress_logged_in_') && 
+        // Ensure it's not an error response
+        !responseText.includes('ERROR') &&
+        !responseText.includes('Invalid username') &&
+        !responseText.includes('The password you entered') &&
+        !responseText.includes('Lost your password') &&
+        // Check for successful login indicators
+        (responseText.includes('Dashboard') || 
+         responseText.includes('wp-admin') ||
+         responseText.includes('Log out'))
       );
 
       if (isLoggedIn) {

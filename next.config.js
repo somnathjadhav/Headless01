@@ -121,7 +121,7 @@ const nextConfig = {
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://woo.local https://staging.eternitty.com https://www.google.com https://www.gstatic.com",
-              "frame-src 'self' https://www.google.com https://www.gstatic.com",
+              "frame-src 'self' https://www.google.com https://www.gstatic.com https://vercel.live",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",

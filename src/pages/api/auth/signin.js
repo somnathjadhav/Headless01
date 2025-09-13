@@ -187,21 +187,16 @@ export default async function handler(req, res) {
       const cookies = loginResponse.headers.get('set-cookie');
       const responseText = await loginResponse.text();
       
-      // More strict validation for successful login
+      // Validate successful login - rely primarily on the WordPress logged-in cookie
       const isLoggedIn = cookies && (
-        // Check for specific WordPress logged-in cookie
+        // Check for specific WordPress logged-in cookie (primary indicator)
         cookies.includes('wordpress_logged_in_') && 
-        // Ensure it's not an error response
+        // Ensure it's not an error response (be more specific about error patterns)
         !responseText.includes('ERROR') &&
         !responseText.includes('Invalid username') &&
-        !responseText.includes('The password you entered') &&
-        !responseText.includes('Lost your password') &&
-        // Check for successful login indicators (any one is sufficient)
-        (responseText.includes('Dashboard') || 
-         responseText.includes('wp-admin') ||
-         responseText.includes('Log out') ||
-         responseText.includes('wp-content') ||
-         responseText.includes('admin-bar'))
+        !responseText.includes('The password you entered for the username') &&
+        !responseText.includes('incorrect') &&
+        !responseText.includes('wrong')
       );
 
       if (isLoggedIn) {

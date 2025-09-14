@@ -25,9 +25,25 @@ export default async function handler(req, res) {
     }
     
     if (!headerFooterData) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Header/Footer data not found' 
+      // Provide fallback header/footer data when WordPress backend is not available
+      console.log('⚠️ WordPress backend not available, providing fallback header/footer data');
+      
+      const fallbackData = {
+        lightLogo: '/logo.svg',
+        darkLogo: '/logo.svg',
+        favicon: '/favicon.ico',
+        topHeaderText: 'Free shipping on orders over $50',
+        headerCtaText: 'Shop Now',
+        headerCtaLink: '/products',
+        footerContent: 'Your trusted e-commerce partner',
+        footerCopyrightText: '© 2024 Eternitty. All rights reserved.',
+        useWidgets: false
+      };
+
+      return res.status(200).json({
+        success: true,
+        data: fallbackData,
+        source: 'fallback'
       });
     }
 
@@ -59,8 +75,8 @@ export default async function handler(req, res) {
       }
     };
 
-    // Set cache headers
-    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    // Set cache headers for dynamic content
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     
     return res.status(200).json(response);
 

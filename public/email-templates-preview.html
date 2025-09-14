@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Templates Preview</title>
+    <title>Email Templates Preview - NextGen Ecommerce</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #f4f4f4;
@@ -14,66 +14,349 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .template-card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        .header {
+        .template-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 20px;
             text-align: center;
         }
-        .content {
-            padding: 40px;
+        .template-content {
+            padding: 20px;
         }
-        .template-section {
-            margin-bottom: 40px;
+        .email-preview {
             border: 1px solid #e9ecef;
             border-radius: 8px;
             overflow: hidden;
+            margin-top: 15px;
+            transform: scale(0.8);
+            transform-origin: top left;
+            width: 125%;
         }
-        .template-header {
-            background-color: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e9ecef;
-            font-weight: bold;
+        .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        .email-content {
+            padding: 40px 30px;
             color: #333;
         }
-        .template-preview {
-            padding: 20px;
-            background: white;
-        }
-        .btn {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin: 5px;
+        .email-footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
             font-size: 14px;
+            text-align: center;
         }
-        .btn:hover {
-            background: #5a6fd8;
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10B981 0%, #20c997 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .contact-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .contact-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .contact-info td {
+            padding: 8px 0;
+            vertical-align: top;
+        }
+        .contact-info td:first-child {
+            color: #666;
+            font-weight: 600;
+            width: 30%;
+        }
+        .contact-info td:last-child {
+            color: #333;
+        }
+        .contact-info a {
+            color: #17a2b8;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>NextGen Ecommerce</h1>
-            <p>Email Templates Preview</p>
+            <h1>📧 Email Templates Preview</h1>
+            <p>Dynamic branding system with WordPress backend integration</p>
         </div>
         
-        <div class="content">
-            <!-- Email Verification Template -->
-            <div class="template-section">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="color: #667eea; margin: 0 0 10px 0;">Contact & Support Templates</h2>
+            <p style="color: #666; margin: 0;">Templates for customer communication and support</p>
+        </div>
+        
+        <div class="template-grid">
+            <!-- Admin Contact Notification Template -->
+            <div class="template-card">
                 <div class="template-header">
-                    Email Verification Template
+                    <h3>📧 Admin Contact Notification</h3>
+                    <p>Notifies administrators of new contact form submissions</p>
                 </div>
-                <div class="template-preview">
+                <div class="template-content">
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Customer information table</li>
+                        <li>Clickable email/phone links</li>
+                        <li>Quick action buttons</li>
+                        <li>Professional layout</li>
+                    </ul>
+                    
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <h1>NextGen Ecommerce</h1>
+                        </div>
+                        <div class="email-content">
+                            <div style="text-align: center; margin-bottom: 30px;">
+                                <h2 style="color: #17a2b8; margin: 0 0 10px 0; font-size: 24px;">📧 New Contact Form Submission</h2>
+                                <p style="color: #666; margin: 0; font-size: 16px;">You have received a new message from your website contact form.</p>
+                            </div>
+                            
+                            <div class="alert-info">
+                                <p style="margin: 0; color: #0c5460; font-size: 16px; font-weight: 600;">
+                                    Customer inquiry requires your attention
+                                </p>
+                            </div>
+                            
+                            <div class="contact-info">
+                                <h3 style="margin: 0 0 15px 0; color: #333;">Customer Information:</h3>
+                                <table>
+                                    <tr>
+                                        <td>Name:</td>
+                                        <td>John Doe</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Email:</td>
+                                        <td><a href="mailto:john.doe@example.com">john.doe@example.com</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Phone:</td>
+                                        <td><a href="tel:+15551234567">+1 (555) 123-4567</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Inquiry Type:</td>
+                                        <td>Sales</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Subject:</td>
+                                        <td>Product Inquiry</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="margin: 0 0 15px 0; color: #333;">Message:</h3>
+                                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; border-left: 4px solid #17a2b8;">
+                                    <p style="margin: 0; color: #333; line-height: 1.6;">Hi, I'm interested in your premium products. Could you please provide more information about pricing and availability?</p>
+                                </div>
+                            </div>
+                            
+                            <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="margin: 0 0 15px 0; color: #1976d2;">Quick Actions:</h3>
+                                <div style="margin: 15px 0;">
+                                    <a href="mailto:john.doe@example.com?subject=Re: Product Inquiry" class="btn-info" style="margin-right: 10px;">Reply to Customer</a>
+                                    <a href="#" style="background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">View All Contacts</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="email-footer">
+                            <p style="margin: 0;">© 2024 NextGen Ecommerce. All rights reserved.</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">123 Business Street, Suite 100, New York, NY 10001, United States</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">
+                                <a href="mailto:support@example.com" style="color: #667eea; text-decoration: none;">support@example.com</a> | 
+                                <a href="tel:+15551234567" style="color: #667eea; text-decoration: none;">+1 (555) 123-4567</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thank You Contact Template -->
+            <div class="template-card">
+                <div class="template-header">
+                    <h3>🙏 Thank You Contact</h3>
+                    <p>Confirmation email sent to customers after contact form submission</p>
+                </div>
+                <div class="template-content">
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Welcome message with inquiry type</li>
+                        <li>Clear next steps and timeline</li>
+                        <li>Contact information for help</li>
+                        <li>Call-to-action buttons</li>
+                    </ul>
+                    
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <h1>NextGen Ecommerce</h1>
+                        </div>
+                        <div class="email-content">
+                            <div style="text-align: center; margin-bottom: 30px;">
+                                <h2 style="color: #10B981; margin: 0 0 10px 0; font-size: 24px;">🙏 Thank You for Contacting Us!</h2>
+                                <p style="color: #666; margin: 0; font-size: 16px;">Hello John Doe,</p>
+                            </div>
+                            
+                            <div class="alert-success">
+                                <p style="margin: 0; color: #155724; font-size: 16px; font-weight: 600;">
+                                    We've received your sales inquiry and will get back to you soon!
+                                </p>
+                            </div>
+                            
+                            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="margin: 0 0 15px 0; color: #333;">What happens next?</h3>
+                                <ul style="margin: 0; padding-left: 20px; color: #666;">
+                                    <li>Our team will review your message within 24 hours</li>
+                                    <li>We'll respond directly to your email: <strong>john.doe@example.com</strong></li>
+                                    <li>For urgent matters, you can call us at <strong>+1 (555) 123-4567</strong></li>
+                                    <li>Our business hours are: <strong>Monday - Friday: 9:00 AM - 6:00 PM</strong></li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="margin: 0 0 15px 0; color: #333;">Your Inquiry Summary:</h3>
+                                <p style="margin: 0 0 10px 0; color: #666;"><strong>Subject:</strong> Product Inquiry</p>
+                                <p style="margin: 0; color: #666;"><strong>Type:</strong> Sales Inquiry</p>
+                            </div>
+                            
+                            <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="margin: 0 0 15px 0; color: #1976d2;">While You Wait</h3>
+                                <p style="margin: 0 0 15px 0; color: #666;">
+                                    Explore our website and discover what makes NextGen Ecommerce special:
+                                </p>
+                                <ul style="margin: 0; padding-left: 20px; color: #666;">
+                                    <li>Browse our latest products and services</li>
+                                    <li>Read customer reviews and testimonials</li>
+                                    <li>Check out our FAQ section for quick answers</li>
+                                    <li>Follow us on social media for updates</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="margin: 25px 0; text-align: center;">
+                                <a href="#" class="btn-success">Visit Our Website</a>
+                            </div>
+                            
+                            <div class="contact-info">
+                                <h3 style="margin: 0 0 15px 0; color: #333;">Need Immediate Help?</h3>
+                                <p style="margin: 0 0 10px 0; color: #666;">
+                                    <strong>Email:</strong> <a href="mailto:support@example.com">support@example.com</a>
+                                </p>
+                                <p style="margin: 0; color: #666;">
+                                    <strong>Phone:</strong> <a href="tel:+15551234567">+1 (555) 123-4567</a>
+                                </p>
+                            </div>
+                            
+                            <div style="margin-top: 25px; padding: 15px; background-color: #d1ecf1; border: 1px solid #bee5eb; border-radius: 4px;">
+                                <p style="margin: 0; color: #0c5460; font-size: 14px;">
+                                    <strong>Thank you for choosing NextGen Ecommerce!</strong> We appreciate your interest and look forward to serving you.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="email-footer">
+                            <p style="margin: 0;">© 2024 NextGen Ecommerce. All rights reserved.</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">123 Business Street, Suite 100, New York, NY 10001, United States</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">
+                                <a href="mailto:support@example.com" style="color: #667eea; text-decoration: none;">support@example.com</a> | 
+                                <a href="tel:+15551234567" style="color: #667eea; text-decoration: none;">+1 (555) 123-4567</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="text-align: center; margin: 50px 0 30px 0;">
+            <h2 style="color: #10B981; margin: 0 0 10px 0;">Authentication & Account Templates</h2>
+            <p style="color: #666; margin: 0;">Templates for user authentication and account management</p>
+        </div>
+        
+        <div class="template-grid">
+            <!-- Email Verification Template -->
+            <div class="template-card">
+                <div class="template-header">
+                    <h3>✅ Email Verification</h3>
+                    <p>Sent to users for email address verification</p>
+                </div>
+                <div class="template-content">
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Verification button with gradient styling</li>
+                        <li>Alternative verification code</li>
+                        <li>Security notes and instructions</li>
+                        <li>Clear call-to-action</li>
+                    </ul>
+                    
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <h1>NextGen Ecommerce</h1>
+                        </div>
+                        <div class="email-content">
                     <div style="text-align: center; margin-bottom: 30px;">
                         <h2 style="color: #333; margin: 0 0 10px 0; font-size: 24px;">Verify Your Email Address</h2>
                         <p style="color: #666; margin: 0; font-size: 16px;">Hello John Doe,</p>
@@ -85,18 +368,7 @@
                         </p>
                         
                         <div style="margin: 25px 0;">
-                            <a href="#" 
-                               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                      color: #ffffff; 
-                                      padding: 15px 30px; 
-                                      text-decoration: none; 
-                                      border-radius: 6px; 
-                                      font-weight: 600; 
-                                      font-size: 16px; 
-                                      display: inline-block;
-                                      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
-                                Verify Email Address
-                            </a>
+                                    <a href="#" class="btn-primary">Verify Email Address</a>
                         </div>
                         
                         <p style="margin: 20px 0 0 0; color: #666; font-size: 14px;">
@@ -123,46 +395,52 @@
                             <li>Access exclusive deals and offers</li>
                         </ul>
                     </div>
-                    
-                    <div style="margin-top: 25px; padding: 15px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
-                        <p style="margin: 0; color: #856404; font-size: 14px;">
-                            <strong>Security Note:</strong> If you didn't create an account with us, please ignore this email. 
-                            Your email address will not be used without verification.
-                        </p>
+                        </div>
+                        <div class="email-footer">
+                            <p style="margin: 0;">© 2024 NextGen Ecommerce. All rights reserved.</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">123 Business Street, Suite 100, New York, NY 10001, United States</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">
+                                <a href="mailto:support@example.com" style="color: #667eea; text-decoration: none;">support@example.com</a> | 
+                                <a href="tel:+15551234567" style="color: #667eea; text-decoration: none;">+1 (555) 123-4567</a>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Welcome Template -->
-            <div class="template-section">
+            <div class="template-card">
                 <div class="template-header">
-                    Welcome Template (After Verification)
+                    <h3>🎉 Welcome Email</h3>
+                    <p>Sent after successful email verification</p>
                 </div>
-                <div class="template-preview">
+                <div class="template-content">
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Celebration message with emoji</li>
+                        <li>Account activation confirmation</li>
+                        <li>Feature highlights and benefits</li>
+                        <li>Call-to-action to start shopping</li>
+                    </ul>
+                    
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <h1>NextGen Ecommerce</h1>
+                        </div>
+                        <div class="email-content">
                     <div style="text-align: center; margin-bottom: 30px;">
-                        <h2 style="color: #28a745; margin: 0 0 10px 0; font-size: 24px;">🎉 Welcome to NextGen Ecommerce!</h2>
+                                <h2 style="color: #10B981; margin: 0 0 10px 0; font-size: 24px;">🎉 Welcome to NextGen Ecommerce!</h2>
                         <p style="color: #666; margin: 0; font-size: 16px;">Hello John Doe,</p>
                     </div>
                     
-                    <div style="background-color: #d4edda; padding: 25px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                            <div class="alert-success">
                         <p style="margin: 0; color: #155724; font-size: 16px; font-weight: 600;">
                             Your email has been successfully verified! Your account is now active.
                         </p>
                     </div>
                     
                     <div style="margin: 25px 0;">
-                        <a href="#" 
-                           style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); 
-                                  color: #ffffff; 
-                                  padding: 15px 30px; 
-                                  text-decoration: none; 
-                                  border-radius: 6px; 
-                                  font-weight: 600; 
-                                  font-size: 16px; 
-                                  display: inline-block;
-                                  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
-                            Start Shopping Now
-                        </a>
+                                <a href="#" class="btn-success">Start Shopping Now</a>
                     </div>
                     
                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -176,92 +454,166 @@
                         </ul>
                     </div>
                 </div>
-            </div>
-
-            <!-- Password Reset Template -->
-            <div class="template-section">
-                <div class="template-header">
-                    Password Reset Template
-                </div>
-                <div class="template-preview">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h2 style="color: #dc3545; margin: 0 0 10px 0; font-size: 24px;">Reset Your Password</h2>
-                        <p style="color: #666; margin: 0; font-size: 16px;">Hello John Doe,</p>
-                    </div>
-                    
-                    <div style="background-color: #f8f9fa; padding: 25px; border-radius: 8px; margin: 20px 0; text-align: center;">
-                        <p style="margin: 0 0 20px 0; color: #333; font-size: 16px;">
-                            We received a request to reset your password. Click the button below to create a new password.
-                        </p>
-                        
-                        <div style="margin: 25px 0;">
-                            <a href="#" 
-                               style="background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%); 
-                                      color: #ffffff; 
-                                      padding: 15px 30px; 
-                                      text-decoration: none; 
-                                      border-radius: 6px; 
-                                      font-weight: 600; 
-                                      font-size: 16px; 
-                                      display: inline-block;
-                                      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);">
-                                Reset Password
-                            </a>
+                        <div class="email-footer">
+                            <p style="margin: 0;">© 2024 NextGen Ecommerce. All rights reserved.</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">123 Business Street, Suite 100, New York, NY 10001, United States</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">
+                                <a href="mailto:support@example.com" style="color: #667eea; text-decoration: none;">support@example.com</a> | 
+                                <a href="tel:+15551234567" style="color: #667eea; text-decoration: none;">+1 (555) 123-4567</a>
+                            </p>
                         </div>
-                        
-                        <p style="margin: 20px 0 0 0; color: #666; font-size: 14px;">
-                            This link will expire in 1 hour.
-                        </p>
                     </div>
-                    
-                    <div style="margin-top: 25px; padding: 15px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
-                        <p style="margin: 0; color: #856404; font-size: 14px;">
-                            <strong>Security Note:</strong> If you didn't request this password reset, please ignore this email. 
-                            Your password will remain unchanged.
-                        </p>
                     </div>
                 </div>
             </div>
 
+        <div style="text-align: center; margin: 50px 0 30px 0;">
+            <h2 style="color: #F59E0B; margin: 0 0 10px 0;">E-commerce & Orders Templates</h2>
+            <p style="color: #666; margin: 0;">Templates for order management and payment processing</p>
+        </div>
+        
+        <div class="template-grid">
             <!-- Order Confirmation Template -->
-            <div class="template-section">
+            <div class="template-card">
                 <div class="template-header">
-                    Order Confirmation Template
+                    <h3>📦 Order Confirmation</h3>
+                    <p>Sent to customers when an order is confirmed</p>
                 </div>
-                <div class="template-preview">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h2 style="color: #28a745; margin: 0 0 10px 0; font-size: 24px;">✅ Order Confirmed!</h2>
-                        <p style="color: #666; margin: 0; font-size: 16px;">Hello John Doe,</p>
-                    </div>
+                <div class="template-content">
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Order details and items</li>
+                        <li>Total amount and payment info</li>
+                        <li>Estimated delivery timeline</li>
+                        <li>Order tracking information</li>
+                    </ul>
                     
-                    <div style="background-color: #d4edda; padding: 25px; border-radius: 8px; margin: 20px 0; text-align: center;">
-                        <p style="margin: 0; color: #155724; font-size: 16px; font-weight: 600;">
-                            Thank you for your order! Order #ORD-2024-001 has been confirmed.
-                        </p>
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <h1>NextGen Ecommerce</h1>
+                        </div>
+                        <div class="email-content">
+                            <div style="text-align: center; margin-bottom: 30px;">
+                                <h2 style="color: #10B981; margin: 0 0 10px 0; font-size: 24px;">✅ Order Confirmed!</h2>
+                                <p style="color: #666; margin: 0; font-size: 16px;">Hello John Doe,</p>
+                            </div>
+                            
+                            <div class="alert-success">
+                                <p style="margin: 0; color: #155724; font-size: 16px; font-weight: 600;">
+                                    Thank you for your order! Order #ORD-2024-001 has been confirmed.
+                                </p>
+                            </div>
+                            
+                            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="margin: 0 0 15px 0; color: #333;">Order Details:</h3>
+                                <ul>
+                                    <li>Premium Product A - Qty: 2 - $99.99 each</li>
+                                    <li>Premium Product B - Qty: 1 - $149.99</li>
+                                </ul>
+                                <p style="margin: 15px 0 0 0; font-weight: 600; color: #333;">Total: $349.97</p>
+                            </div>
+                            
+                            <p style="color: #666; font-size: 14px;">
+                                We'll send you another email when your order ships. You can track your order status anytime in your account.
+                            </p>
+                        </div>
+                        <div class="email-footer">
+                            <p style="margin: 0;">© 2024 NextGen Ecommerce. All rights reserved.</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">123 Business Street, Suite 100, New York, NY 10001, United States</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">
+                                <a href="mailto:support@example.com" style="color: #667eea; text-decoration: none;">support@example.com</a> | 
+                                <a href="tel:+15551234567" style="color: #667eea; text-decoration: none;">+1 (555) 123-4567</a>
+                            </p>
+                        </div>
                     </div>
-                    
-                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="margin: 0 0 15px 0; color: #333;">Order Details:</h3>
-                        <p>Product: Sample Product</p>
-                        <p>Quantity: 2</p>
-                        <p>Price: $29.99</p>
-                        <p style="margin: 15px 0 0 0; font-weight: 600; color: #333;">Total: $59.98</p>
-                    </div>
-                    
-                    <p style="color: #666; font-size: 14px;">
-                        We'll send you another email when your order ships. You can track your order status anytime in your account.
-                    </p>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 40px; text-align: center;">
-                <p style="margin: 0; color: #6c757d; font-size: 14px;">
-                    NextGen Ecommerce
-                </p>
-                <p style="margin: 10px 0 0 0; color: #6c757d; font-size: 12px;">
-                    221B MG Road, Sector 14, Pune 411001, Maharashtra, India
-                </p>
+            <!-- Order Shipped Template -->
+            <div class="template-card">
+                <div class="template-header">
+                    <h3>🚚 Order Shipped</h3>
+                    <p>Sent when an order has been shipped</p>
+                </div>
+                <div class="template-content">
+                    <p><strong>Features:</strong></p>
+                    <ul>
+                        <li>Tracking number and carrier info</li>
+                        <li>Estimated delivery date</li>
+                        <li>Shipping address confirmation</li>
+                        <li>Delivery instructions</li>
+                    </ul>
+                    
+                    <div class="email-preview">
+                        <div class="email-header">
+                            <h1>NextGen Ecommerce</h1>
+                        </div>
+                        <div class="email-content">
+                            <div style="text-align: center; margin-bottom: 30px;">
+                                <h2 style="color: #17a2b8; margin: 0 0 10px 0; font-size: 24px;">🚚 Your Order Has Shipped!</h2>
+                                <p style="color: #666; margin: 0; font-size: 16px;">Hello John Doe,</p>
+                            </div>
+                            
+                            <div class="alert-info">
+                                <p style="margin: 0; color: #0c5460; font-size: 16px; font-weight: 600;">
+                                    Great news! Your order #ORD-2024-001 is on its way to you.
+                                </p>
+                            </div>
+                            
+                            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="margin: 0 0 15px 0; color: #333;">Shipping Details:</h3>
+                                <p style="margin: 0 0 10px 0; color: #666;"><strong>Order Number:</strong> ORD-2024-001</p>
+                                <p style="margin: 0 0 10px 0; color: #666;"><strong>Tracking Number:</strong> TRK123456789</p>
+                                <p style="margin: 0; color: #666;"><strong>Estimated Delivery:</strong> December 25, 2024</p>
+                            </div>
+                            
+                            <p style="color: #666; font-size: 14px;">
+                                You can track your package using the tracking number above. We'll send you another email when your order is delivered.
+                            </p>
+                        </div>
+                        <div class="email-footer">
+                            <p style="margin: 0;">© 2024 NextGen Ecommerce. All rights reserved.</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">123 Business Street, Suite 100, New York, NY 10001, United States</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">
+                                <a href="mailto:support@example.com" style="color: #667eea; text-decoration: none;">support@example.com</a> | 
+                                <a href="tel:+15551234567" style="color: #667eea; text-decoration: none;">+1 (555) 123-4567</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h3>🎨 Dynamic Branding Features</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div>
+                    <h4>WordPress Integration</h4>
+                    <ul style="text-align: left; color: #666;">
+                        <li>Site name & description</li>
+                        <li>Contact information</li>
+                        <li>Theme colors</li>
+                        <li>Business hours</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Responsive Design</h4>
+                    <ul style="text-align: left; color: #666;">
+                        <li>Mobile-friendly layouts</li>
+                        <li>Consistent styling</li>
+                        <li>Professional appearance</li>
+                        <li>Accessibility features</li>
+                    </ul>
+                    </div>
+                <div>
+                    <h4>Fallback Support</h4>
+                    <ul style="text-align: left; color: #666;">
+                        <li>Environment variables</li>
+                        <li>Default values</li>
+                        <li>Always works</li>
+                        <li>No broken emails</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

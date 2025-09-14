@@ -10,6 +10,7 @@ import { useThemeOptions } from '../../hooks/useThemeOptions';
 import { useSiteInfo } from '../../hooks/useSiteInfo';
 import { useFavicon } from '../../hooks/useFavicon';
 import { useHeaderFooter } from '../../hooks/useHeaderFooter';
+import { useMainMenu } from '../../hooks/useMainMenu';
 import { wooCommerceUtils } from '../../lib/woocommerce';
 import { 
   ChevronLeftIcon, 
@@ -52,6 +53,9 @@ export default function Header() {
   
   // Header/footer settings from WordPress backend
   const headerFooterData = useHeaderFooter();
+  
+  // WordPress main menu
+  const { menuData: mainMenu, loading: menuLoading } = useMainMenu();
   
   // Direct logo state for immediate loading
   const [directLogo, setDirectLogo] = useState('http://localhost:10008/wp-content/uploads/2025/09/logoipsum-373.svg');
@@ -147,44 +151,41 @@ export default function Header() {
     router.push('/');
   }, [logout, router]);
 
-  // Navigation items with dropdown support
-  const navigationItems = [
-    { name: 'Home', href: '/', hasDropdown: true },
-    { 
-      name: 'Shop', 
-      href: '/products', 
-      hasDropdown: true,
-      dropdownItems: [
-        { name: 'All Products', href: '/products' },
-        { name: 'Categories', href: '/categories' },
-        { name: 'Tags', href: '/tags' },
-        { name: 'Brands', href: '/brands' },
-        { name: 'New Arrivals', href: '/products?filter=new' },
-        { name: 'Popular Items', href: '/products?filter=popular' },
-        { name: 'Trending Now', href: '/products?filter=trending' },
-        { name: 'Featured Products', href: '/products?filter=featured' },
-        { name: 'On Sale', href: '/products?filter=on_sale' }
-      ]
-    },
-    { 
-      name: 'Pages', 
-      href: '/pages', 
-      hasDropdown: true,
-      dropdownItems: [
-        { name: 'Typography & Colors', href: '/typography' },
-        { name: 'Color Scheme Preview', href: '/products-color-preview' },
-        { name: 'Color Comparison', href: '/color-comparison' },
-        { name: 'Cart Debug', href: '/cart-debug' },
-        { name: 'About Us', href: '/about' },
-        { name: 'Contact Us', href: '/contact' },
-        { name: 'FAQ', href: '/faq' },
-        { name: 'Terms of Use', href: '/terms' },
-        { name: 'Privacy Policy', href: '/privacy' }
-      ]
-    },
-    { name: 'Blog', href: '/blog', hasDropdown: true },
-    { name: 'Sale', href: '/sale', hasDropdown: true, isHot: true }
+  // Convert WordPress menu items to navigation format
+  const convertMenuItemsToNavigation = (menuItems) => {
+    if (!menuItems || !Array.isArray(menuItems)) return [];
+    
+    return menuItems.map(item => ({
+      name: item.title,
+      href: item.url,
+      hasDropdown: item.children && item.children.length > 0,
+      dropdownItems: item.children ? item.children.map(child => ({
+        name: child.title,
+        href: child.url
+      })) : undefined,
+      isHot: item.title.toLowerCase().includes('sale') || item.title.toLowerCase().includes('hot')
+    }));
+  };
+
+  // Default navigation items (fallback) - matches WordPress menu structure
+  const defaultNavigationItems = [
+    { name: 'Shop', href: '/products', hasDropdown: false },
+    { name: 'Kids', href: '/products?category=kids', hasDropdown: false },
+    { name: 'Men', href: '/products?category=men', hasDropdown: false },
+    { name: 'Women', href: '/products?category=women', hasDropdown: false },
+    { name: 'Contact Us', href: '/contact', hasDropdown: false }
   ];
+
+  // Use WordPress menu if available, otherwise use default
+  const navigationItems = mainMenu && mainMenu.items && mainMenu.items.length > 0 
+    ? convertMenuItemsToNavigation(mainMenu.items)
+    : [
+        { name: 'Shop', href: '/products', hasDropdown: false },
+        { name: 'Kids', href: '/products?category=kids', hasDropdown: false },
+        { name: 'Men', href: '/products?category=men', hasDropdown: false },
+        { name: 'Women', href: '/products?category=women', hasDropdown: false },
+        { name: 'Contact Us', href: '/contact', hasDropdown: false }
+      ];
 
   // Profile dropdown items based on authentication status
   const profileItems = isAuthenticated ? [
@@ -335,7 +336,8 @@ export default function Header() {
                 <div key={item.name} className="relative group">
                   <Link 
                     href={item.href} 
-                    className="flex items-center text-gray-700 hover:text-gray-900 font-medium py-2"
+                    className="flex items-center text-gray-700 hover:text-gray-900 font-normal py-2"
+                    style={{ fontSize: '15px', fontWeight: 400 }}
                   >
                     {item.name}
                     {item.isHot && (
@@ -385,14 +387,14 @@ export default function Header() {
             </nav>
             
             {/* Search Bar */}
-            <div className="hidden md:flex flex-1 max-w-md mx-8" ref={desktopSearchRef}>
+            <div className="hidden md:flex flex-1 max-w-xs mx-4" ref={desktopSearchRef}>
               <div className="relative w-full">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <SearchIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
-                  placeholder="I'm looking for..."
+                  placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onFocus={() => {
@@ -742,7 +744,8 @@ export default function Header() {
                 <div key={item.name}>
                   <Link
                     href={item.href}
-                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md"
+                    className="block px-3 py-2 font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md"
+                    style={{ fontSize: '15px', fontWeight: 400 }}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="flex items-center justify-between">

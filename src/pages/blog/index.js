@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { usePosts } from '../../hooks/usePosts'
+import { useBlogPage } from '../../hooks/useBlogPage'
 import SEO from '../../components/layout/SEO'
 import PageLayout from '../../components/layout/PageLayout'
 import LoadingSpinner from '../../components/ui/LoadingSpinner'
@@ -9,6 +10,7 @@ import ErrorMessage from '../../components/ui/ErrorMessage'
 
 export default function Blog() {
   const { posts, loading, error, fetchPosts, totalPages } = usePosts(6)
+  const { blogPage, loading: blogPageLoading, error: blogPageError } = useBlogPage()
   const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
@@ -20,7 +22,7 @@ export default function Blog() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  if (loading && posts.length === 0) {
+  if ((loading && posts.length === 0) || blogPageLoading) {
     return (
       <PageLayout>
         <div className="flex justify-center items-center min-h-96">
@@ -30,10 +32,10 @@ export default function Blog() {
     )
   }
 
-  if (error) {
+  if (error || blogPageError) {
     return (
       <PageLayout>
-        <ErrorMessage message="Failed to load blog posts. Please try again later." />
+        <ErrorMessage message="Failed to load blog content. Please try again later." />
       </PageLayout>
     )
   }
@@ -41,8 +43,8 @@ export default function Blog() {
   return (
     <>
       <SEO 
-        title="Blog - Latest Fashion & Style Tips"
-        description="Discover the latest fashion trends, style tips, and lifestyle advice from our expert team. Stay updated with fashion and culture insights."
+        title={blogPage?.title || "Blog - Latest Fashion & Style Tips"}
+        description={blogPage?.excerpt || "Discover the latest fashion trends, style tips, and lifestyle advice from our expert team. Stay updated with fashion and culture insights."}
         url="/blog"
         type="blog"
         keywords="fashion blog, style tips, fashion trends, lifestyle, fashion culture"
@@ -53,12 +55,21 @@ export default function Blog() {
           {/* Blog Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Fashion & Style Blog
+              {blogPage?.title || "Fashion & Style Blog"}
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Discover the latest fashion trends, style tips, and lifestyle advice from our expert team. 
-              Stay updated with fashion and culture insights.
-            </p>
+            <div className="text-xl text-gray-600 max-w-3xl mx-auto">
+              {blogPage?.content ? (
+                <div 
+                  className="prose prose-lg mx-auto"
+                  dangerouslySetInnerHTML={{ __html: blogPage.content }}
+                />
+              ) : (
+                <p>
+                  Discover the latest fashion trends, style tips, and lifestyle advice from our expert team. 
+                  Stay updated with fashion and culture insights.
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Blog Posts Grid */}

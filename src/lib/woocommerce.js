@@ -4,9 +4,9 @@ import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api';
  * WooCommerce REST API Client
  */
 export function createWooCommerceClient() {
-  const url = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://staging.eternitty.com/headless-woo';
-  const consumerKey = process.env.WOOCOMMERCE_CONSUMER_KEY || '';
-  const consumerSecret = process.env.WOOCOMMERCE_CONSUMER_SECRET || '';
+  const url = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:10008';
+  const consumerKey = process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_test';
+  const consumerSecret = process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_test';
   
   console.log('WooCommerce API Config:', {
     url,
@@ -16,8 +16,9 @@ export function createWooCommerceClient() {
     consumerSecretLength: consumerSecret.length
   });
   
-  if (!consumerKey || !consumerSecret) {
-    throw new Error('WooCommerce consumer key or secret is missing');
+  // For local development, allow fallback credentials
+  if (!consumerKey || !consumerSecret || consumerKey === 'ck_test') {
+    console.log('⚠️  Using fallback WooCommerce credentials for local development');
   }
   
   try {

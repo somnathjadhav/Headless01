@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useWooCommerce } from '../context/WooCommerceContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { useAddresses } from '../hooks/useAddresses';
 import PasswordStrengthMeter from '../components/ui/PasswordStrengthMeter';
 import PleaseSignIn from '../components/auth/PleaseSignIn';
 import TwoFactorAuth from '../components/auth/TwoFactorAuth';
@@ -26,6 +27,14 @@ export default function Account() {
   const { wishlist, addToCart, removeFromWishlist } = useWooCommerce();
   const { isAuthenticated, user, isInitializing } = useAuth();
   const { showSuccess, showError, showInfo } = useNotifications();
+  const { 
+    addresses, 
+    loading: addressesLoading, 
+    addAddress, 
+    updateAddress, 
+    deleteAddress, 
+    setDefaultAddress 
+  } = useAddresses();
   
   // Real orders data from WooCommerce
   const [orders, setOrders] = useState([]);
@@ -35,6 +44,8 @@ export default function Account() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
   
   // Order filtering state
   const [orderFilter, setOrderFilter] = useState('all');
@@ -101,8 +112,7 @@ export default function Account() {
     }
   };
 
-  // Address management state
-  const [addresses, setAddresses] = useState([]);
+  // Address management is now handled by useAddresses hook
   
   const [newAddress, setNewAddress] = useState({
     type: 'shipping',
@@ -210,7 +220,7 @@ export default function Account() {
               });
             }
             
-            setAddresses(userAddresses);
+            // Addresses are now managed by useAddresses hook
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -439,37 +449,59 @@ export default function Account() {
     }));
   };
   
-  const handleAddAddress = () => {
+  const handleAddAddress = async () => {
     if (newAddress.name && newAddress.street && newAddress.city && newAddress.state && newAddress.zipCode) {
-      const addressToAdd = {
-        ...newAddress,
-        id: Date.now(),
-        isDefault: addresses.length === 0
-      };
-      setAddresses(prev => [...prev, addressToAdd]);
-      setNewAddress({
-        type: 'shipping',
-        name: '',
-        street: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: 'United States',
-        phone: ''
-      });
-      setIsAddingAddress(false);
+      const success = await addAddress(newAddress);
+      if (success) {
+        setNewAddress({
+          type: 'shipping',
+          name: '',
+          street: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: 'United States',
+          phone: ''
+        });
+        setIsAddingAddress(false);
+      }
     }
   };
   
-  const handleDeleteAddress = (addressId) => {
-    setAddresses(prev => prev.filter(addr => addr.id !== addressId));
+  const handleDeleteAddress = async (addressId, addressType) => {
+    await deleteAddress(addressId, addressType);
   };
   
-  const handleSetDefaultAddress = (addressId) => {
-    setAddresses(prev => prev.map(addr => ({
-      ...addr,
-      isDefault: addr.id === addressId
-    })));
+  const handleSetDefaultAddress = async (addressId) => {
+    await setDefaultAddress(addressId);
+  };
+  
+  const handleEditAddress = (address) => {
+    setEditingAddress(address);
+    setIsEditingAddress(true);
+    setIsAddingAddress(false); // Close add form if open
+  };
+  
+  const handleUpdateAddress = async () => {
+    if (editingAddress && editingAddress.name && editingAddress.street && editingAddress.city && editingAddress.state && editingAddress.zipCode) {
+      const success = await updateAddress(editingAddress.id, editingAddress);
+      if (success) {
+        setIsEditingAddress(false);
+        setEditingAddress(null);
+      }
+    }
+  };
+  
+  const handleCancelEdit = () => {
+    setIsEditingAddress(false);
+    setEditingAddress(null);
+  };
+  
+  // Function to clear all addresses (useful for testing or user request)
+  const clearAllAddresses = () => {
+    setAddresses([]);
+    localStorage.removeItem('userAddresses');
+    showSuccess('All addresses cleared');
   };
 
   const tabs = [
@@ -1344,6 +1376,9 @@ export default function Account() {
                                         src={item.image || '/placeholder-product.svg'}
                                 alt={item.name}
                                         className="w-12 h-12 object-cover"
+                                        onError={(e) => {
+                                          e.target.src = '/placeholder-product.svg';
+                                        }}
                                       />
                                       {item.quantity > 1 && (
                                         <div className="absolute -top-1 -right-1 w-4 h-4 bg-black text-white text-xs rounded-full flex items-center justify-center font-medium">
@@ -1381,7 +1416,7 @@ export default function Account() {
 
                             {/* Compact Order Footer */}
                             <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-100">
-                              <div className="flex items-center space-x-4 text-xs text-gray-600">
+                              <div className="flex items-center space-x-4 text-gray-500" style={{ fontSize: '11px' }}>
                                 {order.paymentMethod && (
                                   <div className="flex items-center space-x-1">
                                     <CreditCardIcon className="w-3 h-3" />
@@ -1474,6 +1509,9 @@ export default function Account() {
                             src={item.images?.[0]?.src || '/placeholder-product.svg'}
                             alt={item.name}
                                 className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                                onError={(e) => {
+                                  e.target.src = '/placeholder-product.svg';
+                                }}
                           />
                         </Link>
                             {/* Wishlist Remove Button */}
@@ -1579,11 +1617,21 @@ export default function Account() {
             {activeTab === 'addresses' && (
               <div className="bg-white rounded-lg shadow-sm border p-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-medium text-gray-900">My Addresses</h2>
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-900">My Addresses</h2>
+                    <p className="text-sm text-gray-500 mt-1">Manage your shipping and billing addresses</p>
+                  </div>
                   <button 
                     onClick={() => setIsAddingAddress(!isAddingAddress)}
-                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                    className={`inline-flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                      isAddingAddress 
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' 
+                        : 'bg-black text-white hover:bg-gray-800'
+                    }`}
                   >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
                     {isAddingAddress ? 'Cancel' : 'Add New Address'}
                   </button>
                 </div>
@@ -1711,68 +1759,253 @@ export default function Account() {
                     </div>
                   )}
 
-                  {/* Display Existing Addresses */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {addresses.map((address) => (
-                      <div key={address.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-3">
+                  {/* Edit Address Form */}
+                  {isEditingAddress && editingAddress && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Address</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <h3 className="text-sm font-medium text-gray-900 mb-1">
-                            {address.type === 'shipping' ? 'Shipping Address' : 'Billing Address'}
-                            {address.isDefault && <span className="ml-2 text-xs text-green-600">(Default)</span>}
-                          </h3>
-                          <div className="space-y-1 text-xs text-gray-600">
-                            <p>{address.name}</p>
-                            <p>{address.street}</p>
-                            <p>{address.city}, {address.state} {address.zipCode}</p>
-                            <p>{address.country}</p>
-                            {address.phone && <p>{address.phone}</p>}
-                          </div>
+                          <label htmlFor="editAddressType" className="block text-sm font-medium text-gray-700 mb-2">
+                            Address Type
+                          </label>
+                          <select
+                            id="editAddressType"
+                            name="type"
+                            value={editingAddress.type}
+                            onChange={(e) => setEditingAddress({...editingAddress, type: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                          >
+                            <option value="shipping">Shipping Address</option>
+                            <option value="billing">Billing Address</option>
+                          </select>
                         </div>
-                        <div className="flex space-x-2">
-                          <button 
-                            onClick={() => handleSetDefaultAddress(address.id)}
-                            className="text-black hover:text-gray-800 text-xs font-medium"
-                          >
-                            {address.isDefault ? 'Default' : 'Set Default'}
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteAddress(address.id)}
-                            className="text-red-600 hover:text-red-800 text-xs font-medium"
-                          >
-                            Delete
-                          </button>
+                        <div>
+                          <label htmlFor="editAddressName" className="block text-sm font-medium text-gray-700 mb-2">
+                            Full Name
+                          </label>
+                          <input
+                            id="editAddressName"
+                            type="text"
+                            name="name"
+                            value={editingAddress.name}
+                            onChange={(e) => setEditingAddress({...editingAddress, name: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter full name"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label htmlFor="editAddressStreet" className="block text-sm font-medium text-gray-700 mb-2">
+                            Street Address
+                          </label>
+                          <input
+                            id="editAddressStreet"
+                            type="text"
+                            name="street"
+                            value={editingAddress.street}
+                            onChange={(e) => setEditingAddress({...editingAddress, street: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter street address"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="editAddressCity" className="block text-sm font-medium text-gray-700 mb-2">
+                            City
+                          </label>
+                          <input
+                            id="editAddressCity"
+                            type="text"
+                            name="city"
+                            value={editingAddress.city}
+                            onChange={(e) => setEditingAddress({...editingAddress, city: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter city"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="editAddressState" className="block text-sm font-medium text-gray-700 mb-2">
+                            State/Province
+                          </label>
+                          <input
+                            id="editAddressState"
+                            type="text"
+                            name="state"
+                            value={editingAddress.state}
+                            onChange={(e) => setEditingAddress({...editingAddress, state: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter state/province"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="editAddressZipCode" className="block text-sm font-medium text-gray-700 mb-2">
+                            ZIP/Postal Code
+                          </label>
+                          <input
+                            id="editAddressZipCode"
+                            type="text"
+                            name="zipCode"
+                            value={editingAddress.zipCode}
+                            onChange={(e) => setEditingAddress({...editingAddress, zipCode: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter ZIP code"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="editAddressPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                            Phone Number
+                          </label>
+                          <input
+                            id="editAddressPhone"
+                            type="tel"
+                            name="phone"
+                            value={editingAddress.phone}
+                            onChange={(e) => setEditingAddress({...editingAddress, phone: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                            placeholder="Enter phone number"
+                          />
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        {address.isDefault && (
-                          <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-lg">Default</span>
-                        )}
-                        <span className={`px-3 py-1 text-xs font-medium rounded-lg ${
-                          address.type === 'shipping' 
-                            ? 'bg-gray-100 text-gray-800' 
-                            : 'bg-purple-100 text-purple-800'
-                        }`}>
-                          {address.type === 'shipping' ? 'Shipping' : 'Billing'}
-                        </span>
+                      <div className="flex space-x-3 mt-6">
+                        <button
+                          onClick={handleUpdateAddress}
+                          className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                        >
+                          Update Address
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </div>
-                  ))}
-                  </div>
+                  )}
+
+                  {/* Display Existing Addresses */}
+                  {!isEditingAddress && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {addresses.map((address) => (
+                        <div key={address.id} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 relative">
+                        {/* Header with icon and actions */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              address.type === 'shipping' 
+                                ? 'bg-blue-100' 
+                                : 'bg-purple-100'
+                            }`}>
+                              <MapPinIcon className={`w-5 h-5 ${
+                                address.type === 'shipping' 
+                                  ? 'text-blue-600' 
+                                  : 'text-purple-600'
+                              }`} />
+                            </div>
+                            <div>
+                              <h3 className="text-base font-semibold text-gray-900">
+                                {address.type === 'shipping' ? 'Shipping Address' : 'Billing Address'}
+                              </h3>
+                              {address.isDefault && (
+                                <div className="flex items-center space-x-1 mt-1">
+                                  <CheckIcon className="w-3 h-3 text-green-600" />
+                                  <span className="text-xs text-green-600 font-medium">Default Address</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Action buttons */}
+                          <div className="flex items-center space-x-1">
+                            <button 
+                              onClick={() => handleEditAddress(address)}
+                              className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200"
+                              title="Edit address"
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => handleSetDefaultAddress(address.id)}
+                              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                                address.isDefault 
+                                  ? 'bg-green-100 text-green-700 cursor-default' 
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                              disabled={address.isDefault}
+                            >
+                              {address.isDefault ? 'Default' : 'Set Default'}
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteAddress(address.id, address.type)}
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete address"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Address details */}
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center space-x-2">
+                            <UserIcon className="w-4 h-4 text-gray-400" />
+                            <p className="text-sm font-medium text-gray-900">{address.name}</p>
+                          </div>
+                          <div className="flex items-start space-x-2">
+                            <MapPinIcon className="w-4 h-4 text-gray-400 mt-0.5" />
+                            <div className="text-sm text-gray-600">
+                              <p>{address.street}</p>
+                              <p>{address.city}, {address.state} {address.zipCode}</p>
+                              <p>{address.country}</p>
+                            </div>
+                          </div>
+                          {address.phone && (
+                            <div className="flex items-center space-x-2">
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              <p className="text-sm text-gray-600">{address.phone}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tags */}
+                        <div className="flex items-center space-x-2">
+                          {address.isDefault && (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <CheckIcon className="w-3 h-3 mr-1" />
+                              Default
+                            </span>
+                          )}
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                            address.type === 'shipping' 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-purple-100 text-purple-800'
+                          }`}>
+                            {address.type === 'shipping' ? 'Shipping' : 'Billing'}
+                          </span>
+                        </div>
+                      </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Empty State */}
-                  {addresses.length === 0 && !isAddingAddress && (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <MapPinIcon className="w-6 h-6 text-gray-400" />
+                  {addresses.length === 0 && !isAddingAddress && !isEditingAddress && (
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center bg-gray-50">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <MapPinIcon className="w-8 h-8 text-gray-400" />
                       </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">No addresses yet</h3>
-                      <p className="text-gray-500 mb-4">Add your first address to get started</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No addresses yet</h3>
+                      <p className="text-gray-500 mb-6 max-w-sm mx-auto">Add your shipping and billing addresses to make checkout faster and easier.</p>
                       <button 
                         onClick={() => setIsAddingAddress(true)}
-                        className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
+                        className="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm"
                       >
-                        Add Address
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add Your First Address
                       </button>
                     </div>
                   )}
@@ -2342,6 +2575,9 @@ export default function Account() {
                             src={item.image || '/placeholder-product.svg'}
                             alt={item.name}
                             className="w-16 h-16 object-cover rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                            onError={(e) => {
+                              e.target.src = '/placeholder-product.svg';
+                            }}
                           />
                         </Link>
                         <div className="flex-1 min-w-0">

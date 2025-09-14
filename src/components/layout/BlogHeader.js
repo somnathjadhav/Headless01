@@ -249,7 +249,8 @@ export default function BlogHeader() {
                 <div key={item.name} className="relative group">
                   <Link 
                     href={item.href} 
-                    className="flex items-center text-gray-700 hover:text-gray-900 font-medium py-2"
+                    className="flex items-center text-gray-700 hover:text-gray-900 font-normal py-2"
+                    style={{ fontSize: '15px', fontWeight: 400 }}
                   >
                     {item.name}
                     {item.isHot && (
@@ -299,14 +300,14 @@ export default function BlogHeader() {
             </nav>
             
             {/* Search Bar */}
-            <div className="hidden md:flex flex-1 max-w-md mx-8" ref={desktopSearchRef}>
+            <div className="hidden md:flex flex-1 max-w-xs mx-4" ref={desktopSearchRef}>
               <div className="relative w-full">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <SearchIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
-                  placeholder="I'm looking for..."
+                  placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onFocus={() => {
@@ -656,7 +657,8 @@ export default function BlogHeader() {
                 <div key={item.name}>
                   <Link
                     href={item.href}
-                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md"
+                    className="block px-3 py-2 font-normal text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md"
+                    style={{ fontSize: '15px', fontWeight: 400 }}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="flex items-center justify-between">

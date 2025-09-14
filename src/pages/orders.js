@@ -280,18 +280,18 @@ export default function Orders() {
                   {/* Order Actions */}
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <div className="flex items-center space-x-4 text-gray-500" style={{ fontSize: '11px' }}>
                         <div className="flex items-center space-x-1">
-                          <MapPinIcon className="w-4 h-4" />
+                          <MapPinIcon className="w-3 h-3" />
                           <span>{order.shipping?.city || 'N/A'}, {order.shipping?.state || 'N/A'}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <CreditCardIcon className="w-4 h-4" />
+                          <CreditCardIcon className="w-3 h-3" />
                           <span>{order.paymentMethod}</span>
                         </div>
                         {order.trackingNumber && (
                           <div className="flex items-center space-x-1">
-                            <TruckIcon className="w-4 h-4" />
+                            <TruckIcon className="w-3 h-3" />
                             <span>Track: {order.trackingNumber}</span>
                           </div>
                         )}
@@ -437,6 +437,9 @@ export default function Orders() {
                             src={item.image || '/placeholder-product.svg'}
                             alt={item.name}
                             className="w-16 h-16 object-cover rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                            onError={(e) => {
+                              e.target.src = '/placeholder-product.svg';
+                            }}
                           />
                         </Link>
                         <div className="flex-1 min-w-0">

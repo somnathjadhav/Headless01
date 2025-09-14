@@ -124,29 +124,29 @@ const SessionManagement = () => {
 
   return (
     <div>
-      <h3 className="text-sm font-medium text-gray-900 mb-4 flex items-center">
-        <svg className="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <h3 className="text-base font-medium text-gray-900 mb-6 flex items-center">
+        <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
         Active Login Sessions
       </h3>
       
       <div className="bg-gray-50 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <ComputerDesktopIcon className="h-4 w-4 text-blue-600" />
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <ComputerDesktopIcon className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h4 className="text-xs font-medium text-gray-900">Active Login Sessions</h4>
-              <p className="text-xs text-gray-500">Manage your active sessions across devices</p>
+              <h4 className="text-sm font-medium text-gray-900">Active Login Sessions</h4>
+              <p className="text-sm text-gray-500">Manage your active sessions across devices</p>
             </div>
           </div>
           
           {sessions.length > 1 && (
             <button
               onClick={terminateAllOtherSessions}
-              className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium text-xs"
+              className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm"
             >
               End All Other Sessions
             </button>
@@ -163,15 +163,15 @@ const SessionManagement = () => {
             sessions.map((session) => (
               <div
                 key={session.id}
-                className={`p-3 rounded-lg border transition-all duration-200 ${
+                className={`p-4 rounded-lg border transition-all duration-200 ${
                   session.isCurrent
                     ? 'bg-green-50 border-green-200'
                     : 'bg-white border-gray-200 hover:bg-gray-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-lg ${
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                       session.isCurrent ? 'bg-green-100' : 'bg-gray-100'
                     }`}>
                       {getDeviceIcon(session.userAgent)}
@@ -189,7 +189,7 @@ const SessionManagement = () => {
                         )}
                       </div>
                       
-                      <div className="flex items-center space-x-3 text-xs text-gray-500 mt-1">
+                      <div className="flex items-center space-x-3 text-gray-500 mt-1" style={{ fontSize: '14px' }}>
                         <span>{session.location || 'Unknown Location'}</span>
                         <span>•</span>
                         <span>{session.ipAddress}</span>
@@ -205,7 +205,7 @@ const SessionManagement = () => {
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                       title="Terminate session"
                     >
-                      <TrashIcon className="h-3 w-3" />
+                      <TrashIcon className="h-4 w-4" />
                     </button>
                   )}
                 </div>
@@ -214,12 +214,12 @@ const SessionManagement = () => {
           )}
         </div>
 
-        <div className="mt-4 bg-blue-50 rounded-lg p-3 border border-blue-100">
+        <div className="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-100">
           <div className="flex items-start space-x-3">
-            <GlobeAltIcon className="h-4 w-4 text-blue-600 mt-0.5" />
+            <GlobeAltIcon className="h-5 w-5 text-blue-600 mt-0.5" />
             <div>
-              <h5 className="font-medium text-gray-900 text-xs">Security Tips</h5>
-              <ul className="text-xs text-gray-600 mt-1 space-y-1">
+              <h5 className="font-medium text-gray-900 text-sm">Security Tips</h5>
+              <ul className="text-sm text-gray-600 mt-2 space-y-1">
                 <li>• Review your active sessions regularly</li>
                 <li>• End sessions from devices you no longer use</li>
                 <li>• If you see unfamiliar sessions, change your password immediately</li>

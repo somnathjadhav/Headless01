@@ -295,17 +295,69 @@ export default function RelatedProducts({ productId, categoryId }) {
 
                 {/* Color Swatches */}
                 {colorAttributes.length > 0 && (
-                  <div className="flex items-center space-x-2">
-                    {colorAttributes[0].options?.slice(0, 3).map((color, index) => (
-                      <button
-                        key={index}
-                        className={`w-4 h-4 rounded-full border-2 ${
-                          index === 0 ? 'border-gray-900' : 'border-gray-300'
-                        }`}
-                        style={{ backgroundColor: color.toLowerCase() }}
-                        title={color}
-                      />
-                    ))}
+                  <div className="flex items-center space-x-1 flex-wrap">
+                    {colorAttributes[0].options?.map((color, index) => {
+                      // Convert color name to CSS color value
+                      const getColorValue = (colorName) => {
+                        const colorMap = {
+                          'white': '#FFFFFF',
+                          'black': '#000000',
+                          'red': '#EF4444',
+                          'blue': '#3B82F6',
+                          'green': '#10B981',
+                          'yellow': '#F59E0B',
+                          'purple': '#8B5CF6',
+                          'pink': '#EC4899',
+                          'gray': '#6B7280',
+                          'grey': '#6B7280',
+                          'brown': '#92400E',
+                          'orange': '#F97316',
+                          'navy': '#1E3A8A',
+                          'beige': '#F5F5DC',
+                          'cream': '#FFFDD0',
+                          'classic blue': '#1E40AF',
+                          'light blue': '#60A5FA',
+                          'dark blue': '#1E3A8A',
+                          'maroon': '#7C2D12',
+                          'burgundy': '#7C2D12',
+                          'teal': '#0D9488',
+                          'lime': '#84CC16',
+                          'indigo': '#4F46E5',
+                          'violet': '#7C3AED',
+                          'cyan': '#06B6D4',
+                          'magenta': '#D946EF',
+                          'olive': '#65A30D',
+                          'coral': '#FF6B6B',
+                          'salmon': '#FB7185',
+                          'turquoise': '#14B8A6',
+                          'gold': '#F59E0B',
+                          'silver': '#9CA3AF',
+                          'bronze': '#CD7F32',
+                          'copper': '#B87333'
+                        };
+                        
+                        const normalizedColor = colorName.toLowerCase().trim();
+                        return colorMap[normalizedColor] || '#6B7280'; // Default gray if color not found
+                      };
+
+                      const colorValue = getColorValue(color);
+                      
+                      return (
+                        <button
+                          key={index}
+                          className={`w-4 h-4 rounded-full border-2 ${
+                            index === 0 ? 'border-gray-900' : 'border-gray-300'
+                          } hover:border-gray-500 transition-colors`}
+                          style={{ backgroundColor: colorValue }}
+                          title={color}
+                        />
+                      );
+                    })}
+                    {colorAttributes[0].options?.length > 4 && (
+                      <span className="text-xs text-gray-500 ml-1">
+                        +{colorAttributes[0].options.length - 4} more
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

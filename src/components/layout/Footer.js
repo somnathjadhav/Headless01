@@ -1,21 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useGlobalTypography } from '../../hooks/useGlobalTypography';
 import { useSiteInfo } from '../../hooks/useSiteInfo';
+import { useHeaderFooter } from '../../hooks/useHeaderFooter';
+import { useLegalPages } from '../../hooks/useLegalPages';
 import { 
   FacebookIcon, 
   InstagramIcon, 
   TikTokIcon, 
   YouTubeIcon, 
-  SnapchatIcon,
-  AmexIcon,
-  KlarnaIcon,
-  CirrusIcon,
-  MastercardIcon,
-  WesternUnionIcon,
-  VisaIcon,
-  PayPalIcon,
-  ChevronDownIcon
+  SnapchatIcon
 } from '../icons';
 
 export default function Footer() {
@@ -25,9 +19,22 @@ export default function Footer() {
   // Site info from WordPress backend
   const siteInfo = useSiteInfo();
   
+  // Header/footer settings from WordPress backend
+  const { footerCopyrightText, refresh } = useHeaderFooter();
+  
+  // Menu items from WordPress backend
+  const { menuItems, loading: menuItemsLoading } = useLegalPages();
+  
   const [email, setEmail] = useState('');
-  const [language, setLanguage] = useState('English');
-  const [currency, setCurrency] = useState('United States (USD $)');
+
+  // Auto-refresh header/footer data every 30 seconds to keep copyright text dynamic
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refresh();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [refresh]);
 
   const handleNewsletterSubmit = (e) => {
     e.preventDefault();
@@ -201,44 +208,45 @@ export default function Footer() {
       <div className="border-t border-gray-200 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            
-            {/* Left Side - Language, Currency, Copyright */}
-            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6">
-              {/* Language Selector */}
-              <div className="relative">
-                <button className="flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors">
-                  {language}
-                  <ChevronDownIcon className="w-4 h-4 ml-1" />
-                </button>
-              </div>
-              
-              {/* Currency Selector */}
-              <div className="relative">
-                <button className="flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors">
-                  <span className="mr-2">🇺🇸</span>
-                  {currency}
-                  <ChevronDownIcon className="w-4 h-4 ml-1" />
-                </button>
-              </div>
-              
-              {/* Copyright */}
+            {/* Left Side - Copyright */}
+            <div className="flex justify-center md:justify-start">
               <p className="text-sm text-gray-600">
-                © 2025 {siteInfo.name || 'NextGen Ecommerce'}. All rights reserved.
+                © 2025 Headless By Eternitty. All Rights Reserved.
               </p>
             </div>
             
-            {/* Right Side - Payment Methods */}
-            <div className="flex items-center space-x-4">
-              {/* Payment Method Icons */}
-              <div className="flex items-center space-x-2">
-                <AmexIcon className="w-8 h-5 text-gray-600" />
-                <KlarnaIcon className="w-8 h-5 text-gray-600" />
-                <CirrusIcon className="w-8 h-5 text-gray-600" />
-                <MastercardIcon className="w-8 h-5 text-gray-600" />
-                <WesternUnionIcon className="w-8 h-5 text-gray-600" />
-                <VisaIcon className="w-8 h-5 text-gray-600" />
-                <PayPalIcon className="w-8 h-5 text-gray-600" />
-              </div>
+            {/* Right Side - WordPress Menu Items */}
+            <div className="flex flex-wrap justify-center md:justify-end items-center gap-x-4 gap-y-2">
+              {!menuItemsLoading && menuItems.length > 0 ? (
+                menuItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={item.url}
+                    className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                    target={item.target === '_blank' ? '_blank' : '_self'}
+                    rel={item.target === '_blank' ? 'noopener noreferrer' : undefined}
+                  >
+                    {item.title}
+                  </Link>
+                ))
+              ) : (
+                // Fallback menu items while loading or if no items found
+                // These match the WordPress "Footer - Legal Pages" menu exactly
+                <>
+                  <Link href="/legal/privacy-policy" className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
+                    Privacy Policy
+                  </Link>
+                  <Link href="/legal/terms-conditions" className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
+                    Terms & Conditions
+                  </Link>
+                  <Link href="/legal/disclaimer" className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
+                    Disclaimer
+                  </Link>
+                  <Link href="/legal/refund_returns" className="text-sm text-gray-600 hover:text-gray-800 transition-colors">
+                    Refund and Returns Policy
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

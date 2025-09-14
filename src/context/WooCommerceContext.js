@@ -355,6 +355,7 @@ export function WooCommerceProvider({ children }) {
       sortOrder: state.sortOrder,
       filterType: state.filterType
     });
+    console.log('🔍 About to make API call to /api/products');
     
     try {
       dispatch({ type: actionTypes.SET_LOADING, payload: true });
@@ -415,7 +416,74 @@ export function WooCommerceProvider({ children }) {
       console.error('Error in fetchProducts:', error);
       dispatch({ type: actionTypes.SET_ERROR, payload: error.message });
     }
-  }, [dispatch, state.currentCategory, state.searchTerm, state.sortBy, state.sortOrder, state.filterType]);
+  }, [dispatch]);
+
+  /**
+   * Fetch products with specific category
+   */
+  const fetchProductsWithCategory = useCallback(async (page = 1, category = null) => {
+    console.log('🔍 fetchProductsWithCategory called with page:', page, 'category:', category);
+    
+    try {
+      dispatch({ type: actionTypes.SET_LOADING, payload: true });
+      
+      const params = {
+        per_page: 12,
+        page,
+        category: category ? category.id : '',
+        search: state.searchTerm || '',
+        orderby: state.sortBy || 'date',
+        order: state.sortOrder || 'desc'
+      };
+
+      // Handle filter type
+      if (state.filterType) {
+        switch (state.filterType) {
+          case 'new':
+            params.orderby = 'date';
+            params.order = 'desc';
+            break;
+          case 'popular':
+            params.orderby = 'popularity';
+            params.order = 'desc';
+            break;
+          case 'trending':
+            params.orderby = 'popularity';
+            params.order = 'desc';
+            break;
+          case 'featured':
+            params.featured = 'true';
+            break;
+          case 'on_sale':
+            params.on_sale = 'true';
+            break;
+        }
+      }
+      
+      console.log('🔍 API params:', params);
+      
+      // Build query string
+      const queryParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) queryParams.append(key, value);
+      });
+      
+      // Call our API route instead of WooCommerce directly
+      const response = await fetch(`/api/products?${queryParams.toString()}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      
+      console.log('🔍 API response:', { productsCount: result.products?.length || 0, totalPages: result.totalPages, total: result.total });
+      
+      dispatch({ type: actionTypes.SET_PRODUCTS, payload: result });
+      dispatch({ type: actionTypes.SET_PAGINATION, payload: page });
+    } catch (error) {
+      console.error('Error in fetchProductsWithCategory:', error);
+      dispatch({ type: actionTypes.SET_ERROR, payload: error.message });
+    }
+  }, [dispatch, state.searchTerm, state.sortBy, state.sortOrder, state.filterType]);
 
   /**
    * Fetch categories
@@ -559,11 +627,11 @@ export function WooCommerceProvider({ children }) {
    */
   const filterByCategory = useCallback(async (category) => {
     dispatch({ type: actionTypes.SET_CURRENT_CATEGORY, payload: category });
-    // Trigger a new fetch with updated category
+    // Trigger a new fetch with the new category
     setTimeout(() => {
-      fetchProducts(1);
+      fetchProductsWithCategory(1, category);
     }, 0);
-  }, [dispatch, fetchProducts]);
+  }, [dispatch]);
 
   /**
    * Set cart dropdown open state
@@ -745,7 +813,9 @@ export function WooCommerceProvider({ children }) {
   const value = {
     ...state,
     fetchProducts,
+    fetchProductsWithCategory,
     fetchProduct,
+    fetchCategories,
     addToCart,
     removeFromCart,
     updateCartItem,

@@ -7,7 +7,7 @@ import PageLayout from '../../components/layout/PageLayout';
 
 export default function ProductsPage() {
   const router = useRouter();
-  const { filter } = router.query;
+  const { filter, category } = router.query;
   const {
     products,
     categories,
@@ -21,10 +21,12 @@ export default function ProductsPage() {
     sortOrder,
     filterType,
     fetchProducts,
+    fetchCategories,
     filterByCategory,
     setSortOptions,
     setFilterType
   } = useWooCommerce();
+
 
   // Handle URL filter parameter
   useEffect(() => {
@@ -33,10 +35,26 @@ export default function ProductsPage() {
     }
   }, [filter, setFilterType]);
 
-  // Fetch products on initial mount
+  // Handle URL category parameter
   useEffect(() => {
+    if (category && categories.length > 0) {
+      // Find the category by slug
+      const foundCategory = categories.find(cat => 
+        cat.slug === category || cat.name.toLowerCase() === category.toLowerCase()
+      );
+      if (foundCategory) {
+        filterByCategory(foundCategory);
+      }
+    }
+  }, [category, categories, filterByCategory]);
+
+  // Fetch products and categories on initial mount
+  useEffect(() => {
+    console.log('🔍 Products page useEffect triggered, calling fetchProducts and fetchCategories');
     fetchProducts(1);
-  }, [fetchProducts, sortBy, sortOrder]);
+    fetchCategories();
+  }, []);
+
 
   // Fetch products when page changes
   useEffect(() => {
@@ -75,8 +93,17 @@ export default function ProductsPage() {
 
 
 
-  // Get page title and description based on filter
+  // Get page title and description based on filter and category
   const getPageInfo = () => {
+    // If filtering by category, show category name
+    if (currentCategory) {
+      return {
+        title: `${currentCategory.name} Products`,
+        description: `Browse our ${currentCategory.name.toLowerCase()} collection`
+      };
+    }
+    
+    // Otherwise, show filter-based titles
     switch (filterType) {
       case 'new':
         return {
@@ -114,7 +141,8 @@ export default function ProductsPage() {
   const pageInfo = getPageInfo();
   const breadcrumbs = [
     { name: 'Home', href: '/' },
-    { name: 'Products' }
+    { name: 'Products', href: '/products' },
+    ...(currentCategory ? [{ name: currentCategory.name }] : [])
   ];
 
   // Show loading state

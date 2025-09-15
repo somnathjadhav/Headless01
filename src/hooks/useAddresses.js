@@ -265,6 +265,35 @@ export const useAddresses = () => {
     loadAddresses();
   }, [loadAddresses]);
 
+  // Manual sync function for WooCommerce integration
+  const syncAddressesToWordPress = useCallback(async () => {
+    if (!isAuthenticated || !user?.id || addresses.length === 0) return;
+    
+    try {
+      console.log('🏠 Syncing addresses to WooCommerce...');
+      
+      // Save each address to WooCommerce
+      for (const address of addresses) {
+        const response = await fetch('/api/user/addresses', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user.id,
+          },
+          body: JSON.stringify(address),
+        });
+        
+        if (!response.ok) {
+          console.error('Failed to sync address to WooCommerce:', address.id);
+        }
+      }
+      
+      console.log('✅ Addresses synced to WooCommerce');
+    } catch (error) {
+      console.error('Error syncing addresses to WooCommerce:', error);
+    }
+  }, [isAuthenticated, user?.id, addresses]);
+
   return {
     addresses,
     loading,
@@ -273,6 +302,7 @@ export const useAddresses = () => {
     updateAddress,
     deleteAddress,
     setDefaultAddress,
-    loadAddresses
+    loadAddresses,
+    syncAddressesToWordPress
   };
 };

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "billing",
+    "type": "billing",
+    "isDefault": false,
+    "name": "Somnath Jadhav",
+    "street": "A-1001, Nico Baumount, Handewadi",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "zipCode": "412308",
+    "country": "India",
+    "phone": "09270153230",
+    "company": "Eternity Web Solutions Private Limited"
+  },
+  {
+    "id": "shipping",
+    "type": "shipping",
+    "isDefault": true,
+    "name": "Somnath Jadhav",
+    "street": "B-1104, Mantra Senses, Nyati Estate Road, Near DPS",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "zipCode": "411028",
+    "country": "India",
+    "phone": "09270153230",
+    "company": "Eternity Web Solutions Private Limited"
+  }
+]

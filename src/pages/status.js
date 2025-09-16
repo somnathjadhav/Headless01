@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import SEO from '../components/layout/SEO';
 import { useAuth } from '../context/AuthContext';
 import GeometricDesign from '../components/ui/GeometricDesign';
@@ -7,6 +8,7 @@ import GoogleReCaptcha from '../components/ui/GoogleReCaptcha';
 import { useRecaptchaConfig } from '../hooks/useRecaptchaConfig';
 
 export default function SystemStatus() {
+  const router = useRouter();
   const { user, isAuthenticated: authIsAuthenticated, login, logout: authLogout } = useAuth();
   const { isEnabled: isRecaptchaEnabled, isLoading: isRecaptchaLoading } = useRecaptchaConfig();
   const [systemStatus, setSystemStatus] = useState({
@@ -22,6 +24,7 @@ export default function SystemStatus() {
   const [captchaVerified, setCaptchaVerified] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [formErrors, setFormErrors] = useState({});
+  const [viewMode, setViewMode] = useState('detailed'); // 'detailed' or 'simple'
 
   useEffect(() => {
     // Only start checking status if authenticated
@@ -526,6 +529,12 @@ export default function SystemStatus() {
                 </p>
               </div>
               <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => router.push('/status-simple')}
+                  className="bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  Simple View
+                </button>
                 <button
                   onClick={checkSystemStatus}
                   disabled={isLoading}

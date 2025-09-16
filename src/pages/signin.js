@@ -68,32 +68,23 @@ export default function SignIn() {
   }, [error, clearError]);
 
   // Verify reCAPTCHA token
-  const verifyRecaptcha = async (token) => {
-    try {
-      const response = await fetch('/api/recaptcha/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setCaptchaVerified(true);
-        setRecaptchaToken(token);
-        return true;
-      } else {
-        setCaptchaVerified(false);
-        setRecaptchaToken(null);
-        return false;
+  const verifyRecaptcha = (token) => {
+    console.log('reCAPTCHA verifyRecaptcha called with token:', token ? 'present' : 'null');
+    if (token) {
+      setCaptchaVerified(true);
+      setRecaptchaToken(token);
+      console.log('reCAPTCHA verified successfully');
+      // Clear any existing captcha errors
+      if (formErrors.captcha) {
+        setFormErrors(prev => ({
+          ...prev,
+          captcha: ''
+        }));
       }
-    } catch (error) {
-      console.error('reCAPTCHA verification error:', error);
+    } else {
       setCaptchaVerified(false);
       setRecaptchaToken(null);
-      return false;
+      console.log('reCAPTCHA verification cleared');
     }
   };
 
@@ -162,6 +153,7 @@ export default function SignIn() {
     
     // Check reCAPTCHA only if it's enabled
     if (isRecaptchaEnabled && (!captchaVerified || !recaptchaToken)) {
+      console.log('reCAPTCHA validation failed:', { isRecaptchaEnabled, captchaVerified, recaptchaToken });
       setFormErrors({ captcha: 'Please complete the reCAPTCHA verification' });
       return;
     }

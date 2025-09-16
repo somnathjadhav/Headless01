@@ -19,10 +19,15 @@ export default function HomePage() {
     const checkStatus = async () => {
       setIsChecking(true);
       try {
-        const wpConnected = await checkWordPressConnection();
-        setWpStatus(wpConnected);
-        // Set WooCommerce as available if WordPress is connected
-        setWcStatus(wpConnected);
+        // Check WordPress status using our API
+        const wpResponse = await fetch('/api/status/wordpress');
+        const wpData = await wpResponse.json();
+        setWpStatus(wpData.success);
+        
+        // Check WooCommerce status using our API
+        const wcResponse = await fetch('/api/status/woocommerce');
+        const wcData = await wcResponse.json();
+        setWcStatus(wcData.success);
       } catch (error) {
         console.error('Error checking status:', error);
         setWpStatus(false);

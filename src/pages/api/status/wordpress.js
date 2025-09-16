@@ -13,13 +13,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // Test WordPress API connection
+    // Test WordPress API connection with longer timeout
     const response = await fetch(`${wordpressUrl}/wp-json/wp/v2/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      timeout: 5000
+      timeout: 10000 // Increased from 5s to 10s
     });
 
     if (response.ok) {
@@ -29,6 +29,16 @@ export default async function handler(req, res) {
         data: {
           url: wordpressUrl,
           status: 'online'
+        }
+      });
+    } else if (response.status === 429) {
+      return res.status(200).json({
+        success: true,
+        message: 'WordPress backend is accessible (rate limited)',
+        data: {
+          url: wordpressUrl,
+          status: 'online',
+          note: 'Rate limited but accessible'
         }
       });
     } else {

@@ -46,6 +46,16 @@ export default async function handler(req, res) {
           apiVersion: 'v3'
         }
       });
+    } else if (response.status === 429) {
+      return res.status(200).json({
+        success: true,
+        message: 'WooCommerce API is accessible (rate limited)',
+        data: {
+          status: 'installed',
+          apiVersion: 'v3',
+          note: 'Rate limited but accessible'
+        }
+      });
     } else if (response.status === 401) {
       return res.status(200).json({
         success: false,

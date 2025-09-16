@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const wordpressUrl = 'http://localhost:10008'
+    const wordpressUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:10008'
     
     // Try to fetch main menu from WordPress Headless Pro plugin (enhanced endpoint)
     const response = await fetch(`${wordpressUrl}/wp-json/eternitty/v1/menus-enhanced`, {

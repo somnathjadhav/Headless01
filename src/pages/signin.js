@@ -334,9 +334,6 @@ export default function SignIn() {
                   error={formErrors.captcha}
                 />
               )}
-              {formErrors.captcha && (
-                <p className="mt-2 text-sm text-red-600">{formErrors.captcha}</p>
-              )}
             </div>
 
             {/* Remember Me & Forgot Password */}

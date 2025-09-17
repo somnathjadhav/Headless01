@@ -1,0 +1,264 @@
+import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useCategoryProducts } from '../../hooks/useCategoriesRest';
+import { wooCommerceUtils } from '../../lib/woocommerce';
+import SEO from '../../components/layout/SEO';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import ErrorMessage from '../../components/ui/ErrorMessage';
+import Breadcrumb from '../../components/ui/Breadcrumb';
+import ProductCard from '../../components/woocommerce/ProductCard';
+
+export async function getServerSideProps({ params, req }) {
+  const { slug } = params;
+  
+  try {
+    // Fetch category data on the server
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const host = req.headers.host;
+    const baseUrl = `${protocol}://${host}`;
+    
+    const response = await fetch(`${baseUrl}/api/categories`);
+    
+    if (!response.ok) {
+      return {
+        notFound: true,
+      };
+    }
+    
+    const data = await response.json();
+    const category = data.categories.find(cat => cat.slug === slug);
+    
+    if (!category) {
+      return {
+        notFound: true,
+      };
+    }
+    
+    return {
+      props: {
+        category,
+        slug,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching category:', error);
+    return {
+      notFound: true,
+    };
+  }
+}
+
+export default function CategoryPage({ category: initialCategory, slug }) {
+  const router = useRouter();
+  const formatPrice = wooCommerceUtils.formatPrice;
+  const [category, setCategory] = useState(initialCategory);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('desc');
+  
+  const { products, loading, error, pagination } = useCategoryProducts(
+    category?.id,
+    {
+      page: currentPage,
+      per_page: 12,
+      orderby: sortBy,
+      order: sortOrder
+    }
+  );
+
+  // Update category if it changes
+  useEffect(() => {
+    if (initialCategory) {
+      setCategory(initialCategory);
+    }
+  }, [initialCategory]);
+
+  const handleSortChange = (newSortBy) => {
+    if (newSortBy === sortBy) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(newSortBy);
+      setSortOrder('desc');
+    }
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  if (!category) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <ErrorMessage message="Category not found" />
+      </div>
+    );
+  }
+
+  const breadcrumbItems = [
+    { name: 'Home', href: '/' },
+    { name: 'Categories', href: '/categories' },
+    { name: category.name, href: `/category/${category.slug}` }
+  ];
+
+  return (
+    <>
+      <Head>
+        <title>{category.name} - Eternitty</title>
+        <meta name="description" content={category.description || `Browse ${category.name} products at Eternitty`} />
+      </Head>
+      
+      <SEO 
+        title={category.name}
+        description={category.description || `Browse ${category.name} products at Eternitty`}
+        canonical={`/category/${category.slug}`}
+      />
+
+      <div className="min-h-screen bg-gray-50">
+        {/* Breadcrumb */}
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <Breadcrumb items={breadcrumbItems} />
+          </div>
+        </div>
+
+        {/* Category Header */}
+        <div className="bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+                {category.name}
+              </h1>
+              {category.description && (
+                <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+                  {category.description.replace(/<[^>]*>/g, '')}
+                </p>
+              )}
+              <div className="mt-4">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                  {pagination.total} {pagination.total === 1 ? 'product' : 'products'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters and Sort */}
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-700">Sort by:</span>
+                <div className="flex space-x-2">
+                  {[
+                    { key: 'date', label: 'Newest' },
+                    { key: 'popularity', label: 'Popular' },
+                    { key: 'price', label: 'Price' },
+                    { key: 'name', label: 'Name' }
+                  ].map((option) => (
+                    <button
+                      key={option.key}
+                      onClick={() => handleSortChange(option.key)}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors duration-200 ${
+                        sortBy === option.key
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {option.label}
+                      {sortBy === option.key && (
+                        <span className="ml-1">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="text-sm text-gray-500">
+                Showing {((currentPage - 1) * 12) + 1}-{Math.min(currentPage * 12, pagination.total)} of {pagination.total} products
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Products Grid */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <LoadingSpinner />
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center py-12">
+              <ErrorMessage message={error} />
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-500 text-lg">
+                No products found in this category
+              </div>
+              <Link
+                href="/categories"
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 transition-colors duration-200"
+              >
+                Browse other categories
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {pagination.totalPages > 1 && (
+                <div className="mt-12 flex items-center justify-center">
+                  <nav className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    
+                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                      const page = i + 1;
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`px-3 py-2 text-sm font-medium rounded-md ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                    
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === pagination.totalPages}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </nav>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

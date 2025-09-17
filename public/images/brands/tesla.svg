@@ -1,0 +1,5 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 20L20 5L30 20L40 5L50 20L60 5L70 20L80 5L90 20L100 5L110 20" stroke="#CC0000" stroke-width="2" fill="none"/>
+  <path d="M10 25L20 10L30 25L40 10L50 25L60 10L70 25L80 10L90 25L100 10L110 25" stroke="#CC0000" stroke-width="2" fill="none"/>
+  <text x="10" y="35" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#CC0000">TESLA</text>
+</svg>

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra Modern My Account - Design Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        'secondary': {
+                            50: '#fdf4ff',
+                            100: '#fae8ff',
+                            200: '#f5d0fe',
+                            300: '#f0abfc',
+                            400: '#e879f9',
+                            500: '#d946ef',
+                            600: '#c026d3',
+                            700: '#a21caf',
+                            800: '#86198f',
+                            900: '#701a75',
+                        },
+                        'accent': {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        'orange': {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'slide-in-left': 'slideInLeft 0.5s ease-out',
+                        'slide-in-right': 'slideInRight 0.5s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'shimmer': 'shimmer 2s linear infinite',
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+            to { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: calc(200px + 100%) 0; }
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-effect-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-bg {
+            background: #4f46e5;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .card-hover:hover::before {
+            left: 100%;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .floating-element {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .glow-effect {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+        
+        .neon-border {
+            border: 2px solid transparent;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: exclude;
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .parallax-bg {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        
+        .morphing-shape {
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            animation: morphing 8s ease-in-out infinite;
+        }
+        
+        @keyframes morphing {
+            0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+            25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+            50% { border-radius: 70% 30% 40% 60% / 30% 70% 60% 40%; }
+            75% { border-radius: 40% 70% 60% 30% / 70% 40% 50% 30%; }
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .particle:nth-child(1) { width: 4px; height: 4px; top: 20%; left: 20%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 6px; height: 6px; top: 60%; left: 80%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 3px; height: 3px; top: 80%; left: 40%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 5px; height: 5px; top: 30%; left: 70%; animation-delay: 1s; }
+        .particle:nth-child(5) { width: 4px; height: 4px; top: 70%; left: 10%; animation-delay: 3s; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-inter">
+    <!-- Main Container with Boxed Layout -->
+    <div class="max-w-7xl mx-auto bg-white min-h-screen shadow-2xl">
+        <!-- Header Section -->
+        <div class="gradient-bg text-white relative">
+            <div class="container mx-auto px-6 py-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center floating-element">
+                                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-semibold mb-1">Welcome back, <span class="text-gradient">headless!</span></h1>
+                            <p class="text-white text-opacity-90 text-sm">@headless • Member since 2025</p>
+                            <div class="flex items-center space-x-3 mt-2">
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                    <span class="text-xs">Online</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span class="text-xs">Verified</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="glass-effect rounded-xl px-4 py-2 mb-3">
+                            <span class="text-xs font-medium">Active Member</span>
+                        </div>
+                        <div class="text-xs text-white text-opacity-90 space-y-1">
+                            <div class="flex items-center justify-end space-x-2">
+                                <span>0 Total Orders</span>
+                                <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                            </div>
+                            <div class="flex items-center justify-end space-x-2">
+                                <span>6 Wishlist Items</span>
+                                <div class="w-1.5 h-1.5 bg-pink-400 rounded-full"></div>
+                            </div>
+                            <div class="flex items-center justify-end space-x-2">
+                                <span>2 Saved Addresses</span>
+                                <div class="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-6 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Sidebar Navigation -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-lg p-5 sticky top-8 border border-gray-100">
+                    <div class="mb-5">
+                        <h3 class="text-sm font-medium text-gray-800 mb-2">Navigation</h3>
+                        <div class="w-full h-0.5 bg-indigo-600 rounded-full"></div>
+                    </div>
+                    <nav class="space-y-2">
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-xl bg-indigo-600 text-white shadow-md transform hover:scale-105 transition-all duration-300">
+                            <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium">Dashboard</span>
+                                <div class="text-xs text-white text-opacity-80">Overview</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-300 group">
+                            <div class="w-8 h-8 bg-gray-100 group-hover:bg-blue-100 rounded-lg flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 group-hover:text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-sm font-normal">Profile</span>
+                                <div class="text-xs text-gray-500">Personal info</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-300 group">
+                            <div class="w-8 h-8 bg-gray-100 group-hover:bg-orange-100 rounded-lg flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 group-hover:text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-sm font-normal">Orders</span>
+                                <div class="text-xs text-gray-500">Purchase history</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-300 group">
+                            <div class="w-8 h-8 bg-gray-100 group-hover:bg-pink-100 rounded-lg flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 group-hover:text-pink-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-sm font-normal">Wishlist</span>
+                                <div class="text-xs text-gray-500">Saved items</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-300 group">
+                            <div class="w-8 h-8 bg-gray-100 group-hover:bg-green-100 rounded-lg flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 group-hover:text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-sm font-normal">Addresses</span>
+                                <div class="text-xs text-gray-500">Delivery info</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-300 group">
+                            <div class="w-8 h-8 bg-gray-100 group-hover:bg-purple-100 rounded-lg flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 group-hover:text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                                    <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-sm font-normal">Payment</span>
+                                <div class="text-xs text-gray-500">Cards & billing</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-300 group">
+                            <div class="w-8 h-8 bg-gray-100 group-hover:bg-indigo-100 rounded-lg flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 group-hover:text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-sm font-normal">Settings</span>
+                                <div class="text-xs text-gray-500">Preferences</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 p-3 rounded-xl text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-300 group">
+                            <div class="w-8 h-8 bg-gray-100 group-hover:bg-red-100 rounded-lg flex items-center justify-center transition-colors">
+                                <svg class="w-4 h-4 group-hover:text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <span class="text-sm font-normal">Security</span>
+                                <div class="text-xs text-gray-500">Privacy & safety</div>
+                            </div>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- Welcome Banner -->
+                <div class="relative overflow-hidden bg-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+                    <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-semibold mb-2">Welcome back, <span class="text-gradient">headless!</span></h2>
+                            <p class="text-white text-opacity-90 text-sm mb-3">Here's what's happening with your account</p>
+                            <div class="flex items-center space-x-4">
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                    <span class="text-xs">Account Active</span>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                                    <span class="text-xs">Premium Member</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center floating-element">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                                <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="group bg-white rounded-2xl p-5 shadow-lg card-hover border border-gray-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
+                        <div class="relative z-10 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-medium text-gray-600 mb-1">Total Orders</p>
+                                <p class="text-2xl font-semibold text-gray-900 mb-1">0</p>
+                                <p class="text-xs text-gray-500">All time</p>
+                                <div class="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                                    <div class="bg-blue-600 h-1.5 rounded-full w-0 transition-all duration-1000 group-hover:w-3/4"></div>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group bg-white rounded-2xl p-5 shadow-lg card-hover border border-gray-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-pink-100 to-pink-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
+                        <div class="relative z-10 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-medium text-gray-600 mb-1">Wishlist Items</p>
+                                <p class="text-2xl font-semibold text-gray-900 mb-1">6</p>
+                                <p class="text-xs text-gray-500">Saved for later</p>
+                                <div class="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                                    <div class="bg-pink-600 h-1.5 rounded-full w-3/4 transition-all duration-1000"></div>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-pink-100 to-pink-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-pink-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group bg-white rounded-2xl p-5 shadow-lg card-hover border border-gray-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
+                        <div class="relative z-10 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-medium text-gray-600 mb-1">Saved Addresses</p>
+                                <p class="text-2xl font-semibold text-gray-900 mb-1">2</p>
+                                <p class="text-xs text-gray-500">Ready to use</p>
+                                <div class="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                                    <div class="bg-green-600 h-1.5 rounded-full w-1/2 transition-all duration-1000"></div>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group bg-white rounded-2xl p-5 shadow-lg card-hover border border-gray-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
+                        <div class="relative z-10 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-medium text-gray-600 mb-1">Account Status</p>
+                                <p class="text-xl font-semibold text-green-600 mb-1">Active</p>
+                                <p class="text-xs text-gray-500">Verified member</p>
+                                <div class="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                                    <div class="bg-green-600 h-1.5 rounded-full w-full transition-all duration-1000"></div>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full -translate-y-12 translate-x-12"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-1">Recent Orders</h3>
+                                <p class="text-sm text-gray-600">Your latest purchase history</p>
+                            </div>
+                            <a href="#" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all transform hover:scale-105 shadow-md">
+                                View All
+                            </a>
+                        </div>
+                        <div class="text-center py-12">
+                            <div class="relative mb-6">
+                                <div class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto floating-element">
+                                    <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                                        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
+                                    </svg>
+                                </div>
+                                <div class="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-2">No orders yet</h4>
+                            <p class="text-gray-500 mb-6 text-sm">Start shopping to see your orders here</p>
+                            <button class="bg-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all transform hover:scale-105 shadow-lg">
+                                Start Shopping
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-50 to-blue-50 rounded-full -translate-y-12 translate-x-12"></div>
+                    <div class="relative z-10">
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-1">Quick Actions</h3>
+                            <p class="text-sm text-gray-600">Get things done faster</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button class="group flex items-center space-x-4 p-4 border border-gray-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105">
+                                <div class="w-12 h-12 bg-gray-100 group-hover:bg-indigo-100 rounded-xl flex items-center justify-center transition-all">
+                                    <svg class="w-6 h-6 text-gray-600 group-hover:text-indigo-600 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 2L3 7v11a1 1 0 001 1h12a1 1 0 001-1V7l-7-5zM8 15v-3a2 2 0 114 0v3H8z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-left">
+                                    <h4 class="text-sm font-medium text-gray-900 group-hover:text-indigo-700 mb-1">Browse Products</h4>
+                                    <p class="text-xs text-gray-500 group-hover:text-indigo-600">Discover new items</p>
+                                    <div class="mt-1 flex items-center text-xs text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span>Explore now</span>
+                                        <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <button class="group flex items-center space-x-4 p-4 border border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50 transition-all duration-300 transform hover:scale-105">
+                                <div class="w-12 h-12 bg-gray-100 group-hover:bg-purple-100 rounded-xl flex items-center justify-center transition-all">
+                                    <svg class="w-6 h-6 text-gray-600 group-hover:text-purple-600 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-left">
+                                    <h4 class="text-sm font-medium text-gray-900 group-hover:text-purple-700 mb-1">View Cart</h4>
+                                    <p class="text-xs text-gray-500 group-hover:text-purple-600">Check your items</p>
+                                    <div class="mt-1 flex items-center text-xs text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span>View cart</span>
+                                        <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate cards on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'slideUp 0.6s ease-out forwards';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.card-hover').forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

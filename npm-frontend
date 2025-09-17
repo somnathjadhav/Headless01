@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# 🚨 GLOBAL NPM COMMAND OVERRIDE - ALWAYS WORKS FROM ANY DIRECTORY
+# This script overrides npm commands to always work regardless of where you are
+
+# Get the command that was called
+COMMAND="$1"
+
+# FORCE navigation to frontend directory
+cd /Users/eternitty/Projects/headless-woo/headless-frontend
+
+# Verify we're in the right place
+if [ ! -f "package.json" ]; then
+    echo "❌ CRITICAL ERROR: Cannot find package.json!"
+    echo "📍 Current location: $(pwd)"
+    echo "🔍 Looking for package.json..."
+    ls -la
+    exit 1
+fi
+
+echo "✅ Executing npm $COMMAND from frontend directory: $(pwd)"
+echo "📦 Found package.json: $(ls -la package.json)"
+
+# Execute the npm command
+npm "$@"

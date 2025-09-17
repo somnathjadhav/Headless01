@@ -1,0 +1,45 @@
+{
+  "name": "Eternitty Store",
+  "short_name": "Eternitty",
+  "description": "Modern headless WooCommerce store built with Next.js",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#3B82F6",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "/api/favicon",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/api/favicon",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/api/favicon",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/api/favicon",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/api/favicon",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

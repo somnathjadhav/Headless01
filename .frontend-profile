@@ -1,0 +1,36 @@
+# 🚨 FRONTEND-ONLY SHELL PROFILE
+# This profile automatically puts you in the frontend directory and keeps you there
+
+# Auto-navigate to frontend directory
+cd /Users/eternitty/Projects/headless-woo/headless-frontend
+
+# Verify we're in the right place
+if [ ! -f "package.json" ]; then
+    echo "❌ CRITICAL ERROR: Cannot find package.json!"
+    echo "📍 Current location: $(pwd)"
+    exit 1
+fi
+
+echo "🔒 WELCOME TO FRONTEND DIRECTORY"
+echo "📍 Location: $(pwd)"
+echo "📦 Package: $(ls -la package.json)"
+echo ""
+
+# Disable cd command to prevent leaving
+alias cd='echo "🚫 BLOCKED: cd command is disabled! You must stay in frontend directory!"'
+
+# Show available commands
+echo "💡 Available commands:"
+echo "   npm run dev     - Start development server"
+echo "   npm run build   - Build for production"
+echo "   npm run start   - Start production server"
+echo "   npm run lint    - Run linting"
+echo "   npm run test    - Run tests"
+echo "   npm run format  - Format code"
+echo ""
+
+# Set prompt to show you're in frontend directory
+PS1="🔒 FRONTEND [$(pwd)] $ "
+
+echo "🚫 cd command is DISABLED - you must stay here!"
+echo "🔒 Terminal is now locked to frontend directory"

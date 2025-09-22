@@ -10,10 +10,12 @@ out/
 build/
 
 # Environment variables
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.vercel
 
 # IDE
 .vscode/
@@ -55,3 +57,4 @@ jspm_packages/
 # TypeScript
 *.tsbuildinfo
 node_modules
+.env

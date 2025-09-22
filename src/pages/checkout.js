@@ -18,10 +18,9 @@ import {
 
 export default function Checkout() {
   const router = useRouter();
-  const { cart, cartTotal, appliedCoupon, clearCart, restoreCart, cartBackup } = useWooCommerce();
+  const { cart, cartTotal, appliedCoupon, clearCart, restoreCart, clearCartBackup, cartBackup, loading: globalLoading, setLoading } = useWooCommerce();
   const { isAuthenticated, user } = useAuth();
   const { formatPrice } = useCurrency();
-  const [isLoading, setIsLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [error, setError] = useState('');
@@ -353,7 +352,7 @@ export default function Checkout() {
       return;
     }
 
-    setIsLoading(true);
+    setLoading(true);
     setError('');
 
     try {
@@ -439,13 +438,15 @@ export default function Checkout() {
         setOrderSuccess(true);
         clearCart();
         
-        // Restore cart backup if it exists (from Buy Now functionality)
+        // Clear cart backup after successful order (don't restore old items)
         if (cartBackup) {
-          console.log('🛒 Restoring cart backup after order completion');
-          setTimeout(() => {
-            restoreCart();
-          }, 100); // Small delay to ensure cart is cleared first
+          console.log('🛒 Order successful - clearing cart backup to prevent old items from returning');
+          // Clear the backup instead of restoring it
+          clearCartBackup();
         }
+        
+        // Clear global loading state
+        setLoading(false);
         
         // Redirect to order success page after 2 seconds
         setTimeout(() => {
@@ -453,12 +454,12 @@ export default function Checkout() {
         }, 2000);
       } else {
         setError(data.message || 'Failed to create order. Please try again.');
-        setIsLoading(false);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Order creation error:', error);
       setError('Failed to create order. Please try again.');
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -473,18 +474,6 @@ export default function Checkout() {
     );
   }
 
-  // Show loading state when order is being processed
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Processing Your Order</h2>
-          <p className="text-gray-600">Please wait while we process your order...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Show empty cart message
   if (cart.length === 0) {
@@ -1158,10 +1147,10 @@ export default function Checkout() {
               {/* Place Order Button */}
               <button
                 onClick={handlePlaceOrder}
-                disabled={isLoading}
+                disabled={globalLoading}
                 className="w-full mt-6 px-4 py-3 bg-black text-white font-medium rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? 'Placing Order...' : 'Place Order'}
+                {globalLoading ? 'Placing Order...' : 'Place Order'}
               </button>
 
               {/* Error Message */}

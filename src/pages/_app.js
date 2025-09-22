@@ -13,6 +13,7 @@ import Layout from '../components/layout/Layout';
 import WordPressStorageSync from '../components/WordPressStorageSync';
 import AuthModal from '../components/modals/AuthModal';
 import AuthModalLight from '../components/modals/AuthModalLight';
+import GlobalLoader from '../components/ui/GlobalLoader';
 
 /**
  * Main App Component
@@ -41,6 +42,7 @@ function MyApp({ Component, pageProps, router }) {
                   )}
                   <AuthModal />
                   <AuthModalLight />
+                  <GlobalLoader />
                 </ModalProvider>
               </ThemeProvider>
             </NotificationProvider>

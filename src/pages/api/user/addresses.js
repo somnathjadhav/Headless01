@@ -252,7 +252,7 @@ async function createAddress(req, res, userId) {
     });
   }
 
-  const { type, name, street, city, state, zipCode, country, phone, company } = validation.data;
+  const { type, name, street, city, state, postcode, country, phone, company } = validation.data;
 
   try {
     // Check if WooCommerce credentials are configured
@@ -279,7 +279,7 @@ async function createAddress(req, res, userId) {
       [`${type}_address_2`]: '',
       [`${type}_city`]: city,
       [`${type}_state`]: state || '',
-      [`${type}_postcode`]: zipCode || '',
+      [`${type}_postcode`]: postcode || '',
       [`${type}_country`]: country || '',
       [`${type}_phone`]: phone || ''
     };
@@ -324,7 +324,7 @@ async function createAddress(req, res, userId) {
       street: street,
       city: city,
       state: state || '',
-      zipCode: zipCode || '',
+      postcode: postcode || '',
       country: country || '',
       phone: phone || '',
       company: company || ''
@@ -359,7 +359,7 @@ async function updateAddress(req, res, userId) {
     });
   }
 
-  const { id, type, name, street, city, state, zipCode, country, phone, company } = validation.data;
+  const { id, type, name, street, city, state, postcode, country, phone, company } = validation.data;
 
   if (!id) {
     return res.status(400).json({
@@ -394,7 +394,7 @@ async function updateAddress(req, res, userId) {
         address_2: '',
         city: city,
         state: state || '',
-        postcode: zipCode || '',
+        postcode: postcode || '',
         country: country || '',
         phone: phone || ''
       }
@@ -439,7 +439,7 @@ async function updateAddress(req, res, userId) {
       street: street,
       city: city,
       state: state || '',
-      zipCode: zipCode || '',
+      postcode: postcode || '',
       country: country || '',
       phone: phone || '',
       company: company || ''

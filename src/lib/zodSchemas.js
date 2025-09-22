@@ -26,7 +26,7 @@ const usernameSchema = z.string()
 const nameSchema = z.string()
   .min(2, 'Name must be at least 2 characters')
   .max(50, 'Name must be less than 50 characters')
-  .regex(/^[a-zA-Z\s\-']+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes');
+  .trim();
 
 // Sign-in form schema
 export const signinSchema = z.object({
@@ -87,7 +87,7 @@ export const addressSchema = z.object({
   street: z.string().min(1, 'Street address is required').max(100, 'Street address is too long'),
   city: z.string().min(1, 'City is required').max(50, 'City name is too long'),
   state: z.string().max(50, 'State name is too long').optional(), // Made optional for development
-  zipCode: z.string().max(10, 'Postal code is too long').optional(), // Made optional for development
+  postcode: z.string().max(10, 'Postal code is too long').optional(), // Made optional for development
   country: z.string().max(50, 'Country name is too long').optional(), // Made optional and more lenient
   phone: z.string().max(20, 'Phone number is too long').optional(),
   company: z.string().max(100, 'Company name is too long').optional()

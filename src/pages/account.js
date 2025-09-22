@@ -4,6 +4,7 @@ import { useWooCommerce } from '../context/WooCommerceContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { useAddresses } from '../hooks/useAddresses';
+import { useProfile } from '../hooks/useProfile';
 import PasswordStrengthMeter from '../components/ui/PasswordStrengthMeter';
 import PleaseSignIn from '../components/auth/PleaseSignIn';
 import TwoFactorAuth from '../components/auth/TwoFactorAuth';
@@ -36,6 +37,12 @@ export default function Account() {
     deleteAddress, 
     setDefaultAddress
   } = useAddresses();
+  
+  const { 
+    profile, 
+    loading: profileLoading, 
+    updateProfile 
+  } = useProfile();
   
   // Real orders data from WooCommerce
   const [orders, setOrders] = useState([]);
@@ -74,6 +81,26 @@ export default function Account() {
   useEffect(() => {
     setFormData(userData);
   }, [userData]);
+  
+  // Sync formData with profile when profile changes
+  useEffect(() => {
+    if (profile) {
+      const updatedUserData = {
+        firstName: profile.first_name || profile.name?.split(' ')[0] || '',
+        lastName: profile.last_name || profile.name?.split(' ').slice(1).join(' ') || '',
+        email: profile.email || user?.email || '',
+        phone: profile.billing?.phone || profile.shipping?.phone || '',
+        address: profile.billing?.address_1 || profile.shipping?.address_1 || '',
+        city: profile.billing?.city || profile.shipping?.city || '',
+        state: profile.billing?.state || profile.shipping?.state || '',
+        zipCode: profile.billing?.postcode || profile.shipping?.postcode || '',
+        country: profile.billing?.country || profile.shipping?.country || ''
+      };
+      
+      setUserData(updatedUserData);
+      setFormData(updatedUserData);
+    }
+  }, [profile, user]);
   
   // Password change state
   const [passwordData, setPasswordData] = useState({
@@ -167,76 +194,7 @@ export default function Account() {
     fetchOrders();
   }, [activeTab, isAuthenticated, user?.id]);
   
-  // Fetch user profile data when authenticated
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (isAuthenticated && user?.id) {
-        try {
-          const response = await fetch(`/api/user-profile?userId=${user.id}`);
-          const data = await response.json();
-          
-          if (data.success && data.profile) {
-            const profile = data.profile;
-            const updatedUserData = {
-              firstName: profile.first_name || profile.name?.split(' ')[0] || '',
-              lastName: profile.last_name || profile.name?.split(' ').slice(1).join(' ') || '',
-              email: profile.email || user.email || '',
-              phone: profile.billing?.phone || profile.shipping?.phone || '',
-              address: profile.billing?.address_1 || profile.shipping?.address_1 || '',
-              city: profile.billing?.city || profile.shipping?.city || '',
-              state: profile.billing?.state || profile.shipping?.state || '',
-              zipCode: profile.billing?.postcode || profile.shipping?.postcode || '',
-              country: profile.billing?.country || profile.shipping?.country || ''
-            };
-            
-            setUserData(updatedUserData);
-            setFormData(updatedUserData);
-            
-            // Set up addresses from profile data
-            const userAddresses = [];
-            
-            // Add shipping address if available
-            if (profile.shipping && (profile.shipping.address_1 || profile.shipping.city)) {
-              userAddresses.push({
-                id: 1,
-                type: 'shipping',
-                isDefault: true,
-                name: `${profile.shipping.first_name || ''} ${profile.shipping.last_name || ''}`.trim(),
-                street: profile.shipping.address_1 || '',
-                city: profile.shipping.city || '',
-                state: profile.shipping.state || '',
-                zipCode: profile.shipping.postcode || '',
-                country: profile.shipping.country || '',
-                phone: profile.billing?.phone || ''
-              });
-            }
-            
-            // Add billing address if available
-            if (profile.billing && (profile.billing.address_1 || profile.billing.city)) {
-              userAddresses.push({
-                id: 2,
-                type: 'billing',
-                isDefault: false,
-                name: `${profile.billing.first_name || ''} ${profile.billing.last_name || ''}`.trim(),
-                street: profile.billing.address_1 || '',
-                city: profile.billing.city || '',
-                state: profile.billing.state || '',
-                zipCode: profile.billing.postcode || '',
-                country: profile.billing.country || '',
-                phone: profile.billing.phone || ''
-              });
-            }
-            
-            // Addresses are now managed by useAddresses hook
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-        }
-      }
-    };
-
-    fetchUserProfile();
-  }, [isAuthenticated, user]);
+  // Profile data is now managed by useProfile hook
   
   // Show loading while checking authentication
   if (isInitializing) {
@@ -407,9 +365,24 @@ export default function Account() {
     }));
   };
 
-  const handleSave = () => {
-    setUserData(formData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const profileData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company || ''
+      };
+      
+      const success = await updateProfile(profileData);
+      if (success) {
+        setUserData(formData);
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    }
   };
 
   const handleCancel = () => {
@@ -919,10 +892,20 @@ export default function Account() {
                     <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
                       <button
                         onClick={handleSave}
-                        className="flex-1 inline-flex items-center justify-center space-x-2 bg-black text-white px-8 py-3 rounded-xl hover:bg-gray-800 transition-colors font-medium shadow-sm"
+                        disabled={profileLoading}
+                        className="flex-1 inline-flex items-center justify-center space-x-2 bg-black text-white px-8 py-3 rounded-xl hover:bg-gray-800 transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <CheckIcon className="w-4 h-4" />
-                        <span>Save Changes</span>
+                        {profileLoading ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Saving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckIcon className="w-4 h-4" />
+                            <span>Save Changes</span>
+                          </>
+                        )}
                       </button>
                       <button
                         onClick={handleCancel}

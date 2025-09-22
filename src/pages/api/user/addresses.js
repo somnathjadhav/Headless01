@@ -50,11 +50,13 @@ async function getAddresses(req, res, userId) {
 
     console.log('🔄 Fetching customer data from WooCommerce API...');
     
-    // WooCommerce REST API call with retry logic
+    // Try WooCommerce API first, fallback to WordPress REST API
+    let customerData = null;
     let wcResponse;
     let retryCount = 0;
     const maxRetries = 3;
     
+    // First try WooCommerce API
     while (retryCount < maxRetries) {
       try {
         wcResponse = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wc/v3/customers/${userId}`, {
@@ -67,6 +69,7 @@ async function getAddresses(req, res, userId) {
         });
 
         if (wcResponse.ok) {
+          customerData = await wcResponse.json();
           break; // Success, exit retry loop
         } else if (wcResponse.status === 429 || wcResponse.status === 500) {
           // Rate limit or server error, retry after delay
@@ -76,6 +79,46 @@ async function getAddresses(req, res, userId) {
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
             continue;
           }
+        }
+        
+        // If WooCommerce API fails, try WordPress REST API as fallback
+        console.log('WooCommerce API failed, trying WordPress REST API fallback...');
+        const wpResponse = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wp/v2/users/${userId}`);
+        if (wpResponse.ok) {
+          const wpUserData = await wpResponse.json();
+          // Transform WordPress user data to WooCommerce format
+          customerData = {
+            id: wpUserData.id,
+            email: wpUserData.email || 'user@example.com',
+            first_name: wpUserData.name?.split(' ')[0] || '',
+            last_name: wpUserData.name?.split(' ').slice(1).join(' ') || '',
+            username: wpUserData.name,
+            billing: {
+              first_name: wpUserData.name?.split(' ')[0] || '',
+              last_name: wpUserData.name?.split(' ').slice(1).join(' ') || '',
+              company: '',
+              address_1: '',
+              address_2: '',
+              city: '',
+              state: '',
+              postcode: '',
+              country: '',
+              email: wpUserData.email || 'user@example.com',
+              phone: ''
+            },
+            shipping: {
+              first_name: wpUserData.name?.split(' ')[0] || '',
+              last_name: wpUserData.name?.split(' ').slice(1).join(' ') || '',
+              company: '',
+              address_1: '',
+              address_2: '',
+              city: '',
+              state: '',
+              postcode: '',
+              country: ''
+            }
+          };
+          break;
         }
         
         console.log('❌ WooCommerce API response not ok:', wcResponse.status, wcResponse.statusText);
@@ -90,14 +133,55 @@ async function getAddresses(req, res, userId) {
       } catch (error) {
         retryCount++;
         if (retryCount >= maxRetries) {
+          // Final fallback to WordPress REST API
+          try {
+            console.log('All retries failed, using WordPress REST API fallback...');
+            const wpResponse = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wp/v2/users/${userId}`);
+            if (wpResponse.ok) {
+              const wpUserData = await wpResponse.json();
+              // Transform WordPress user data to WooCommerce format
+              customerData = {
+                id: wpUserData.id,
+                email: wpUserData.email || 'user@example.com',
+                first_name: wpUserData.name?.split(' ')[0] || '',
+                last_name: wpUserData.name?.split(' ').slice(1).join(' ') || '',
+                username: wpUserData.name,
+                billing: {
+                  first_name: wpUserData.name?.split(' ')[0] || '',
+                  last_name: wpUserData.name?.split(' ').slice(1).join(' ') || '',
+                  company: '',
+                  address_1: '',
+                  address_2: '',
+                  city: '',
+                  state: '',
+                  postcode: '',
+                  country: '',
+                  email: wpUserData.email || 'user@example.com',
+                  phone: ''
+                },
+                shipping: {
+                  first_name: wpUserData.name?.split(' ')[0] || '',
+                  last_name: wpUserData.name?.split(' ').slice(1).join(' ') || '',
+                  company: '',
+                  address_1: '',
+                  address_2: '',
+                  city: '',
+                  state: '',
+                  postcode: '',
+                  country: ''
+                }
+              };
+              break;
+            }
+          } catch (fallbackError) {
+            console.error('WordPress REST API fallback also failed:', fallbackError);
+          }
           throw error;
         }
         console.log(`WooCommerce API error, retrying ${retryCount}/${maxRetries}...`);
         await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
       }
     }
-
-    const customerData = await wcResponse.json();
     console.log('✅ WooCommerce customer data retrieved:', JSON.stringify(customerData, null, 2));
     
     // Transform WooCommerce customer data to frontend format

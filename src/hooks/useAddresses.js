@@ -253,7 +253,7 @@ export const useAddresses = () => {
           ...addr,
           isDefault: addr.id === addressId
         }));
-        localStorage.setItem('userAddresses', JSON.stringify(updatedAddresses));
+        localStorage.setItem(`userAddresses_${user.id}`, JSON.stringify(updatedAddresses));
         return updatedAddresses;
       });
 

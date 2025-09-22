@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { useAddresses } from '../hooks/useAddresses';
 import { useProfile } from '../hooks/useProfile';
+import { useProfileSync } from '../hooks/useProfileSync';
 import PasswordStrengthMeter from '../components/ui/PasswordStrengthMeter';
 import PleaseSignIn from '../components/auth/PleaseSignIn';
 import TwoFactorAuth from '../components/auth/TwoFactorAuth';
@@ -44,6 +45,13 @@ export default function Account() {
     updateProfile 
   } = useProfile();
   
+  const { 
+    isSyncing, 
+    syncFromBackend, 
+    syncToBackend, 
+    transformBackendToFrontend 
+  } = useProfileSync();
+  
   // Real orders data from WooCommerce
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -68,6 +76,7 @@ export default function Account() {
     lastName: '',
     email: '',
     phone: '',
+    company: '',
     address: '',
     city: '',
     state: '',
@@ -75,7 +84,18 @@ export default function Account() {
     country: ''
   });
 
-  const [formData, setFormData] = useState(userData);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: ''
+  });
   
   // Sync formData with userData when userData changes
   useEffect(() => {
@@ -85,22 +105,14 @@ export default function Account() {
   // Sync formData with profile when profile changes
   useEffect(() => {
     if (profile) {
-      const updatedUserData = {
-        firstName: profile.first_name || profile.name?.split(' ')[0] || '',
-        lastName: profile.last_name || profile.name?.split(' ').slice(1).join(' ') || '',
-        email: profile.email || user?.email || '',
-        phone: profile.billing?.phone || profile.shipping?.phone || '',
-        address: profile.billing?.address_1 || profile.shipping?.address_1 || '',
-        city: profile.billing?.city || profile.shipping?.city || '',
-        state: profile.billing?.state || profile.shipping?.state || '',
-        zipCode: profile.billing?.postcode || profile.shipping?.postcode || '',
-        country: profile.billing?.country || profile.shipping?.country || ''
-      };
-      
-      setUserData(updatedUserData);
-      setFormData(updatedUserData);
+      const updatedUserData = transformBackendToFrontend(profile);
+      if (updatedUserData) {
+        console.log('Profile data synced:', updatedUserData);
+        setUserData(updatedUserData);
+        setFormData(updatedUserData);
+      }
     }
-  }, [profile, user]);
+  }, [profile, transformBackendToFrontend]);
   
   // Password change state
   const [passwordData, setPasswordData] = useState({
@@ -375,8 +387,26 @@ export default function Account() {
         company: formData.company || ''
       };
       
-      const success = await updateProfile(profileData);
-      if (success) {
+      // Try to update via the profile API first
+      try {
+        const success = await updateProfile(profileData);
+        if (success) {
+          setUserData(formData);
+          setIsEditing(false);
+          return;
+        }
+      } catch (updateError) {
+        console.log('Profile update failed, trying sync to backend:', updateError);
+      }
+      
+      // If profile update fails, try syncing to backend
+      try {
+        await syncToBackend(profileData);
+        setUserData(formData);
+        setIsEditing(false);
+      } catch (syncError) {
+        console.error('Both profile update and sync failed:', syncError);
+        // Still update local state even if backend sync fails
         setUserData(formData);
         setIsEditing(false);
       }
@@ -400,7 +430,8 @@ export default function Account() {
   };
   
   const handleAddAddress = async () => {
-    if (newAddress.name && newAddress.street && newAddress.city && newAddress.state && newAddress.zipCode) {
+    // Check required fields only (name, street, city are required)
+    if (newAddress.name && newAddress.street && newAddress.city) {
       const success = await addAddress(newAddress);
       if (success) {
         setNewAddress({
@@ -416,6 +447,9 @@ export default function Account() {
         });
         setIsAddingAddress(false);
       }
+    } else {
+      // Show error message for missing required fields
+      showError('Please fill in all required fields (Name, Street Address, and City)');
     }
   };
   
@@ -434,12 +468,16 @@ export default function Account() {
   };
   
   const handleUpdateAddress = async () => {
-    if (editingAddress && editingAddress.name && editingAddress.street && editingAddress.city && editingAddress.state && editingAddress.zipCode) {
+    // Check required fields only (name, street, city are required)
+    if (editingAddress && editingAddress.name && editingAddress.street && editingAddress.city) {
       const success = await updateAddress(editingAddress.id, editingAddress);
       if (success) {
         setIsEditingAddress(false);
         setEditingAddress(null);
       }
+    } else {
+      // Show error message for missing required fields
+      showError('Please fill in all required fields (Name, Street Address, and City)');
     }
   };
   
@@ -451,7 +489,7 @@ export default function Account() {
   // Function to clear all addresses (useful for testing or user request)
   const clearAllAddresses = () => {
     setAddresses([]);
-    localStorage.removeItem('userAddresses');
+    // No longer using localStorage for address storage
     showSuccess('All addresses cleared');
   };
 
@@ -833,13 +871,28 @@ export default function Account() {
                       <p className="text-gray-600">Manage your personal information and preferences</p>
                     </div>
                   {!isEditing && (
-                    <button
-                      onClick={() => setIsEditing(true)}
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={syncFromBackend}
+                        disabled={isSyncing}
+                        className="inline-flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Sync profile from backend"
+                      >
+                        {isSyncing ? (
+                          <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <span>🔄</span>
+                        )}
+                        <span>Sync</span>
+                      </button>
+                      <button
+                        onClick={() => setIsEditing(true)}
                         className="inline-flex items-center space-x-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm shadow-sm"
-                    >
+                      >
                         <EditIcon className="w-4 h-4" />
                         <span>Edit Profile</span>
-                    </button>
+                      </button>
+                    </div>
                   )}
                   </div>
                 </div>
@@ -885,6 +938,22 @@ export default function Account() {
                             placeholder="Enter your last name"
                         />
                         </div>
+                      </div>
+                      
+                      {/* Company Field */}
+                      <div>
+                        <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+                          Company (optional)
+                        </label>
+                        <input
+                          id="company"
+                          type="text"
+                          name="company"
+                          value={formData.company}
+                          onChange={handleInputChange}
+                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors text-sm"
+                          placeholder="Enter your company name"
+                        />
                       </div>
                     </div>
 
@@ -937,6 +1006,16 @@ export default function Account() {
                           <p className="text-base font-medium text-gray-900">{userData.lastName}</p>
                         </div>
                       </div>
+                      
+                      {/* Company Display */}
+                      {userData.company && (
+                        <div>
+                          <div className="block text-sm font-medium text-gray-500 mb-2">
+                            Company
+                          </div>
+                          <p className="text-base font-medium text-gray-900">{userData.company}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1611,7 +1690,7 @@ export default function Account() {
                             id="addressZipCode"
                             type="text"
                             name="zipCode"
-                            value={newAddress.zipCode}
+                            value={newAddress.zipCode || ''}
                             onChange={handleAddressInputChange}
                             className="w-full px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
                             placeholder="Enter ZIP code"
@@ -1690,6 +1769,13 @@ export default function Account() {
                   {isEditingAddress && editingAddress && (
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Address</h3>
+                      {(!editingAddress.street && !editingAddress.city && !editingAddress.state && !editingAddress.zipCode) && (
+                        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-sm text-blue-700">
+                            <strong>Note:</strong> This address appears to be incomplete. Please fill in the missing information below.
+                          </p>
+                        </div>
+                      )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label htmlFor="editAddressType" className="block text-sm font-medium text-gray-700 mb-2">
@@ -1834,7 +1920,7 @@ export default function Account() {
                             id="editAddressZipCode"
                             type="text"
                             name="zipCode"
-                            value={editingAddress.zipCode}
+                            value={editingAddress.zipCode || ''}
                             onChange={(e) => setEditingAddress({...editingAddress, zipCode: e.target.value})}
                             className="w-full px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
                             placeholder="Enter ZIP code"
@@ -1862,34 +1948,6 @@ export default function Account() {
                             <option value="CN">China</option>
                             <option value="BR">Brazil</option>
                           </select>
-                        </div>
-                        <div>
-                          <label htmlFor="editAddressCompany" className="block text-sm font-medium text-gray-700 mb-2">
-                            Company (optional)
-                          </label>
-                          <input
-                            id="editAddressCompany"
-                            type="text"
-                            name="company"
-                            value={editingAddress.company || ''}
-                            onChange={(e) => setEditingAddress({...editingAddress, company: e.target.value})}
-                            className="w-full px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
-                            placeholder="Enter company name"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="editAddressPhone" className="block text-sm font-medium text-gray-700 mb-2">
-                            Phone Number
-                          </label>
-                          <input
-                            id="editAddressPhone"
-                            type="tel"
-                            name="phone"
-                            value={editingAddress.phone}
-                            onChange={(e) => setEditingAddress({...editingAddress, phone: e.target.value})}
-                            className="w-full px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
-                            placeholder="Enter phone number"
-                          />
                         </div>
                       </div>
                       <div className="flex space-x-3 mt-6">
@@ -1954,6 +2012,14 @@ export default function Account() {
                                       <span className="text-xs text-amber-600 font-medium">Syncing...</span>
                                     </div>
                                   )}
+                                  {(!address.street && !address.city && !address.state && !address.zipCode && !address.country) && (
+                                    <div className="flex items-center space-x-1">
+                                      <svg className="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                      </svg>
+                                      <span className="text-xs text-amber-600 font-medium">Incomplete</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -2012,9 +2078,15 @@ export default function Account() {
                             <div className="flex items-start space-x-2">
                               <MapPinIcon className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
                               <div className="text-[8px] text-gray-400 leading-none">
-                                <div>{address.street}</div>
-                                <div>{address.city}, {address.state} {address.zipCode}</div>
-                                <div>{address.country}</div>
+                                {(!address.street && !address.city && !address.state && !address.zipCode && !address.country) ? (
+                                  <div className="text-amber-600 font-medium">Address information incomplete - Click Edit to complete</div>
+                                ) : (
+                                  <>
+                                    <div>{address.street}</div>
+                                    <div>{address.city}, {address.state} {address.zipCode}</div>
+                                    <div>{address.country}</div>
+                                  </>
+                                )}
                               </div>
                             </div>
                             

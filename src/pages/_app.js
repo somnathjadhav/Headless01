@@ -6,13 +6,13 @@ import { AuthProvider } from '../context/AuthContext';
 import { CurrencyProvider } from '../context/CurrencyContext';
 import { NotificationProvider } from '../context/NotificationContext';
 import { ModalProvider } from '../context/ModalContext';
-import { ThemeProvider } from '../context/ThemeContext';
 import DynamicFavicon from '../components/ui/DynamicFavicon';
 import DynamicGoogleFonts from '../components/ui/DynamicGoogleFonts';
 import Layout from '../components/layout/Layout';
 import WordPressStorageSync from '../components/WordPressStorageSync';
 import AuthModal from '../components/modals/AuthModal';
 import AuthModalLight from '../components/modals/AuthModalLight';
+import GlobalLoader from '../components/ui/GlobalLoader';
 
 /**
  * Main App Component
@@ -27,8 +27,7 @@ function MyApp({ Component, pageProps, router }) {
         <WooCommerceProvider>
           <CurrencyProvider>
             <NotificationProvider>
-              <ThemeProvider>
-                <ModalProvider>
+              <ModalProvider>
                   <DynamicFavicon />
                   <DynamicGoogleFonts />
                   <WordPressStorageSync />
@@ -41,8 +40,8 @@ function MyApp({ Component, pageProps, router }) {
                   )}
                   <AuthModal />
                   <AuthModalLight />
+                  <GlobalLoader />
                 </ModalProvider>
-              </ThemeProvider>
             </NotificationProvider>
           </CurrencyProvider>
         </WooCommerceProvider>

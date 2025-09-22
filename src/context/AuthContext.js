@@ -43,6 +43,7 @@ function authReducer(state, action) {
         token: action.payload.token,
         isAuthenticated: true,
         isLoading: false,
+        isInitializing: false, // Complete initialization when login is successful
         error: null
       };
     
@@ -70,6 +71,7 @@ function authReducer(state, action) {
         token: action.payload.token,
         isAuthenticated: true,
         isLoading: false,
+        isInitializing: false, // Complete initialization when login is successful
         error: null
       };
     
@@ -138,48 +140,89 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Check for existing token on mount
+  // Check for existing session on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    const user = localStorage.getItem('auth_user');
-    const authVersion = localStorage.getItem('auth_version');
-    const currentVersion = '2.0.0'; // Increment this when auth data structure changes
+    console.log('🔄 AuthContext: Starting initialization...');
     
-    // Clear old cached data if version doesn't match
-    if (authVersion !== currentVersion) {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_version');
+    // Set a timeout to ensure initialization completes
+    const initTimeout = setTimeout(() => {
+      console.log('⏰ AuthContext: Initialization timeout, forcing completion');
       dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
-      return;
-    }
+    }, 5000); // 5 second timeout
     
-    if (token && user) {
+    // Check for stored user session in localStorage
+    const storedUser = localStorage.getItem('user');
+    const storedUserId = localStorage.getItem('userId');
+    
+    console.log('🔍 AuthContext: Stored user:', storedUser ? 'exists' : 'none');
+    console.log('🔍 AuthContext: Stored userId:', storedUserId);
+    
+    if (storedUser && storedUserId) {
       try {
-        const userData = JSON.parse(user);
+        const user = JSON.parse(storedUser);
+        console.log('✅ AuthContext: Parsed user data:', user);
         
-        // Additional validation: Check if user data contains old hardcoded values
-        if (userData.name === 'John Doe' || userData.email === 'john.doe@example.com') {
-          console.log('🧹 Clearing old hardcoded user data from cache');
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('auth_user');
+        // Verify the session is still valid
+        console.log('🔍 AuthContext: Verifying session...');
+        fetch(`/api/auth/verify?userId=${storedUserId}`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          console.log('📡 AuthContext: Verify response status:', response.status);
+          clearTimeout(initTimeout); // Clear timeout on successful response
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error(`HTTP ${response.status}: No valid session`);
+          }
+        })
+        .then(data => {
+          console.log('📡 AuthContext: Verify response data:', data);
+          if (data.success && data.user) {
+            console.log('✅ AuthContext: Session restored successfully');
+            dispatch({ 
+              type: AUTH_ACTIONS.LOGIN_SUCCESS, 
+              payload: { 
+                token: data.token || 'session-based',
+                user: data.user,
+                message: 'Session restored'
+              } 
+            });
+          } else {
+            console.log('❌ AuthContext: Session verification failed, completing initialization');
+            dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
+          }
+        })
+        .catch(error => {
+          console.log('❌ AuthContext: Session verification error:', error.message);
+          clearTimeout(initTimeout); // Clear timeout on error
+          // Clear invalid session data
+          localStorage.removeItem('user');
+          localStorage.removeItem('userId');
           dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
-          return;
-        }
-        
-        dispatch({
-          type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: { token, user: userData }
         });
       } catch (error) {
-        // console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+        console.log('❌ AuthContext: Error parsing stored user:', error.message);
+        clearTimeout(initTimeout); // Clear timeout on error
+        localStorage.removeItem('user');
+        localStorage.removeItem('userId');
+        dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
       }
+    } else {
+      // No stored session, complete initialization
+      console.log('ℹ️ AuthContext: No stored session, completing initialization');
+      clearTimeout(initTimeout); // Clear timeout
+      dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
     }
     
-    // Mark initialization as complete
-    dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
+    // Cleanup function
+    return () => {
+      clearTimeout(initTimeout);
+    };
   }, []);
 
   // Login function
@@ -198,14 +241,14 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (data.success) {
-        // Store in localStorage with version
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('auth_user', JSON.stringify(data.user));
-        localStorage.setItem('auth_version', '2.0.0');
+        // Store session in localStorage for persistence
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('userId', data.user.id.toString());
         
+        // Session is managed server-side via cookies
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: { token: data.token, user: data.user }
+          payload: { token: data.token || 'session-based', user: data.user }
         });
         
         return { success: true };
@@ -275,10 +318,24 @@ export function AuthProvider({ children }) {
   };
 
   // Logout function
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
-    dispatch({ type: AUTH_ACTIONS.LOGOUT });
+  const logout = async () => {
+    try {
+      // Call server-side logout to clear session
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear session from localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('userId');
+      dispatch({ type: AUTH_ACTIONS.LOGOUT });
+    }
   };
 
   // Google login function
@@ -297,14 +354,10 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (data.success) {
-        // Store in localStorage with version
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('auth_user', JSON.stringify(data.user));
-        localStorage.setItem('auth_version', '2.0.0');
-        
+        // Session is managed server-side via cookies
         dispatch({
           type: AUTH_ACTIONS.GOOGLE_LOGIN_SUCCESS,
-          payload: { token: data.token, user: data.user }
+          payload: { token: data.token || 'session-based', user: data.user }
         });
         
         return { success: true };

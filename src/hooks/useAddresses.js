@@ -1,15 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 
-export const useAddresses = () => {
-  const { user, isAuthenticated } = useAuth();
-  const { showSuccess, showError } = useNotifications();
+export function useAddresses() {
+  const { isAuthenticated, user } = useAuth();
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load addresses from backend
+  // Load addresses from server
   const loadAddresses = useCallback(async () => {
     if (!isAuthenticated || !user?.id) {
       console.log('Not authenticated or no user ID, clearing addresses');
@@ -17,65 +15,19 @@ export const useAddresses = () => {
       return;
     }
 
-    // Check if we have recent data in localStorage to avoid unnecessary API calls
-    const lastFetchKey = `userAddresses_lastFetch_${user.id}`;
-    const lastFetch = localStorage.getItem(lastFetchKey);
-    const now = Date.now();
-    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
-    
-    if (lastFetch && (now - parseInt(lastFetch)) < fiveMinutes) {
-      console.log('Using cached addresses (less than 5 minutes old)');
-      const savedAddresses = localStorage.getItem(`userAddresses_${user.id}`);
-      if (savedAddresses) {
-        try {
-          const parsedAddresses = JSON.parse(savedAddresses);
-          setAddresses(parsedAddresses);
-          return;
-        } catch (parseError) {
-          console.error('Error parsing cached addresses:', parseError);
-        }
-      }
-    }
-
-    // Clear old localStorage data for other users and generic key
-    const allKeys = Object.keys(localStorage);
-    allKeys.forEach(key => {
-      if (key.startsWith('userAddresses_') && key !== `userAddresses_${user.id}`) {
-        localStorage.removeItem(key);
-        console.log('Cleared old address data for key:', key);
-      }
-    });
-    
-    // Also clear the old generic key if it exists
-    if (localStorage.getItem('userAddresses')) {
-      localStorage.removeItem('userAddresses');
-      console.log('Cleared old generic userAddresses key');
-    }
-
+    // Always fetch fresh data from server - no localStorage caching
     console.log('Loading addresses for user:', user.id);
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/user/addresses?userId=${user.id}`, {
-        headers: {
-          'x-user-id': user.id,
-        }
-      });
-
+      const response = await fetch(`/api/user/addresses?userId=${user.id}`);
       const data = await response.json();
-      console.log('Address API response:', data);
 
       if (data.success) {
         const addresses = data.addresses || [];
         console.log('Setting addresses:', addresses);
         setAddresses(addresses);
-        
-        // Update localStorage for caching
-        if (addresses.length > 0) {
-          localStorage.setItem(`userAddresses_${user.id}`, JSON.stringify(addresses));
-          localStorage.setItem(`userAddresses_lastFetch_${user.id}`, Date.now().toString());
-        }
       } else {
         throw new Error(data.message || 'Failed to load addresses');
       }
@@ -87,11 +39,15 @@ export const useAddresses = () => {
     }
   }, [isAuthenticated, user?.id]);
 
+  // Load addresses when user changes
+  useEffect(() => {
+    loadAddresses();
+  }, [loadAddresses]);
+
   // Add new address
   const addAddress = useCallback(async (addressData) => {
     if (!isAuthenticated || !user?.id) {
-      showError('Please sign in to manage addresses');
-      return false;
+      throw new Error('User not authenticated');
     }
 
     setLoading(true);
@@ -102,126 +58,99 @@ export const useAddresses = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': user.id,
         },
-        body: JSON.stringify(addressData),
+        body: JSON.stringify({
+          userId: user.id,
+          ...addressData
+        })
       });
 
       const data = await response.json();
 
       if (data.success) {
-        const newAddress = data.address;
-        setAddresses(prev => {
-          const updatedAddresses = [...prev, newAddress];
-          localStorage.setItem(`userAddresses_${user.id}`, JSON.stringify(updatedAddresses));
-          // Clear the cache timestamp so next load will fetch fresh data
-          localStorage.removeItem(`userAddresses_lastFetch_${user.id}`);
-          return updatedAddresses;
-        });
-        
-        showSuccess('Address added successfully');
-        return true;
+        const updatedAddresses = [...addresses, data.address];
+        setAddresses(updatedAddresses);
+        return data.address;
       } else {
         throw new Error(data.message || 'Failed to add address');
       }
     } catch (error) {
       console.error('Error adding address:', error);
       setError(error.message);
-      showError('Failed to add address. Please try again.');
-      return false;
+      // Don't re-throw the error to prevent unhandled runtime errors
+      return null;
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.id, showSuccess, showError]);
+  }, [isAuthenticated, user?.id, addresses]);
 
-
-  // Update address
+  // Update existing address
   const updateAddress = useCallback(async (addressId, addressData) => {
     if (!isAuthenticated || !user?.id) {
-      showError('Please sign in to manage addresses');
-      return false;
+      throw new Error('User not authenticated');
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/user/addresses', {
+      const response = await fetch(`/api/user/addresses/${addressId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': user.id,
         },
         body: JSON.stringify({
-          id: addressId,
+          userId: user.id,
           ...addressData
-        }),
+        })
       });
 
       const data = await response.json();
 
       if (data.success) {
-        const updatedAddress = data.address;
-        setAddresses(prev => {
-          const updatedAddresses = prev.map(addr => 
-            addr.id === addressId ? updatedAddress : addr
-          );
-          localStorage.setItem(`userAddresses_${user.id}`, JSON.stringify(updatedAddresses));
-          return updatedAddresses;
-        });
-        
-        showSuccess('Address updated successfully');
-        return true;
+        const updatedAddresses = addresses.map(addr => 
+          addr.id === addressId ? { ...addr, ...data.address } : addr
+        );
+        setAddresses(updatedAddresses);
+        return data.address;
       } else {
         throw new Error(data.message || 'Failed to update address');
       }
     } catch (error) {
       console.error('Error updating address:', error);
       setError(error.message);
-      showError('Failed to update address. Please try again.');
-      return false;
+      // Don't re-throw the error to prevent unhandled runtime errors
+      return null;
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.id, showSuccess, showError]);
+  }, [isAuthenticated, user?.id, addresses]);
 
   // Delete address
-  const deleteAddress = useCallback(async (addressId, addressType) => {
+  const deleteAddress = useCallback(async (addressId) => {
     if (!isAuthenticated || !user?.id) {
-      showError('Please sign in to manage addresses');
-      return false;
+      throw new Error('User not authenticated');
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/user/addresses', {
+      const response = await fetch(`/api/user/addresses/${addressId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': user.id,
         },
         body: JSON.stringify({
-          id: addressId,
-          type: addressType
-        }),
+          userId: user.id
+        })
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setAddresses(prev => {
-          const updatedAddresses = prev.filter(addr => addr.id !== addressId);
-          if (updatedAddresses.length === 0) {
-            localStorage.removeItem(`userAddresses_${user.id}`);
-          } else {
-            localStorage.setItem(`userAddresses_${user.id}`, JSON.stringify(updatedAddresses));
-          }
-          return updatedAddresses;
-        });
-        
-        showSuccess('Address deleted successfully');
+        const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
+        setAddresses(updatedAddresses);
         return true;
       } else {
         throw new Error(data.message || 'Failed to delete address');
@@ -229,83 +158,81 @@ export const useAddresses = () => {
     } catch (error) {
       console.error('Error deleting address:', error);
       setError(error.message);
-      showError('Failed to delete address. Please try again.');
+      // Don't re-throw the error to prevent unhandled runtime errors
       return false;
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.id, showSuccess, showError]);
+  }, [isAuthenticated, user?.id, addresses]);
 
   // Set default address
-  const setDefaultAddress = useCallback(async (addressId) => {
+  const setDefaultAddress = useCallback(async (addressId, type = 'billing') => {
     if (!isAuthenticated || !user?.id) {
-      showError('Please sign in to manage addresses');
-      return false;
+      throw new Error('User not authenticated');
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      // Update addresses to set the selected one as default
-      setAddresses(prev => {
-        const updatedAddresses = prev.map(addr => ({
-          ...addr,
-          isDefault: addr.id === addressId
-        }));
-        localStorage.setItem(`userAddresses_${user.id}`, JSON.stringify(updatedAddresses));
-        return updatedAddresses;
+      const response = await fetch(`/api/user/addresses/${addressId}/default`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          type
+        })
       });
 
-      // Try to sync with backend
-      const address = addresses.find(addr => addr.id === addressId);
-      if (address) {
-        await updateAddress(addressId, address);
+      const data = await response.json();
+
+      if (data.success) {
+        const updatedAddresses = addresses.map(addr => ({
+          ...addr,
+          is_default_billing: type === 'billing' ? addr.id === addressId : addr.is_default_billing,
+          is_default_shipping: type === 'shipping' ? addr.id === addressId : addr.is_default_shipping
+        }));
+        setAddresses(updatedAddresses);
+        return true;
+      } else {
+        throw new Error(data.message || 'Failed to set default address');
       }
-      
-      showSuccess('Default address updated successfully');
-      return true;
     } catch (error) {
       console.error('Error setting default address:', error);
       setError(error.message);
-      showError('Failed to update default address. Please try again.');
+      // Don't re-throw the error to prevent unhandled runtime errors
       return false;
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.id, addresses, updateAddress, showSuccess, showError]);
+  }, [isAuthenticated, user?.id, addresses]);
 
-  // Load addresses when user changes
-  useEffect(() => {
-    loadAddresses();
-  }, [loadAddresses]);
-
-  // Manual sync function for WooCommerce integration
+  // Sync addresses to WordPress (for authenticated users)
   const syncAddressesToWordPress = useCallback(async () => {
     if (!isAuthenticated || !user?.id || addresses.length === 0) return;
-    
+
     try {
-      console.log('🏠 Syncing addresses to WooCommerce...');
-      
-      // Save each address to WooCommerce
-      for (const address of addresses) {
-        const response = await fetch('/api/user/addresses', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-user-id': user.id,
-          },
-          body: JSON.stringify(address),
-        });
-        
-        if (!response.ok) {
-          console.error('Failed to sync address to WooCommerce:', address.id);
-        }
+      const response = await fetch('/api/user/addresses/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          addresses
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        console.log('✅ Addresses synced to WordPress successfully');
+      } else {
+        console.error('❌ Failed to sync addresses to WordPress:', data.message);
       }
-      
-      console.log('✅ Addresses synced to WooCommerce');
     } catch (error) {
-      console.error('Error syncing addresses to WooCommerce:', error);
+      console.error('❌ Error syncing addresses to WordPress:', error);
     }
   }, [isAuthenticated, user?.id, addresses]);
 
@@ -313,11 +240,11 @@ export const useAddresses = () => {
     addresses,
     loading,
     error,
+    loadAddresses,
     addAddress,
     updateAddress,
     deleteAddress,
     setDefaultAddress,
-    loadAddresses,
     syncAddressesToWordPress
   };
-};
+}

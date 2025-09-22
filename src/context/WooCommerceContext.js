@@ -57,6 +57,7 @@ const actionTypes = {
   CLEAR_CART: 'CLEAR_CART',
   BACKUP_CART: 'BACKUP_CART',
   RESTORE_CART: 'RESTORE_CART',
+  CLEAR_CART_BACKUP: 'CLEAR_CART_BACKUP',
   SET_SEARCH_TERM: 'SET_SEARCH_TERM',
   SET_CURRENT_CATEGORY: 'SET_CURRENT_CATEGORY',
   SET_SORT_OPTIONS: 'SET_SORT_OPTIONS',
@@ -133,9 +134,6 @@ function wooCommerceReducer(state, action) {
         cartData: newCart 
       });
       
-      // Save to localStorage
-      localStorage.setItem('eternitty-cart', JSON.stringify(newCart));
-      
       return { 
         ...state, 
         cart: newCart, 
@@ -151,8 +149,6 @@ function wooCommerceReducer(state, action) {
         return total + (price * item.quantity);
       }, 0);
       const newCount = filteredCart.reduce((count, item) => count + item.quantity, 0);
-      
-      localStorage.setItem('eternitty-cart', JSON.stringify(filteredCart));
       
       return { 
         ...state, 
@@ -175,8 +171,6 @@ function wooCommerceReducer(state, action) {
       }, 0);
       const updatedCount = updatedCart.reduce((count, item) => count + item.quantity, 0);
       
-      localStorage.setItem('eternitty-cart', JSON.stringify(updatedCart));
-      
       return { 
         ...state, 
         cart: updatedCart, 
@@ -186,7 +180,6 @@ function wooCommerceReducer(state, action) {
     }
       
     case actionTypes.CLEAR_CART:
-      localStorage.removeItem('eternitty-cart');
       return { ...state, cart: [], cartTotal: 0, cartCount: 0 };
       
     case actionTypes.BACKUP_CART:
@@ -205,9 +198,6 @@ function wooCommerceReducer(state, action) {
         const restoredTotal = state.cartBackup.cartTotal;
         const restoredCount = state.cartBackup.cartCount;
         
-        // Save restored cart to localStorage
-        localStorage.setItem('eternitty-cart', JSON.stringify(restoredCart));
-        
         return { 
           ...state, 
           cart: restoredCart,
@@ -218,25 +208,26 @@ function wooCommerceReducer(state, action) {
       }
       return state;
       
+    case actionTypes.CLEAR_CART_BACKUP:
+      return { ...state, cartBackup: null };
+      
     case actionTypes.ADD_TO_WISHLIST: {
       const existingItem = state.wishlist.find(item => item.id === action.payload.id);
       if (existingItem) {
         return state; // Already in wishlist
       }
       const newWishlist = [...state.wishlist, action.payload];
-      localStorage.setItem('eternitty-wishlist', JSON.stringify(newWishlist));
       return { ...state, wishlist: newWishlist };
     }
       
     case actionTypes.REMOVE_FROM_WISHLIST: {
       const newWishlist = state.wishlist.filter(item => item.id !== action.payload);
-      localStorage.setItem('eternitty-wishlist', JSON.stringify(newWishlist));
       return { ...state, wishlist: newWishlist };
     }
       
     case actionTypes.LOAD_WISHLIST_FROM_STORAGE: {
-      const savedWishlist = JSON.parse(localStorage.getItem('eternitty-wishlist') || '[]');
-      return { ...state, wishlist: savedWishlist };
+      // No longer loading from localStorage - data comes from WordPress
+      return state;
     }
       
     case actionTypes.SET_WISHLIST_FROM_WORDPRESS: {
@@ -273,26 +264,8 @@ function wooCommerceReducer(state, action) {
       return { ...state, filterType: action.payload, currentPage: 1 };
       
     case actionTypes.LOAD_CART_FROM_STORAGE: {
-      const savedCart = JSON.parse(localStorage.getItem('eternitty-cart') || '[]');
-      const savedTotal = savedCart.reduce((total, item) => {
-        const price = parseFloat(item.price || item.regular_price || 0);
-        return total + (price * item.quantity);
-      }, 0);
-      const savedCount = savedCart.reduce((count, item) => count + item.quantity, 0);
-      
-      console.log('🛒 Loading cart from storage:', { 
-        savedCart: savedCart.length, 
-        savedTotal, 
-        savedCount,
-        cartData: savedCart 
-      });
-      
-      return { 
-        ...state, 
-        cart: savedCart, 
-        cartTotal: savedTotal, 
-        cartCount: savedCount 
-      };
+      // No longer loading from localStorage - data comes from WordPress
+      return state;
     }
       
     case actionTypes.SET_CART_FROM_WORDPRESS: {
@@ -327,15 +300,10 @@ const WooCommerceContext = createContext();
 export function WooCommerceProvider({ children }) {
   const [state, dispatch] = useReducer(wooCommerceReducer, initialState);
 
-  // Load cart and wishlist from localStorage on mount (only if not authenticated)
+  // No longer loading from localStorage - all data comes from WordPress backend
   useEffect(() => {
-    // Only load from localStorage if user is not authenticated
-    // Authenticated users will have their cart loaded from WordPress
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      dispatch({ type: actionTypes.LOAD_CART_FROM_STORAGE });
-      dispatch({ type: actionTypes.LOAD_WISHLIST_FROM_STORAGE });
-    }
+    // Cart and wishlist data will be loaded from WordPress when user authenticates
+    // or when the WordPress storage hook initializes
   }, []);
 
   // Fetch categories on mount
@@ -573,6 +541,13 @@ export function WooCommerceProvider({ children }) {
   }, [dispatch]);
 
   /**
+   * Clear cart backup (after successful order)
+   */
+  const clearCartBackup = useCallback(() => {
+    dispatch({ type: actionTypes.CLEAR_CART_BACKUP });
+  }, [dispatch]);
+
+  /**
    * Add item to wishlist
    */
   const addToWishlist = useCallback((product) => {
@@ -710,31 +685,18 @@ export function WooCommerceProvider({ children }) {
         }, 0);
         const wpCount = wpCart.reduce((count, item) => count + item.quantity, 0);
         
-        // Save WordPress cart to localStorage
-        localStorage.setItem('eternitty-cart', JSON.stringify(wpCart));
-        
         // Update state with WordPress cart data
         dispatch({ 
           type: actionTypes.SET_CART_FROM_WORDPRESS, 
           payload: { cart: wpCart, cartTotal: wpTotal, cartCount: wpCount }
         });
       } else {
-        // No cart data in WordPress, but user is authenticated
-        // Load from localStorage if available (for first-time authenticated users)
-        const localCart = JSON.parse(localStorage.getItem('eternitty-cart') || '[]');
-        if (localCart.length > 0) {
-          console.log('📦 No WordPress cart found, loading from localStorage:', localCart.length, 'items');
-          const localTotal = localCart.reduce((total, item) => {
-            const price = parseFloat(item.price || item.regular_price || 0);
-            return total + (price * item.quantity);
-          }, 0);
-          const localCount = localCart.reduce((count, item) => count + item.quantity, 0);
-          
-          dispatch({ 
-            type: actionTypes.SET_CART_FROM_WORDPRESS, 
-            payload: { cart: localCart, cartTotal: localTotal, cartCount: localCount }
-          });
-        }
+        // No cart data in WordPress - start with empty cart
+        console.log('📦 No WordPress cart found, starting with empty cart');
+        dispatch({ 
+          type: actionTypes.SET_CART_FROM_WORDPRESS, 
+          payload: { cart: [], cartTotal: 0, cartCount: 0 }
+        });
       }
     } catch (error) {
       console.error('❌ Error loading cart from WordPress:', error);
@@ -785,25 +747,18 @@ export function WooCommerceProvider({ children }) {
         // Replace the entire wishlist with WordPress data instead of adding to existing wishlist
         const wpWishlist = result.data.wishlist;
         
-        // Save WordPress wishlist to localStorage
-        localStorage.setItem('eternitty-wishlist', JSON.stringify(wpWishlist));
-        
         // Update state with WordPress wishlist data
         dispatch({ 
           type: actionTypes.SET_WISHLIST_FROM_WORDPRESS, 
           payload: wpWishlist
         });
       } else {
-        // No wishlist data in WordPress, but user is authenticated
-        // Load from localStorage if available (for first-time authenticated users)
-        const localWishlist = JSON.parse(localStorage.getItem('eternitty-wishlist') || '[]');
-        if (localWishlist.length > 0) {
-          console.log('❤️ No WordPress wishlist found, loading from localStorage:', localWishlist.length, 'items');
-          dispatch({ 
-            type: actionTypes.SET_WISHLIST_FROM_WORDPRESS, 
-            payload: localWishlist
-          });
-        }
+        // No wishlist data in WordPress - start with empty wishlist
+        console.log('❤️ No WordPress wishlist found, starting with empty wishlist');
+        dispatch({ 
+          type: actionTypes.SET_WISHLIST_FROM_WORDPRESS, 
+          payload: []
+        });
       }
     } catch (error) {
       console.error('❌ Error loading wishlist from WordPress:', error);
@@ -822,6 +777,7 @@ export function WooCommerceProvider({ children }) {
     clearCart,
     backupCart,
     restoreCart,
+    clearCartBackup,
     addToWishlist,
     removeFromWishlist,
     isInWishlist,

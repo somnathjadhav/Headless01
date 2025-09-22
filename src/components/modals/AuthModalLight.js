@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../context/AuthContext';
 import { useModal } from '../../context/ModalContext';
-import { useTheme } from '../../context/ThemeContext';
 import { useGlobalTypography } from '../../hooks/useGlobalTypography';
 import { useSiteInfo } from '../../hooks/useSiteInfo';
 import { useRecaptchaConfig } from '../../hooks/useRecaptchaConfig';
@@ -27,7 +26,6 @@ export default function AuthModalLight() {
   const router = useRouter();
   const { login, register, isAuthenticated, isLoading, error, clearError } = useAuth();
   const { authModal, closeAuthModal } = useModal();
-  const { isLight } = useTheme();
   const { name: siteName, loading: siteLoading } = useSiteInfo();
   const { isEnabled: isRecaptchaEnabled, isLoading: isRecaptchaLoading } = useRecaptchaConfig();
   
@@ -254,7 +252,7 @@ export default function AuthModalLight() {
     setRecaptchaToken(null);
   };
 
-  if (!authModal.isOpen || !isLight) return null;
+  if (!authModal.isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -343,7 +341,7 @@ export default function AuthModalLight() {
                   {/* Email/Username Field */}
                   <div className="form-group">
                     <input
-                      id="signin-email"
+                      id="signin-email-light"
                       name="email"
                       type="text"
                       autoComplete="username"
@@ -362,7 +360,7 @@ export default function AuthModalLight() {
                   <div className="form-group">
                     <div className="input-group">
                       <input
-                        id="signin-password"
+                        id="signin-password-light"
                         name="password"
                         type={showPassword ? 'text' : 'password'}
                         autoComplete="current-password"

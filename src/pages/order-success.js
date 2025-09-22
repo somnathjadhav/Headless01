@@ -11,62 +11,13 @@ import jsPDF from 'jspdf';
 export default function OrderSuccess() {
   const router = useRouter();
   const { orderId, orderNumber } = router.query;
-  const { restoreCart, cartBackup } = useWooCommerce();
+  const { restoreCart, clearCartBackup, cartBackup } = useWooCommerce();
   const { user, isAuthenticated } = useAuth();
   const { formatPrice } = useCurrency();
-  // Initialize with fallback data
-  const [orderDetails, setOrderDetails] = useState({
-    id: 'demo',
-    number: '387',
-    date: new Date().toISOString(),
-    status: 'Processing',
-    total: 129.99,
-    currency: 'USD',
-    items: [{
-      id: 1,
-      name: 'Sample Product',
-      quantity: 1,
-      price: 129.99,
-      total: 129.99,
-      image: '/placeholder-product.svg'
-    }],
-    billing: {
-      first_name: user?.first_name || '',
-      last_name: user?.last_name || '',
-      company: '',
-      address_1: '',
-      address_2: '',
-      city: '',
-      state: '',
-      postcode: '',
-      country: '',
-      email: user?.email || '',
-      phone: ''
-    },
-    shipping: {
-      first_name: user?.first_name || '',
-      last_name: user?.last_name || '',
-      company: '',
-      address_1: '',
-      address_2: '',
-      city: '',
-      state: '',
-      postcode: '',
-      country: ''
-    },
-    paymentMethod: 'Credit Card',
-    paymentStatus: 'Paid',
-    trackingNumber: null,
-    notes: '',
-    dateModified: new Date().toISOString(),
-    dateCompleted: null,
-    subtotal: 129.99,
-    shippingTotal: 0,
-    taxTotal: 0,
-    discountTotal: 0
-  });
+  // Initialize with empty state - data will be fetched from server
+  const [orderDetails, setOrderDetails] = useState(null);
   const [siteInfo, setSiteInfo] = useState(null);
-  const [loading, setLoading] = useState(false); // Set to false since we have fallback data
+  const [loading, setLoading] = useState(true); // Set to true since we need to fetch data
   const [error, setError] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -120,12 +71,13 @@ export default function OrderSuccess() {
     fetchOrderData();
   }, [router.isReady, orderId]);
 
-  // Restore cart backup when component mounts (after order completion)
+  // Clear cart backup when component mounts (after successful order completion)
   useEffect(() => {
     if (cartBackup) {
-      restoreCart();
+      console.log('🛒 Order success page - clearing cart backup to prevent old items from returning');
+      clearCartBackup();
     }
-  }, [cartBackup, restoreCart]);
+  }, [cartBackup, clearCartBackup]);
 
 
   // Function to handle PDF invoice download
@@ -144,7 +96,7 @@ export default function OrderSuccess() {
       status: orderDetails.status || 'Processing',
       paymentMethod: orderDetails.paymentMethod || 'Credit Card',
       paymentStatus: orderDetails.paymentStatus || 'Paid',
-      total: orderDetails.total || orderDetails.totalAmount || '129.99',
+      total: orderDetails.total || orderDetails.totalAmount || '0.00',
       billing: orderDetails.billing || {
         first_name: user?.first_name || '',
         last_name: user?.last_name || '',
@@ -160,7 +112,7 @@ export default function OrderSuccess() {
       items: orderDetails.items || [{
         name: 'Product Item',
         quantity: 1,
-        price: 129.99
+        price: 0.00
       }]
     };
 

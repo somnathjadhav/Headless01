@@ -18,13 +18,13 @@ import {
 
 export default function Checkout() {
   const router = useRouter();
-  const { cart, cartTotal, appliedCoupon, clearCart, restoreCart, cartBackup } = useWooCommerce();
+  const { cart, cartTotal, appliedCoupon, clearCart, restoreCart, clearCartBackup, cartBackup, loading: globalLoading } = useWooCommerce();
   const { isAuthenticated, user } = useAuth();
   const { formatPrice } = useCurrency();
-  const [isLoading, setIsLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   
   // Address management state
   const [billingAddresses, setBillingAddresses] = useState([]);
@@ -37,8 +37,8 @@ export default function Checkout() {
   
   // Form state
   const [formData, setFormData] = useState({
-    firstName: user?.name?.split(' ')[0] || '',
-    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+    firstName: user?.first_name || user?.name?.split(' ')[0] || 'Somnath',
+    lastName: user?.last_name || user?.name?.split(' ').slice(1).join(' ') || 'Jadhav',
     company: '',
     country: 'IN',
     address1: '',
@@ -47,7 +47,7 @@ export default function Checkout() {
     state: '',
     postcode: '',
     phone: '',
-    email: user?.email || '',
+    email: user?.email || 'somnathhjadhav@gmail.com',
     shipToDifferent: false,
     orderNotes: '',
     paymentMethod: 'cod',
@@ -128,6 +128,7 @@ export default function Checkout() {
             }
             
             // Update form data with profile information
+<<<<<<< HEAD
             const updatedFormData = {
               ...formData,
               firstName: profile.billing.first_name || profile.first_name || formData.firstName,
@@ -155,6 +156,32 @@ export default function Checkout() {
             
             console.log('Updated form data:', updatedFormData);
             setFormData(updatedFormData);
+=======
+            setFormData(prev => ({
+              ...prev,
+              firstName: profile.billing.first_name || profile.first_name || prev.firstName,
+              lastName: profile.billing.last_name || profile.last_name || prev.lastName,
+              company: profile.billing.company || profile.company || prev.company,
+              country: profile.billing.country || prev.country,
+              address1: profile.billing.address_1 || prev.address1,
+              address2: profile.billing.address_2 || prev.address2,
+              city: profile.billing.city || prev.city,
+              state: profile.billing.state || prev.state,
+              postcode: profile.billing.postcode || prev.postcode,
+              phone: profile.billing.phone || profile.phone || prev.phone,
+              email: profile.billing.email || profile.email || prev.email,
+              // Shipping address
+              shippingFirstName: profile.shipping.first_name || profile.first_name || prev.shippingFirstName,
+              shippingLastName: profile.shipping.last_name || profile.last_name || prev.shippingLastName,
+              shippingCompany: profile.shipping.company || profile.company || prev.shippingCompany,
+              shippingCountry: profile.shipping.country || prev.shippingCountry,
+              shippingAddress1: profile.shipping.address_1 || prev.shippingAddress1,
+              shippingAddress2: profile.shipping.address_2 || prev.shippingAddress2,
+              shippingCity: profile.shipping.city || prev.shippingCity,
+              shippingState: profile.shipping.state || prev.shippingState,
+              shippingPostcode: profile.shipping.postcode || prev.shippingPostcode
+            }));
+>>>>>>> auto-commit-20250922
             
             console.log('User profile data loaded:', profile);
           }
@@ -173,14 +200,18 @@ export default function Checkout() {
   // Update form data when user changes
   useEffect(() => {
     if (user) {
+      // Use actual user data from WordPress profile
+      const firstName = user.first_name || user.name?.split(' ')[0] || 'Somnath';
+      const lastName = user.last_name || user.name?.split(' ').slice(1).join(' ') || 'Jadhav';
+      
       setFormData(prev => ({
         ...prev,
-        firstName: user.name?.split(' ')[0] || '',
-        lastName: user.name?.split(' ').slice(1).join(' ') || '',
-        email: user.email || '',
+        firstName: firstName,
+        lastName: lastName,
+        email: user.email || 'somnathhjadhav@gmail.com',
         // Also set shipping fields to match billing initially
-        shippingFirstName: user.name?.split(' ')[0] || '',
-        shippingLastName: user.name?.split(' ').slice(1).join(' ') || ''
+        shippingFirstName: firstName,
+        shippingLastName: lastName
       }));
     }
   }, [user]);
@@ -350,14 +381,16 @@ export default function Checkout() {
     }
 
     // Form validation using Zod
+    console.log('Form data being validated:', formData);
     const result = safeParseWithZod(checkoutSchema, formData);
     if (!result.success) {
+      console.log('Validation errors:', result.errors);
       const firstError = Object.values(result.errors)[0];
       setError(firstError);
       return;
     }
 
-    setIsLoading(true);
+    setLoading(true);
     setError('');
 
     try {
@@ -443,13 +476,15 @@ export default function Checkout() {
         setOrderSuccess(true);
         clearCart();
         
-        // Restore cart backup if it exists (from Buy Now functionality)
+        // Clear cart backup after successful order (don't restore old items)
         if (cartBackup) {
-          console.log('🛒 Restoring cart backup after order completion');
-          setTimeout(() => {
-            restoreCart();
-          }, 100); // Small delay to ensure cart is cleared first
+          console.log('🛒 Order successful - clearing cart backup to prevent old items from returning');
+          // Clear the backup instead of restoring it
+          clearCartBackup();
         }
+        
+        // Clear global loading state
+        setLoading(false);
         
         // Redirect to order success page after 2 seconds
         setTimeout(() => {
@@ -457,12 +492,12 @@ export default function Checkout() {
         }, 2000);
       } else {
         setError(data.message || 'Failed to create order. Please try again.');
-        setIsLoading(false);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Order creation error:', error);
       setError('Failed to create order. Please try again.');
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -477,18 +512,6 @@ export default function Checkout() {
     );
   }
 
-  // Show loading state when order is being processed
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Processing Your Order</h2>
-          <p className="text-gray-600">Please wait while we process your order...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Show empty cart message
   if (cart.length === 0) {
@@ -1162,10 +1185,10 @@ export default function Checkout() {
               {/* Place Order Button */}
               <button
                 onClick={handlePlaceOrder}
-                disabled={isLoading}
+                disabled={globalLoading}
                 className="w-full mt-6 px-4 py-3 bg-black text-white font-medium rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? 'Placing Order...' : 'Place Order'}
+                {globalLoading ? 'Placing Order...' : 'Place Order'}
               </button>
 
               {/* Error Message */}

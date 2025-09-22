@@ -15,10 +15,11 @@ export const isValidPhone = (phone) => {
   return phoneRegex.test(phone.replace(/[\s\-()]/g, ''));
 };
 
-// Name validation (letters, spaces, hyphens, apostrophes)
+// Name validation (more flexible for international names)
 export const isValidName = (name) => {
-  const nameRegex = /^[a-zA-Z\s\-']{2,50}$/;
-  return nameRegex.test(name);
+  if (!name || typeof name !== 'string') return false;
+  const trimmedName = name.trim();
+  return trimmedName.length >= 2 && trimmedName.length <= 50;
 };
 
 // Password strength validation

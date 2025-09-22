@@ -69,7 +69,9 @@ export default function ProductDetailPage({ product: initialProduct, slug: initi
     addToWishlist, 
     removeFromWishlist,
     wishlist,
-    cart
+    cart,
+    backupCart,
+    clearCart
   } = useWooCommerce();
   
   const { 
@@ -142,6 +144,34 @@ export default function ProductDetailPage({ product: initialProduct, slug: initi
       console.log('Product added to cart successfully!');
     } catch (error) {
       console.error('Error adding to cart:', error);
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  // Handle buy now (one-click checkout)
+  const handleBuyNow = async () => {
+    if (!product) return;
+    
+    setIsAddingToCart(true);
+    try {
+      const productToAdd = selectedVariation || product;
+      
+      // Backup existing cart items first (if any)
+      if (cart.length > 0) {
+        backupCart();
+      }
+      
+      // Clear existing cart items
+      clearCart();
+      
+      // Add the current product to the now-empty cart
+      addToCart(productToAdd, quantity);
+      
+      // Redirect to checkout page
+      router.push('/checkout');
+    } catch (error) {
+      console.error('Error with buy now:', error);
     } finally {
       setIsAddingToCart(false);
     }
@@ -281,6 +311,7 @@ export default function ProductDetailPage({ product: initialProduct, slug: initi
                 quantity={quantity}
                 onQuantityChange={setQuantity}
                 onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
                 isAddingToCart={isAddingToCart}
                 isInCart={isInCart}
               />

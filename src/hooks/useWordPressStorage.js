@@ -23,6 +23,8 @@ export function useWordPressStorage() {
   const lastCartLength = useRef(0);
   const lastWishlistLength = useRef(0);
   const lastAddressesLength = useRef(0);
+  const lastAddressSyncTime = useRef(0);
+  const addressSyncTimeout = useRef(null);
 
   // Load data from WordPress when user logs in
   useEffect(() => {
@@ -75,9 +77,31 @@ export function useWordPressStorage() {
     // 3. We're not currently loading from WordPress (to prevent loops)
     // 4. Addresses length actually changed (to prevent unnecessary saves)
     if (isAuthenticated && user?.id && addresses.length > 0 && !isLoadingFromWordPress.current && addresses.length !== lastAddressesLength.current) {
-      console.log('🏠 Addresses changed, saving to WordPress...');
+      console.log('🏠 Addresses changed, scheduling sync to WordPress...');
       lastAddressesLength.current = addresses.length;
-      syncAddressesToWordPress();
+      
+      // Clear any existing timeout
+      if (addressSyncTimeout.current) {
+        clearTimeout(addressSyncTimeout.current);
+      }
+      
+      // Throttle sync calls - only sync if it's been at least 2 seconds since last sync
+      const now = Date.now();
+      const timeSinceLastSync = now - lastAddressSyncTime.current;
+      const minSyncInterval = 2000; // 2 seconds
+      
+      if (timeSinceLastSync >= minSyncInterval) {
+        // Sync immediately
+        lastAddressSyncTime.current = now;
+        syncAddressesToWordPress();
+      } else {
+        // Schedule sync for later
+        const delay = minSyncInterval - timeSinceLastSync;
+        addressSyncTimeout.current = setTimeout(() => {
+          lastAddressSyncTime.current = Date.now();
+          syncAddressesToWordPress();
+        }, delay);
+      }
     }
   }, [addresses, isAuthenticated, user?.id, syncAddressesToWordPress]);
 

@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 
 export function useAddresses() {
-  const { isAuthenticated, user, isInitializing } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { showSuccess, showError } = useNotifications();
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -11,47 +11,13 @@ export function useAddresses() {
   const loadedUserIdRef = useRef(null);
   const isLoadingRef = useRef(false);
 
-  // Load addresses from localStorage on mount
-  useEffect(() => {
-    const storedAddresses = localStorage.getItem('userAddresses');
-    if (storedAddresses) {
-      try {
-        const parsedAddresses = JSON.parse(storedAddresses);
-        setAddresses(parsedAddresses);
-        console.log('📦 Loaded addresses from localStorage:', parsedAddresses.length);
-      } catch (error) {
-        console.error('Error parsing stored addresses:', error);
-        localStorage.removeItem('userAddresses');
-      }
-    }
-  }, []);
-
-  // Save addresses to localStorage whenever they change
-  useEffect(() => {
-    if (addresses.length > 0) {
-      localStorage.setItem('userAddresses', JSON.stringify(addresses));
-      console.log('💾 Saved addresses to localStorage:', addresses.length);
-    }
-  }, [addresses]);
-
   // Load addresses from server
   const loadAddresses = useCallback(async () => {
-    // Don't clear addresses during initialization
-    if (isInitializing) {
-      console.log('Auth still initializing, skipping address load');
-      return;
-    }
     
     if (!isAuthenticated || !user?.id) {
-      // Only clear addresses if we don't have any in localStorage
-      const storedAddresses = localStorage.getItem('userAddresses');
-      if (!storedAddresses) {
-        console.log('Not authenticated or no user ID, clearing addresses');
-        setAddresses([]);
-        loadedUserIdRef.current = null;
-      } else {
-        console.log('Not authenticated but keeping addresses from localStorage');
-      }
+      console.log('Not authenticated or no user ID, clearing addresses');
+      setAddresses([]);
+      loadedUserIdRef.current = null;
       return;
     }
 
@@ -93,7 +59,7 @@ export function useAddresses() {
       setLoading(false);
       isLoadingRef.current = false;
     }
-  }, [isAuthenticated, user?.id, isInitializing, showSuccess, showError]);
+  }, [isAuthenticated, user?.id, showSuccess, showError]);
 
   // Load addresses when user changes
   useEffect(() => {
@@ -114,11 +80,9 @@ export function useAddresses() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': user.id,
         },
-        body: JSON.stringify({
-          userId: user.id,
-          ...addressData
-        })
+        body: JSON.stringify(addressData)
       });
 
       const data = await response.json();
@@ -156,11 +120,9 @@ export function useAddresses() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': user.id,
         },
-        body: JSON.stringify({
-          userId: user.id,
-          ...addressData
-        })
+        body: JSON.stringify(addressData)
       });
 
       const data = await response.json();
@@ -200,10 +162,8 @@ export function useAddresses() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.id
-        })
+          'x-user-id': user.id,
+        }
       });
 
       const data = await response.json();
@@ -241,9 +201,9 @@ export function useAddresses() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': user.id,
         },
         body: JSON.stringify({
-          userId: user.id,
           type
         })
       });
@@ -282,10 +242,9 @@ export function useAddresses() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': user.id
+          'x-user-id': user.id,
         },
         body: JSON.stringify({
-          userId: user.id,
           addresses
         })
       });
@@ -296,21 +255,23 @@ export function useAddresses() {
         showSuccess('Addresses synced to backend successfully!');
       } else {
         console.error('❌ Failed to sync addresses to WordPress:', data.message);
-        showError(`Failed to sync addresses: ${data.message}`);
+        
+        // Handle rate limiting specifically
+        if (response.status === 429 || data.error === 'rate_limit_exceeded') {
+          showError('Rate limit exceeded. Addresses will sync automatically in a moment.');
+        } else if (response.status === 403 || response.status === 401 || 
+                   data.message?.includes('not allowed to edit') || 
+                   data.message?.includes('permission')) {
+          showError('Permission denied. Addresses will be saved locally and synced when permissions are available.');
+        } else {
+          showError(`Failed to sync addresses: ${data.message}`);
+        }
       }
     } catch (error) {
       console.error('❌ Error syncing addresses to WordPress:', error);
       showError(`Failed to sync addresses: ${error.message}`);
     }
   }, [isAuthenticated, user?.id, showSuccess, showError]);
-
-  // Clear addresses and localStorage
-  const clearAddresses = useCallback(() => {
-    setAddresses([]);
-    localStorage.removeItem('userAddresses');
-    loadedUserIdRef.current = null;
-    console.log('🗑️ Cleared addresses and localStorage');
-  }, []);
 
   return {
     addresses,

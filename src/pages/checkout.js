@@ -594,19 +594,19 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b mb-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Checkout</h1>
+        <div className="bg-white shadow-sm border-b mb-6 sm:mb-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Checkout</h1>
             <p className="text-gray-600">
               Complete your purchase
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Checkout Form */}
           <div className="lg:col-span-2 space-y-6">
             {/* Billing Details */}

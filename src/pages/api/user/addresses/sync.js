@@ -133,6 +133,24 @@ async function syncAddressesToBackend(req, res, userId) {
       const errorData = await wcResponse.json();
       console.log('Error details:', errorData);
       
+      // Handle rate limiting specifically
+      if (wcResponse.status === 429 || errorData.message?.includes('Too many requests')) {
+        return res.status(429).json({
+          success: false,
+          message: 'Rate limit exceeded. Please wait a moment before syncing again.',
+          error: 'rate_limit_exceeded',
+          retryAfter: 30 // seconds
+        });
+      }
+      
+      // Handle permission errors - fallback to WordPress user meta
+      if (wcResponse.status === 403 || wcResponse.status === 401 || 
+          errorData.message?.includes('not allowed to edit') || 
+          errorData.message?.includes('permission')) {
+        console.log('🔄 WooCommerce API permission denied, falling back to WordPress user meta...');
+        return await syncAddressesToWordPressUserMeta(req, res, userId, addresses);
+      }
+      
       return res.status(wcResponse.status).json({
         success: false,
         message: `WooCommerce API error: ${errorData.message || wcResponse.statusText}`,
@@ -155,6 +173,87 @@ async function syncAddressesToBackend(req, res, userId) {
     return res.status(500).json({
       success: false,
       message: 'Failed to sync addresses to backend',
+      error: error.message
+    });
+  }
+}
+
+// Fallback function to sync addresses to WordPress user meta
+async function syncAddressesToWordPressUserMeta(req, res, userId, addresses) {
+  try {
+    console.log('🔄 Syncing addresses to WordPress user meta...');
+    
+    // Prepare user meta data
+    const userMetaData = {};
+    
+    // Process each address and store in user meta
+    for (const address of addresses) {
+      const nameParts = address.name.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      if (address.type === 'billing') {
+        userMetaData.billing_first_name = firstName;
+        userMetaData.billing_last_name = lastName;
+        userMetaData.billing_company = address.company || '';
+        userMetaData.billing_address_1 = address.street || '';
+        userMetaData.billing_address_2 = '';
+        userMetaData.billing_city = address.city || '';
+        userMetaData.billing_state = address.state || '';
+        userMetaData.billing_postcode = address.zipCode || address.postcode || '';
+        userMetaData.billing_country = address.country || 'IN';
+        userMetaData.billing_phone = address.phone || '';
+      } else if (address.type === 'shipping') {
+        userMetaData.shipping_first_name = firstName;
+        userMetaData.shipping_last_name = lastName;
+        userMetaData.shipping_company = address.company || '';
+        userMetaData.shipping_address_1 = address.street || '';
+        userMetaData.shipping_address_2 = '';
+        userMetaData.shipping_city = address.city || '';
+        userMetaData.shipping_state = address.state || '';
+        userMetaData.shipping_postcode = address.zipCode || address.postcode || '';
+        userMetaData.shipping_country = address.country || 'IN';
+      }
+    }
+    
+    // Store addresses in user meta using WordPress REST API
+    const wpResponse = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/eternitty/v1/user-addresses/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        addresses: userMetaData
+      })
+    });
+    
+    if (!wpResponse.ok) {
+      console.log('❌ WordPress user meta update failed:', wpResponse.status, wpResponse.statusText);
+      const errorData = await wpResponse.json();
+      console.log('WordPress error details:', errorData);
+      
+      return res.status(wpResponse.status).json({
+        success: false,
+        message: `WordPress user meta error: ${errorData.message || wpResponse.statusText}`,
+        error: errorData.code || 'wordpress_user_meta_error'
+      });
+    }
+    
+    const wpData = await wpResponse.json();
+    console.log('✅ Addresses synced to WordPress user meta successfully');
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Addresses synced to WordPress user meta successfully',
+      source: 'wordpress_user_meta',
+      syncedAddresses: addresses.length
+    });
+    
+  } catch (error) {
+    console.error('Error syncing addresses to WordPress user meta:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to sync addresses to WordPress user meta',
       error: error.message
     });
   }

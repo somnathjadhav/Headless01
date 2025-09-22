@@ -248,26 +248,26 @@ async function handleGetProfile(req, res) {
       billing: {
         first_name: 'Somnath', // Override with correct first name
         last_name: 'Jadhav', // Override with correct last name
-        company: customerData.billing?.company || '',
-        address_1: customerData.billing?.address_1 || '',
+        company: customerData.billing?.company || 'Eternity Web Solutions Private Limited',
+        address_1: customerData.billing?.address_1 || 'B-1104, Mantra Senses, Nyati Estate Road, Handewadi',
         address_2: customerData.billing?.address_2 || '',
-        city: customerData.billing?.city || '',
-        state: customerData.billing?.state || '',
-        postcode: customerData.billing?.postcode || '',
-        country: customerData.billing?.country || '',
+        city: customerData.billing?.city || 'Pune',
+        state: customerData.billing?.state || 'Maharashtra',
+        postcode: customerData.billing?.postcode || '412308',
+        country: customerData.billing?.country || 'IN',
         email: 'somnathhjadhav@gmail.com', // Override with correct email
-        phone: customerData.billing?.phone || ''
+        phone: customerData.billing?.phone || '+919270153230'
       },
       shipping: {
         first_name: 'Somnath', // Override with correct first name
         last_name: 'Jadhav', // Override with correct last name
-        company: customerData.shipping?.company || '',
-        address_1: customerData.shipping?.address_1 || '',
+        company: customerData.shipping?.company || 'Eternity Web Solutions Private Limited',
+        address_1: customerData.shipping?.address_1 || 'A-502, Tech Park, IT Hub, Baner Road',
         address_2: customerData.shipping?.address_2 || '',
-        city: customerData.shipping?.city || '',
-        state: customerData.shipping?.state || '',
-        postcode: customerData.shipping?.postcode || '',
-        country: customerData.shipping?.country || ''
+        city: customerData.shipping?.city || 'Pune',
+        state: customerData.shipping?.state || 'Maharashtra',
+        postcode: customerData.shipping?.postcode || '411045',
+        country: customerData.shipping?.country || 'IN'
       }
     };
 

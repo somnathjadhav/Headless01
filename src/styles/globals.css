@@ -185,6 +185,13 @@ label {
   line-height: 2 !important;
 }
 
+/* Address card text consistency */
+.address-card-text {
+  font-size: 0.875rem !important; /* 14px */
+  line-height: 1.25rem !important; /* 20px */
+  font-family: 'Instrument Sans', system-ui, -apple-system, 'system-ui', 'Segoe UI', Roboto, sans-serif !important;
+}
+
 /* Product Description Styling */
 .prose-content {
   line-height: 1.7;

@@ -6,8 +6,9 @@ import { useWishlistAuth } from '../../hooks/useWishlistAuth';
 import { HeartIcon, ShoppingCartIcon, TrashIcon, StarIcon } from '../icons';
 import LoginPromptModal from '../modals/LoginPromptModal';
 
-export default function Wishlist() {
-  const { wishlist, addToCart, removeFromWishlist } = useWooCommerce();
+export default function Wishlist({ wishlist: propWishlist }) {
+  const { wishlist: contextWishlist, addToCart, removeFromWishlist } = useWooCommerce();
+  const wishlist = propWishlist || contextWishlist;
   const { formatPrice } = useCurrency();
   const { handleWishlistAction, showLoginPrompt, closeLoginPrompt } = useWishlistAuth();
 

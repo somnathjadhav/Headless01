@@ -77,7 +77,7 @@ class RequestDeduplication {
         // Handle rate limit responses gracefully
         if (response.status === 429) {
           const retryAfter = response.headers.get('Retry-After');
-          const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 5000;
+          const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 10000; // Increased to 10 seconds
           console.warn(`Server rate limit hit. Waiting ${waitTime}ms`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
           // Retry once after waiting

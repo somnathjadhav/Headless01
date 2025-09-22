@@ -138,48 +138,41 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Check for existing token on mount
+  // Check for existing session on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    const user = localStorage.getItem('auth_user');
-    const authVersion = localStorage.getItem('auth_version');
-    const currentVersion = '2.0.0'; // Increment this when auth data structure changes
-    
-    // Clear old cached data if version doesn't match
-    if (authVersion !== currentVersion) {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_version');
-      dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
-      return;
-    }
-    
-    if (token && user) {
-      try {
-        const userData = JSON.parse(user);
-        
-        // Additional validation: Check if user data contains old hardcoded values
-        if (userData.name === 'John Doe' || userData.email === 'john.doe@example.com') {
-          console.log('🧹 Clearing old hardcoded user data from cache');
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('auth_user');
-          dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
-          return;
-        }
-        
-        dispatch({
-          type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: { token, user: userData }
-        });
-      } catch (error) {
-        // console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+    // Check if user is authenticated via server-side session
+    fetch('/api/auth/verify', {
+      method: 'GET',
+      credentials: 'include', // Include cookies for session-based auth
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error('No valid session');
       }
-    }
-    
-    // Mark initialization as complete
-    dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
+    })
+    .then(data => {
+      if (data.success && data.user) {
+        dispatch({ 
+          type: AUTH_ACTIONS.LOGIN_SUCCESS, 
+          payload: { 
+            token: data.token || 'session-based',
+            user: data.user,
+            message: 'Session restored'
+          } 
+        });
+      } else {
+        dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
+      }
+    })
+    .catch(error => {
+      console.log('No valid session found:', error.message);
+      dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
+    });
   }, []);
 
   // Login function
@@ -198,14 +191,10 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (data.success) {
-        // Store in localStorage with version
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('auth_user', JSON.stringify(data.user));
-        localStorage.setItem('auth_version', '2.0.0');
-        
+        // Session is managed server-side via cookies
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: { token: data.token, user: data.user }
+          payload: { token: data.token || 'session-based', user: data.user }
         });
         
         return { success: true };
@@ -275,10 +264,21 @@ export function AuthProvider({ children }) {
   };
 
   // Logout function
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
-    dispatch({ type: AUTH_ACTIONS.LOGOUT });
+  const logout = async () => {
+    try {
+      // Call server-side logout to clear session
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      dispatch({ type: AUTH_ACTIONS.LOGOUT });
+    }
   };
 
   // Google login function
@@ -297,14 +297,10 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (data.success) {
-        // Store in localStorage with version
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('auth_user', JSON.stringify(data.user));
-        localStorage.setItem('auth_version', '2.0.0');
-        
+        // Session is managed server-side via cookies
         dispatch({
           type: AUTH_ACTIONS.GOOGLE_LOGIN_SUCCESS,
-          payload: { token: data.token, user: data.user }
+          payload: { token: data.token || 'session-based', user: data.user }
         });
         
         return { success: true };

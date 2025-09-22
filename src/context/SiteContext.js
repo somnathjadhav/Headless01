@@ -3,18 +3,13 @@ import { createContext, useContext, useState } from 'react'
 const SiteContext = createContext()
 
 export function SiteProvider({ children }) {
-  const [darkMode, setDarkMode] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [siteSettings, setSiteSettings] = useState({
     title: 'Headless WordPress',
     description: 'A modern headless WordPress site'
   })
-
-  const toggleDarkMode = () => setDarkMode(!darkMode)
   
   const value = {
-    darkMode,
-    toggleDarkMode,
     isAuthenticated,
     setIsAuthenticated,
     siteSettings,

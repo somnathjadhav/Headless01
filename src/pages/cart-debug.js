@@ -5,18 +5,10 @@ import { useAuth } from '../context/AuthContext';
 export default function CartDebug() {
   const { cart, cartCount, cartTotal, addToCart, removeFromCart, clearCart } = useWooCommerce();
   const { isAuthenticated, user } = useAuth();
-  const [localStorageCart, setLocalStorageCart] = useState(null);
-
-  useEffect(() => {
-    // Check localStorage cart
-    const savedCart = localStorage.getItem('eternitty-cart');
-    setLocalStorageCart(savedCart ? JSON.parse(savedCart) : []);
-  }, []);
+  // No longer using localStorage for cart storage
 
   const handleClearCart = () => {
     clearCart();
-    localStorage.removeItem('eternitty-cart');
-    setLocalStorageCart([]);
   };
 
   const handleAddTestProduct = () => {
@@ -76,26 +68,12 @@ export default function CartDebug() {
           )}
         </div>
 
-        {/* LocalStorage Cart */}
+        {/* Storage Information */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">LocalStorage Cart</h2>
+          <h2 className="text-xl font-semibold mb-4">Storage Information</h2>
           <div className="space-y-2">
-            <p><strong>Items in localStorage:</strong> {localStorageCart?.length || 0}</p>
-            {localStorageCart && localStorageCart.length > 0 ? (
-              <div className="space-y-2">
-                <h3 className="font-medium">LocalStorage Items:</h3>
-                {localStorageCart.map((item, index) => (
-                  <div key={item.id || index} className="bg-gray-50 p-3 rounded">
-                    <p><strong>ID:</strong> {item.id}</p>
-                    <p><strong>Name:</strong> {item.name}</p>
-                    <p><strong>Price:</strong> ${item.price || item.regular_price}</p>
-                    <p><strong>Quantity:</strong> {item.quantity}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500">No items in localStorage</p>
-            )}
+            <p><strong>Note:</strong> Cart data is now managed server-side via WordPress backend</p>
+            <p><strong>No localStorage:</strong> All data is fetched from and saved to WordPress</p>
           </div>
         </div>
 

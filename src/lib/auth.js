@@ -1,14 +1,16 @@
-// JWT/OAuth helpers for secure queries
+// Session-based auth helpers (no localStorage)
 export function getAuthHeaders() {
-  const token = localStorage.getItem('auth_token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  // Session-based authentication - no token needed in headers
+  return {}
 }
 
 export function isAuthenticated() {
-  return !!localStorage.getItem('auth_token')
+  // This should be checked via server-side session verification
+  // For now, return false and let the AuthContext handle authentication state
+  return false
 }
 
 export function logout() {
-  localStorage.removeItem('auth_token')
+  // Logout is handled by the AuthContext
   window.location.href = '/'
 }

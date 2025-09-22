@@ -74,55 +74,24 @@
   box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
 }
 
-/* Dark mode form inputs */
-.dark .form-input {
-  @apply bg-gray-800 border-gray-600 text-white placeholder-gray-400;
-  @apply focus:ring-purple-400 focus:border-purple-400;
-}
-
-.dark .form-input-sm {
-  @apply bg-gray-800 border-gray-600 text-white placeholder-gray-400;
-  @apply focus:ring-purple-400 focus:border-purple-400;
-}
-
-.dark .form-input:focus {
-  box-shadow: 0 0 0 3px rgb(168 85 247 / 0.1);
-}
-
-.dark .form-input.error {
-  @apply border-red-500 focus:ring-red-400 focus:border-red-400;
-}
-
-.dark .form-input.error:focus {
-  box-shadow: 0 0 0 3px rgb(248 113 113 / 0.1);
-}
 
 /* Form Label Styles */
 .form-label {
   @apply block text-sm font-medium text-gray-700 mb-2;
 }
 
-.dark .form-label {
-  @apply text-gray-300;
-}
 
 /* Form Error Styles */
 .form-error {
   @apply mt-1 text-sm text-red-600;
 }
 
-.dark .form-error {
-  @apply text-red-400;
-}
 
 /* Form Help Text */
 .form-help {
   @apply mt-1 text-xs text-gray-500;
 }
 
-.dark .form-help {
-  @apply text-gray-400;
-}
 
 /* Global Button Styles */
 .btn {
@@ -156,10 +125,6 @@
   @apply focus:ring-gray-500;
 }
 
-.dark .btn-secondary {
-  @apply bg-gray-700 text-white border-gray-600;
-  @apply hover:bg-gray-600;
-}
 
 .btn-outline {
   @apply bg-transparent text-purple-600 border border-purple-600;
@@ -167,10 +132,6 @@
   @apply focus:ring-purple-500;
 }
 
-.dark .btn-outline {
-  @apply text-purple-400 border-purple-400;
-  @apply hover:bg-purple-900/20 hover:text-purple-300;
-}
 
 .btn-ghost {
   @apply bg-transparent text-gray-600;
@@ -178,10 +139,6 @@
   @apply focus:ring-gray-500;
 }
 
-.dark .btn-ghost {
-  @apply text-gray-400;
-  @apply hover:bg-gray-800 hover:text-gray-200;
-}
 
 .btn-danger {
   @apply bg-red-600 text-white;
@@ -220,17 +177,11 @@
   border-radius: var(--radius-xl);
 }
 
-.dark .card {
-  @apply bg-gray-800 border-gray-700;
-}
 
 .card-header {
   @apply px-6 py-4 border-b border-gray-200;
 }
 
-.dark .card-header {
-  @apply border-gray-700;
-}
 
 .card-body {
   @apply px-6 py-4;
@@ -240,9 +191,6 @@
   @apply px-6 py-4 border-t border-gray-200;
 }
 
-.dark .card-footer {
-  @apply border-gray-700;
-}
 
 /* Modal Styles */
 .modal-backdrop {
@@ -258,9 +206,6 @@
   border-radius: var(--radius-3xl);
 }
 
-.dark .modal-content {
-  @apply bg-gray-800;
-}
 
 /* Form Group Styles */
 .form-group {
@@ -301,10 +246,6 @@
   @apply h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300;
 }
 
-.dark .form-checkbox,
-.dark .form-radio {
-  @apply border-gray-600;
-}
 
 /* Select Styles */
 .form-select {

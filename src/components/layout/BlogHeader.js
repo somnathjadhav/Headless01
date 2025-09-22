@@ -43,44 +43,9 @@ export default function BlogHeader() {
   // Site info from WordPress backend
   const siteInfo = useSiteInfo();
   
-  // Detect theme preference and select appropriate logo
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
   
-  useEffect(() => {
-    // Check for dark theme preference
-    const checkTheme = () => {
-      if (typeof window !== 'undefined') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const hasDarkClass = document.documentElement.classList.contains('dark');
-        setIsDarkTheme(prefersDark || hasDarkClass);
-      }
-    };
-    
-    checkTheme();
-    
-    // Listen for theme changes
-    if (typeof window !== 'undefined') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      mediaQuery.addEventListener('change', checkTheme);
-      
-      // Watch for class changes on document element
-      const observer = new MutationObserver(checkTheme);
-      observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['class']
-      });
-      
-      return () => {
-        mediaQuery.removeEventListener('change', checkTheme);
-        observer.disconnect();
-      };
-    }
-  }, []);
-  
-  // Select appropriate logo based on theme
-  const currentLogo = isDarkTheme && themeOptions.branding.dark_logo 
-    ? themeOptions.branding.dark_logo 
-    : themeOptions.branding.light_logo || themeOptions.branding.logo;
+  // Select appropriate logo
+  const currentLogo = themeOptions.branding.light_logo || themeOptions.branding.logo;
   
   // State for mobile menu and profile dropdown
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

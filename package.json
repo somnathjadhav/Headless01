@@ -27,7 +27,7 @@
     "build:production": "NODE_ENV=production npm run build",
     "start:production": "NODE_ENV=production npm run start",
     "cache:clear": "node -e \"const { cacheManager } = require('./src/lib/redis-cache'); cacheManager.clear();\"",
-    "performance:test": "npm run build && npm run start & sleep 5 && curl -w '@curl-format.txt' -o /dev/null -s http://localhost:3000"
+    "performance:test": "npm run build && npm run start & sleep 5 && curl -w '@curl-format.txt' -o /dev/null -s image.pnghttp://localhost:3000"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

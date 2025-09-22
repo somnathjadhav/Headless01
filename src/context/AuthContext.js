@@ -140,39 +140,59 @@ export function AuthProvider({ children }) {
 
   // Check for existing session on mount
   useEffect(() => {
-    // Check if user is authenticated via server-side session
-    fetch('/api/auth/verify', {
-      method: 'GET',
-      credentials: 'include', // Include cookies for session-based auth
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(response => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error('No valid session');
-      }
-    })
-    .then(data => {
-      if (data.success && data.user) {
-        dispatch({ 
-          type: AUTH_ACTIONS.LOGIN_SUCCESS, 
-          payload: { 
-            token: data.token || 'session-based',
-            user: data.user,
-            message: 'Session restored'
-          } 
+    // Check for stored user session in localStorage
+    const storedUser = localStorage.getItem('user');
+    const storedUserId = localStorage.getItem('userId');
+    
+    if (storedUser && storedUserId) {
+      try {
+        const user = JSON.parse(storedUser);
+        // Verify the session is still valid
+        fetch(`/api/auth/verify?userId=${storedUserId}`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('No valid session');
+          }
+        })
+        .then(data => {
+          if (data.success && data.user) {
+            dispatch({ 
+              type: AUTH_ACTIONS.LOGIN_SUCCESS, 
+              payload: { 
+                token: data.token || 'session-based',
+                user: data.user,
+                message: 'Session restored'
+              } 
+            });
+          } else {
+            dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
+          }
+        })
+        .catch(error => {
+          console.log('No valid session found:', error.message);
+          // Clear invalid session data
+          localStorage.removeItem('user');
+          localStorage.removeItem('userId');
+          dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
         });
-      } else {
+      } catch (error) {
+        console.log('Error parsing stored user:', error.message);
+        localStorage.removeItem('user');
+        localStorage.removeItem('userId');
         dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
       }
-    })
-    .catch(error => {
-      console.log('No valid session found:', error.message);
+    } else {
+      // No stored session, complete initialization
       dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
-    });
+    }
   }, []);
 
   // Login function
@@ -191,6 +211,10 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (data.success) {
+        // Store session in localStorage for persistence
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('userId', data.user.id.toString());
+        
         // Session is managed server-side via cookies
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
@@ -277,6 +301,9 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Clear session from localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('userId');
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
     }
   };

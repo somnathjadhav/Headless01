@@ -341,7 +341,7 @@ export default function AuthModalLight() {
                   {/* Email/Username Field */}
                   <div className="form-group">
                     <input
-                      id="signin-email"
+                      id="signin-email-light"
                       name="email"
                       type="text"
                       autoComplete="username"
@@ -360,7 +360,7 @@ export default function AuthModalLight() {
                   <div className="form-group">
                     <div className="input-group">
                       <input
-                        id="signin-password"
+                        id="signin-password-light"
                         name="password"
                         type={showPassword ? 'text' : 'password'}
                         autoComplete="current-password"

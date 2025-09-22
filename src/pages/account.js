@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { useAddresses } from '../hooks/useAddresses';
 import { useProfile } from '../hooks/useProfile';
+import { useProfileSync } from '../hooks/useProfileSync';
 import PasswordStrengthMeter from '../components/ui/PasswordStrengthMeter';
 import PleaseSignIn from '../components/auth/PleaseSignIn';
 import TwoFactorAuth from '../components/auth/TwoFactorAuth';
@@ -43,6 +44,13 @@ export default function Account() {
     loading: profileLoading, 
     updateProfile 
   } = useProfile();
+  
+  const { 
+    isSyncing, 
+    syncFromBackend, 
+    syncToBackend, 
+    transformBackendToFrontend 
+  } = useProfileSync();
   
   // Real orders data from WooCommerce
   const [orders, setOrders] = useState([]);
@@ -97,43 +105,14 @@ export default function Account() {
   // Sync formData with profile when profile changes
   useEffect(() => {
     if (profile) {
-      // Handle name splitting more intelligently
-      let firstName = profile.first_name || '';
-      let lastName = profile.last_name || '';
-      
-      // If we have a name but no first_name/last_name, try to split it
-      if (!firstName && !lastName && profile.name) {
-        const nameParts = profile.name.trim().split(' ');
-        firstName = nameParts[0] || '';
-        lastName = nameParts.slice(1).join(' ') || '';
+      const updatedUserData = transformBackendToFrontend(profile);
+      if (updatedUserData) {
+        console.log('Profile data synced:', updatedUserData);
+        setUserData(updatedUserData);
+        setFormData(updatedUserData);
       }
-      
-      // If we still don't have a last name but have a first name, try to extract from name
-      if (!lastName && firstName && profile.name && profile.name !== firstName) {
-        const remainingName = profile.name.replace(firstName, '').trim();
-        if (remainingName) {
-          lastName = remainingName;
-        }
-      }
-      
-      const updatedUserData = {
-        firstName: firstName,
-        lastName: lastName,
-        email: profile.email || user?.email || '',
-        phone: profile.billing?.phone || profile.shipping?.phone || profile.phone || '',
-        company: profile.billing?.company || profile.shipping?.company || profile.company || '',
-        address: profile.billing?.address_1 || profile.shipping?.address_1 || '',
-        city: profile.billing?.city || profile.shipping?.city || '',
-        state: profile.billing?.state || profile.shipping?.state || '',
-        zipCode: profile.billing?.postcode || profile.shipping?.postcode || '',
-        country: profile.billing?.country || profile.shipping?.country || ''
-      };
-      
-      console.log('Profile data synced:', updatedUserData);
-      setUserData(updatedUserData);
-      setFormData(updatedUserData);
     }
-  }, [profile, user]);
+  }, [profile, transformBackendToFrontend]);
   
   // Password change state
   const [passwordData, setPasswordData] = useState({
@@ -408,8 +387,26 @@ export default function Account() {
         company: formData.company || ''
       };
       
-      const success = await updateProfile(profileData);
-      if (success) {
+      // Try to update via the profile API first
+      try {
+        const success = await updateProfile(profileData);
+        if (success) {
+          setUserData(formData);
+          setIsEditing(false);
+          return;
+        }
+      } catch (updateError) {
+        console.log('Profile update failed, trying sync to backend:', updateError);
+      }
+      
+      // If profile update fails, try syncing to backend
+      try {
+        await syncToBackend(profileData);
+        setUserData(formData);
+        setIsEditing(false);
+      } catch (syncError) {
+        console.error('Both profile update and sync failed:', syncError);
+        // Still update local state even if backend sync fails
         setUserData(formData);
         setIsEditing(false);
       }
@@ -874,13 +871,28 @@ export default function Account() {
                       <p className="text-gray-600">Manage your personal information and preferences</p>
                     </div>
                   {!isEditing && (
-                    <button
-                      onClick={() => setIsEditing(true)}
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={syncFromBackend}
+                        disabled={isSyncing}
+                        className="inline-flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Sync profile from backend"
+                      >
+                        {isSyncing ? (
+                          <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <span>🔄</span>
+                        )}
+                        <span>Sync</span>
+                      </button>
+                      <button
+                        onClick={() => setIsEditing(true)}
                         className="inline-flex items-center space-x-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm shadow-sm"
-                    >
+                      >
                         <EditIcon className="w-4 h-4" />
                         <span>Edit Profile</span>
-                    </button>
+                      </button>
+                    </div>
                   )}
                   </div>
                 </div>

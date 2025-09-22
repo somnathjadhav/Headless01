@@ -77,7 +77,8 @@ export function useAddresses() {
     } catch (error) {
       console.error('Error adding address:', error);
       setError(error.message);
-      throw error;
+      // Don't re-throw the error to prevent unhandled runtime errors
+      return null;
     } finally {
       setLoading(false);
     }
@@ -118,7 +119,8 @@ export function useAddresses() {
     } catch (error) {
       console.error('Error updating address:', error);
       setError(error.message);
-      throw error;
+      // Don't re-throw the error to prevent unhandled runtime errors
+      return null;
     } finally {
       setLoading(false);
     }
@@ -156,7 +158,8 @@ export function useAddresses() {
     } catch (error) {
       console.error('Error deleting address:', error);
       setError(error.message);
-      throw error;
+      // Don't re-throw the error to prevent unhandled runtime errors
+      return false;
     } finally {
       setLoading(false);
     }
@@ -199,7 +202,8 @@ export function useAddresses() {
     } catch (error) {
       console.error('Error setting default address:', error);
       setError(error.message);
-      throw error;
+      // Don't re-throw the error to prevent unhandled runtime errors
+      return false;
     } finally {
       setLoading(false);
     }

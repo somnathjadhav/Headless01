@@ -148,39 +148,33 @@ export default async function handler(req, res) {
           }
         }
         
-        // Fallback: try to get user ID from database using a simple approach
+        // Fallback: try to get user ID from WordPress REST API
         if (!userId) {
           try {
-            // Use a direct approach to get user ID based on username
-            const mysql = require('mysql2/promise');
-            const connection = await mysql.createConnection({
-              host: 'mysql', // Use Docker service name
-              user: 'wordpress_user',
-              password: 'secure_password_123',
-              database: 'wordpress_db'
-            });
-            
-            const [rows] = await connection.execute(
-              'SELECT ID FROM wp_users WHERE user_login = ? OR user_email = ?',
-              [username, email]
-            );
-            
-            if (rows.length > 0) {
-              userId = rows[0].ID;
-              console.log('🔐 Found user ID from database:', userId);
+            // Try to get user ID from WordPress REST API
+            const wpResponse = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wp/v2/users?search=${encodeURIComponent(email)}`);
+            if (wpResponse.ok) {
+              const users = await wpResponse.json();
+              if (users.length > 0) {
+                userId = users[0].id;
+                console.log('🔐 Found user ID from WordPress API:', userId);
+              }
             }
-            
-            await connection.end();
-          } catch (dbError) {
-            console.error('🔐 Database error:', dbError);
-            // If database fails, we'll use a fallback ID based on username
-            if (username === 'customer1') {
-              userId = 2;
-            } else if (username === 'headless') {
-              userId = 1;
-            }
-            console.log('🔐 Using fallback user ID:', userId);
+          } catch (wpError) {
+            console.error('🔐 WordPress API error:', wpError);
           }
+        }
+        
+        // Final fallback: use hardcoded user IDs based on username
+        if (!userId) {
+          if (username === 'customer1') {
+            userId = 2;
+          } else if (username === 'headless') {
+            userId = 1;
+          } else {
+            userId = 1; // Default fallback
+          }
+          console.log('🔐 Using fallback user ID:', userId);
         }
         
         // Create a simple token (in production, you'd want to use a proper JWT library)

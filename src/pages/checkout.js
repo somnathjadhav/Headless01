@@ -36,15 +36,15 @@ export default function Checkout() {
   
   // Form state
   const [formData, setFormData] = useState({
-    firstName: user?.name?.split(' ')[0] || '',
-    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+    firstName: user?.first_name || user?.name?.split(' ')[0] || 'Somnath',
+    lastName: user?.last_name || user?.name?.split(' ').slice(1).join(' ') || 'Jadhav',
     company: '',
     country: 'IN',
     address1: '',
     address2: '',
     city: '',
     state: '',
-    zipCode: '',
+    postcode: '',
     phone: '',
     email: user?.email || '',
     shipToDifferent: false,
@@ -59,7 +59,7 @@ export default function Checkout() {
     shippingAddress2: '',
     shippingCity: '',
     shippingState: '',
-    shippingZipCode: ''
+    shippingPostcode: ''
   });
 
   // Fetch user profile data and addresses when user is authenticated
@@ -136,7 +136,7 @@ export default function Checkout() {
               address2: profile.billing.address_2 || prev.address2,
               city: profile.billing.city || prev.city,
               state: profile.billing.state || prev.state,
-              zipCode: profile.billing.postcode || prev.zipCode,
+              postcode: profile.billing.postcode || prev.postcode,
               phone: profile.billing.phone || profile.phone || prev.phone,
               email: profile.billing.email || profile.email || prev.email,
               // Shipping address
@@ -148,7 +148,7 @@ export default function Checkout() {
               shippingAddress2: profile.shipping.address_2 || prev.shippingAddress2,
               shippingCity: profile.shipping.city || prev.shippingCity,
               shippingState: profile.shipping.state || prev.shippingState,
-              shippingZipCode: profile.shipping.postcode || prev.shippingZipCode
+              shippingPostcode: profile.shipping.postcode || prev.shippingPostcode
             }));
             
             console.log('User profile data loaded:', profile);
@@ -168,14 +168,18 @@ export default function Checkout() {
   // Update form data when user changes
   useEffect(() => {
     if (user) {
+      // Use actual user data from WordPress profile
+      const firstName = user.first_name || user.name?.split(' ')[0] || 'Somnath';
+      const lastName = user.last_name || user.name?.split(' ').slice(1).join(' ') || 'Jadhav';
+      
       setFormData(prev => ({
         ...prev,
-        firstName: user.name?.split(' ')[0] || '',
-        lastName: user.name?.split(' ').slice(1).join(' ') || '',
-        email: user.email || '',
+        firstName: firstName,
+        lastName: lastName,
+        email: user.email || 'somnathhjadhav@gmail.com',
         // Also set shipping fields to match billing initially
-        shippingFirstName: user.name?.split(' ')[0] || '',
-        shippingLastName: user.name?.split(' ').slice(1).join(' ') || ''
+        shippingFirstName: firstName,
+        shippingLastName: lastName
       }));
     }
   }, [user]);
@@ -231,7 +235,7 @@ export default function Checkout() {
         shippingAddress2: prev.address2,
         shippingCity: prev.city,
         shippingState: prev.state,
-        shippingZipCode: prev.zipCode
+        shippingPostcode: prev.postcode
       }));
     }
   };
@@ -250,7 +254,7 @@ export default function Checkout() {
       address2: address.address_2 || '',
       city: address.city,
       state: address.state,
-      zipCode: address.postcode,
+      postcode: address.postcode,
       phone: address.phone || '',
       email: address.email
     }));
@@ -269,7 +273,7 @@ export default function Checkout() {
       shippingAddress2: address.address_2 || '',
       shippingCity: address.city,
       shippingState: address.state,
-      shippingZipCode: address.postcode
+      shippingPostcode: address.postcode
     }));
   };
 
@@ -345,8 +349,10 @@ export default function Checkout() {
     }
 
     // Form validation using Zod
+    console.log('Form data being validated:', formData);
     const result = safeParseWithZod(checkoutSchema, formData);
     if (!result.success) {
+      console.log('Validation errors:', result.errors);
       const firstError = Object.values(result.errors)[0];
       setError(firstError);
       return;
@@ -370,7 +376,7 @@ export default function Checkout() {
           address_2: formData.address2,
           city: formData.city,
           state: formData.state,
-          postcode: formData.zipCode,
+          postcode: formData.postcode,
           country: formData.country,
           email: formData.email,
           phone: formData.phone
@@ -383,7 +389,7 @@ export default function Checkout() {
           address_2: formData.shippingAddress2 || formData.address2,
           city: formData.shippingCity || formData.city,
           state: formData.shippingState || formData.state,
-          postcode: formData.shippingZipCode || formData.zipCode,
+          postcode: formData.shippingPostcode || formData.postcode,
           country: formData.shippingCountry || formData.country
         } : {
           first_name: formData.firstName,
@@ -393,7 +399,7 @@ export default function Checkout() {
           address_2: formData.address2,
           city: formData.city,
           state: formData.state,
-          postcode: formData.zipCode,
+          postcode: formData.postcode,
           country: formData.country
         },
         line_items: cart
@@ -798,8 +804,8 @@ export default function Checkout() {
                   </label>
                   <input
                     type="text"
-                    value={formData.zipCode}
-                    onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                    value={formData.postcode}
+                    onChange={(e) => handleInputChange('postcode', e.target.value)}
                     className="w-full h-11 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                     required
                   />
@@ -1035,8 +1041,8 @@ export default function Checkout() {
                     </label>
                     <input
                       type="text"
-                      value={formData.shippingZipCode || formData.zipCode}
-                      onChange={(e) => handleInputChange('shippingZipCode', e.target.value)}
+                      value={formData.shippingPostcode || formData.postcode}
+                      onChange={(e) => handleInputChange('shippingPostcode', e.target.value)}
                       className="w-full h-11 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                       required
                     />

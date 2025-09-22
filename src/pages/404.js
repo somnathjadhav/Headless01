@@ -79,25 +79,25 @@ export default function Custom404() {
         ))}
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-16">
+      <div className="relative z-10 container mx-auto px-4 py-12 sm:py-16">
         <div className="max-w-5xl mx-auto">
           {/* Main 404 Section */}
-          <div className={`text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <div className="mb-12">
+          <div className={`text-center mb-12 sm:mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="mb-8 sm:mb-12">
               {/* Animated 404 Number */}
-              <div className="relative mb-8">
-                <div className="text-6xl md:text-7xl font-black bg-gradient-to-r from-gray-800 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4 animate-bounce">
+              <div className="relative mb-6 sm:mb-8">
+                <div className="text-5xl sm:text-6xl md:text-7xl font-black bg-gradient-to-r from-gray-800 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4 animate-bounce">
                   404
                 </div>
-                <div className="absolute inset-0 text-6xl md:text-7xl font-black text-gray-300 opacity-20 blur-sm animate-pulse">
+                <div className="absolute inset-0 text-5xl sm:text-6xl md:text-7xl font-black text-gray-300 opacity-20 blur-sm animate-pulse">
                   404
                 </div>
               </div>
               
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 leading-tight">
                 Oops! Page Not Found
               </h1>
-              <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed px-4">
                 The page you're looking for seems to have wandered off into the digital void. 
                 Don't worry, we'll help you find what you need!
               </p>

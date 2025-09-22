@@ -216,16 +216,16 @@ export default function SignIn() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
+      <div className="flex-1 flex flex-col justify-center px-4 py-8 sm:py-12 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           {/* Branding */}
-          <div className="text-left mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="text-left mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               Welcome to {siteLoading ? 'Your WordPress Site' : siteName}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm sm:text-base">
               Sign in for exclusive deals and faster checkout.
             </p>
           </div>

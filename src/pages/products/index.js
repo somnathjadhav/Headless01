@@ -194,11 +194,11 @@ export default function ProductsPage() {
       description={`${pageInfo.description}${totalProducts > 0 ? ` (${totalProducts} products available)` : ''}`}
       breadcrumbs={breadcrumbs}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="lg:grid lg:grid-cols-4 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="lg:grid lg:grid-cols-4 lg:gap-6 xl:gap-8">
           {/* Sidebar Filters */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8">
+          <div className="lg:col-span-1 mb-6 lg:mb-0">
+            <div className="lg:sticky lg:top-8">
               <ProductFilters
                 categories={categories}
                 onCategoryFilter={handleCategoryFilter}

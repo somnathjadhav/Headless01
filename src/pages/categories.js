@@ -57,10 +57,10 @@ export default function CategoriesPage() {
         canonical: "/categories"
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         {categories.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg">
+          <div className="text-center py-8 sm:py-12">
+            <div className="text-gray-500 text-base sm:text-lg">
               No categories found
             </div>
           </div>

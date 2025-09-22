@@ -183,12 +183,12 @@ export default function SearchResultsPage({
       </Head>
 
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Search Header */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <div className="flex items-center space-x-3 mb-4">
-              <SearchIcon className="w-8 h-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-900">
+              <SearchIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 {searchQuery ? `Search Results for "${searchQuery}"` : 'Search Results'}
               </h1>
             </div>

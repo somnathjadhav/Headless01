@@ -17,11 +17,15 @@ import {
   CurrencyDollarIcon,
   SparklesIcon,
   FireIcon,
-  GiftIcon
+  GiftIcon,
+  StarIcon,
+  ClockIcon,
+  UserIcon
 } from '../components/icons';
 
 /**
- * Home Page - Modern E-commerce Homepage with all sections
+ * Modern E-commerce Homepage with all sections
+ * Inspired by Glozin Fashion theme
  */
 export default function HomePage() {
   const [wpStatus, setWpStatus] = useState(null);
@@ -32,14 +36,13 @@ export default function HomePage() {
   const { products, categories, fetchProducts, fetchCategories } = useWooCommerce();
   const { formatPrice } = useCurrency();
   
-  // Blog posts
-  const { posts, fetchPosts } = usePosts(3);
-  
   // Local state
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recentPosts, setRecentPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
 
   // Apply global typography
   useGlobalTypography();
@@ -48,15 +51,30 @@ export default function HomePage() {
   useEffect(() => {
     const loadHomepageData = async () => {
       setLoading(true);
+      setPostsLoading(true);
+      
       try {
         // Load products and categories
         await Promise.all([
           fetchProducts(1, 12), // Load 12 products
-          fetchCategories(),
-          fetchPosts(1, 3) // Load 3 blog posts
+          fetchCategories()
         ]);
         
-        // Simulate product categorization (in real app, this would come from API)
+        // Fetch recent blog posts
+        try {
+          const postsResponse = await fetch('/api/posts?page=1&per_page=3');
+          if (postsResponse.ok) {
+            const postsData = await postsResponse.json();
+            if (postsData.success) {
+              setRecentPosts(postsData.data.posts || []);
+            }
+          }
+        } catch (postsError) {
+          console.error('Error fetching blog posts:', postsError);
+          setRecentPosts([]);
+        }
+        
+        // Categorize products (in real app, this would come from API with proper categorization)
         if (products.length > 0) {
           setFeaturedProducts(products.slice(0, 4));
           setNewArrivals(products.slice(4, 8));
@@ -66,18 +84,18 @@ export default function HomePage() {
         console.error('Error loading homepage data:', error);
       } finally {
         setLoading(false);
+        setPostsLoading(false);
       }
     };
 
     loadHomepageData();
-  }, [fetchProducts, fetchCategories, fetchPosts, products]);
+  }, [fetchProducts, fetchCategories, products]);
 
-  // Check WordPress status on mount with optimized single API call
+  // Check WordPress status on mount
   useEffect(() => {
     const checkStatus = async () => {
       setIsChecking(true);
       try {
-        // Use combined status endpoint for better performance
         const response = await fetch('/api/status/combined');
         const data = await response.json();
         
@@ -362,8 +380,8 @@ export default function HomePage() {
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Unmatched design—superior performance and customer satisfaction in one.
             </p>
-      </div>
-
+          </div>
+          
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
@@ -384,84 +402,94 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Blog Posts Section */}
+      {/* Latest Blog Posts Section */}
       <section className="bg-white py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">The Blog</h2>
-              <p className="text-lg text-gray-600">Provide you with useful knowledge about fashion trend.</p>
-            </div>
-          <Link
-            href="/blog"
-              className="inline-flex items-center text-gray-900 hover:text-gray-700 font-medium mt-4 sm:mt-0"
-            >
-              View All Posts
-              <ArrowRightIcon className="w-5 h-5 ml-2" />
-            </Link>
-          </div>
-          
-          {loading ? (
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Latest Blog Posts</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Stay updated with the latest fashion trends, styling tips, and lifestyle content
+            </p>
+      </div>
+
+          {postsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="bg-gray-50 rounded-2xl overflow-hidden animate-pulse">
                   <div className="w-full h-48 bg-gray-200"></div>
                   <div className="p-6">
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-4 w-2/3"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-3"></div>
                     <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
                   </div>
                 </div>
               ))}
             </div>
-          ) : (
+          ) : recentPosts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.slice(0, 3).map((post) => (
-                <article key={post.id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow">
+              {recentPosts.map((post) => (
+                <article key={post.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                   <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative">
-                    {post.featured_media ? (
+                    {post.featured_image ? (
                       <Image
-                        src={post.featured_media.source_url}
-                        alt={post.title.rendered}
+                        src={post.featured_image}
+                        alt={post.title}
                         fill
                         className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-gray-400 text-sm">No Image</span>
+                        <div className="text-gray-400">
+                          <UserIcon className="w-16 h-16 mx-auto mb-2" />
+                          <p className="text-sm">No Image</p>
+                        </div>
                       </div>
                     )}
                   </div>
-                  
                   <div className="p-6">
                     <div className="flex items-center text-sm text-gray-500 mb-3">
-                      <span className="bg-gray-100 px-3 py-1 rounded-full text-xs font-medium">
-                        {post.categories?.[0]?.name || 'Lifestyle'}
-                      </span>
+                      <ClockIcon className="w-4 h-4 mr-2" />
+                      {post.date ? new Date(post.date).toLocaleDateString() : 'No date'}
                     </div>
-                    
                     <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
-                      {post.title.rendered}
+                      {post.title || 'Untitled Post'}
                     </h3>
-                    
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                      {post.excerpt.rendered.replace(/<[^>]*>/g, '')}
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {post.excerpt?.replace(/<[^>]*>/g, '') || 'No excerpt available'}
                     </p>
-                    
                     <Link
-                      href={`/blog/${post.slug}`}
-                      className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm"
+                      href={`/blog/${post.slug || 'untitled'}`}
+                      className="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-medium"
                     >
                       Read More
-                      <ArrowRightIcon className="w-4 h-4 ml-1" />
-          </Link>
+                      <ArrowRightIcon className="w-4 h-4 ml-2" />
+                    </Link>
                   </div>
                 </article>
               ))}
             </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="bg-white rounded-2xl shadow-sm p-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <UserIcon className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No blog posts available</h3>
+                <p className="text-gray-500">Check back later for new content!</p>
+              </div>
+            </div>
           )}
+          
+          <div className="text-center mt-12">
+          <Link
+            href="/blog"
+              className="inline-flex items-center px-8 py-3 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition-colors"
+          >
+              View All Posts
+              <ArrowRightIcon className="w-5 h-5 ml-2" />
+          </Link>
         </div>
+      </div>
       </section>
 
       {/* Newsletter Section */}
@@ -497,7 +525,7 @@ export default function HomePage() {
           <p className="text-sm text-gray-400 mt-4">
             By entering the e-mail you accept the terms and conditions and the privacy policy.
           </p>
-      </div>
+        </div>
       </section>
     </div>
   );

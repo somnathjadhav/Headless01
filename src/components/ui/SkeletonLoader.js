@@ -89,10 +89,49 @@ export function SkeletonSpinner({ size = "md", className = "" }) {
   );
 }
 
+export function SearchResultsSkeleton({ className = "" }) {
+  return (
+    <div className={`space-y-6 ${className}`}>
+      {/* Search Header Skeleton */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <SkeletonBox className="h-8 w-64 mb-4" />
+        <SkeletonBox className="h-4 w-48" />
+      </div>
+      
+      {/* Filters Skeleton */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex flex-wrap gap-4">
+          <SkeletonBox className="h-10 w-32" />
+          <SkeletonBox className="h-10 w-32" />
+          <SkeletonBox className="h-10 w-32" />
+        </div>
+      </div>
+      
+      {/* Results Grid Skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <SkeletonBox className="h-48 w-full" />
+            <div className="p-4">
+              <SkeletonBox className="h-5 w-3/4 mb-2" />
+              <SkeletonBox className="h-4 w-1/2 mb-3" />
+              <div className="flex justify-between items-center">
+                <SkeletonBox className="h-6 w-16" />
+                <SkeletonBox className="h-8 w-20" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default {
   SkeletonBox,
   SkeletonText,
   SkeletonCard,
   SkeletonStatusCard,
-  SkeletonSpinner
+  SkeletonSpinner,
+  SearchResultsSkeleton
 };

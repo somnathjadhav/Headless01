@@ -21,10 +21,13 @@ export function useCategoriesRest() {
         
         const data = await response.json();
         console.log('🔍 useCategoriesRest: Categories data received:', data.categories?.length || 0, 'categories');
+        console.log('🔍 useCategoriesRest: First category:', data.categories?.[0]);
         setCategories(data.categories || []);
       } catch (err) {
         console.error('🔍 useCategoriesRest: Error fetching categories:', err);
         setError(err.message);
+        // Set fallback categories on error
+        setCategories([]);
       } finally {
         setLoading(false);
         console.log('🔍 useCategoriesRest: Loading completed');

@@ -282,7 +282,6 @@ export function useAddresses() {
     updateAddress,
     deleteAddress,
     setDefaultAddress,
-    syncAddressesToWordPress,
-    clearAddresses
+    syncAddressesToWordPress
   };
 }

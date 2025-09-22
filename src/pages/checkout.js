@@ -128,35 +128,6 @@ export default function Checkout() {
             }
             
             // Update form data with profile information
-<<<<<<< HEAD
-            const updatedFormData = {
-              ...formData,
-              firstName: profile.billing.first_name || profile.first_name || formData.firstName,
-              lastName: profile.billing.last_name || profile.last_name || formData.lastName,
-              company: profile.billing.company || profile.company || formData.company,
-              country: profile.billing.country || formData.country,
-              address1: profile.billing.address_1 || formData.address1,
-              address2: profile.billing.address_2 || formData.address2,
-              city: profile.billing.city || formData.city,
-              state: profile.billing.state || formData.state,
-              postcode: profile.billing.postcode || formData.postcode,
-              phone: profile.billing.phone || profile.phone || formData.phone,
-              email: profile.billing.email || profile.email || formData.email,
-              // Shipping address
-              shippingFirstName: profile.shipping.first_name || profile.first_name || formData.shippingFirstName,
-              shippingLastName: profile.shipping.last_name || profile.last_name || formData.shippingLastName,
-              shippingCompany: profile.shipping.company || profile.company || formData.shippingCompany,
-              shippingCountry: profile.shipping.country || formData.shippingCountry,
-              shippingAddress1: profile.shipping.address_1 || formData.shippingAddress1,
-              shippingAddress2: profile.shipping.address_2 || formData.shippingAddress2,
-              shippingCity: profile.shipping.city || formData.shippingCity,
-              shippingState: profile.shipping.state || formData.shippingState,
-              shippingPostcode: profile.shipping.postcode || formData.shippingPostcode
-            };
-            
-            console.log('Updated form data:', updatedFormData);
-            setFormData(updatedFormData);
-=======
             setFormData(prev => ({
               ...prev,
               firstName: profile.billing.first_name || profile.first_name || prev.firstName,
@@ -181,7 +152,6 @@ export default function Checkout() {
               shippingState: profile.shipping.state || prev.shippingState,
               shippingPostcode: profile.shipping.postcode || prev.shippingPostcode
             }));
->>>>>>> auto-commit-20250922
             
             console.log('User profile data loaded:', profile);
           }

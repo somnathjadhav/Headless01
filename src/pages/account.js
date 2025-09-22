@@ -507,7 +507,7 @@ export default function Account() {
       <div className="max-w-7xl mx-auto bg-white min-h-screen shadow-2xl">
         {/* Header Section */}
         <div className="bg-gradient-to-r from-black via-gray-900 to-gray-800 text-white relative">
-          <div className="container mx-auto px-6 pt-6 pb-4">
+          <div className="container mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
               <div className="relative">

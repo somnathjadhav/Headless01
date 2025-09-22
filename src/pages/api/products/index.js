@@ -22,7 +22,9 @@ async function productsHandler(req, res) {
   }
 
   // Apply rate limiting
-  apiRateLimit(req, res);
+  if (!apiRateLimit(req, res)) {
+    return; // Rate limit exceeded, response already sent
+  }
 
   // Configure SSL based on environment
   const sslConfig = configureSSL(process.env.NEXT_PUBLIC_WORDPRESS_URL);

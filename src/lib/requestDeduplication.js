@@ -3,6 +3,8 @@
  * Prevents duplicate API calls by caching ongoing requests
  */
 
+import rateLimiter from './rateLimiter.js';
+
 class RequestDeduplication {
   constructor() {
     this.ongoingRequests = new Map();
@@ -49,19 +51,38 @@ class RequestDeduplication {
   }
 
   /**
-   * Make the actual request
+   * Make the actual request with rate limiting
    * @param {string} url - Request URL
    * @param {Object} options - Fetch options
    * @returns {Promise} - Request promise
    */
   async makeRequest(url, options) {
     try {
+      // Extract domain for rate limiting
+      const domain = new URL(url).hostname;
+      
+      // Check rate limit (5 requests per minute per domain)
+      if (!rateLimiter.isAllowed(domain, 5, 60000)) {
+        const waitTime = rateLimiter.getTimeUntilReset(domain, 60000);
+        console.warn(`Rate limit exceeded for ${domain}. Waiting ${waitTime}ms`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+
       const response = await fetch(url, {
         ...options,
         timeout: options.timeout || 10000 // Default 10s timeout
       });
 
       if (!response.ok) {
+        // Handle rate limit responses gracefully
+        if (response.status === 429) {
+          const retryAfter = response.headers.get('Retry-After');
+          const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 5000;
+          console.warn(`Server rate limit hit. Waiting ${waitTime}ms`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          // Retry once after waiting
+          return this.makeRequest(url, options);
+        }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 

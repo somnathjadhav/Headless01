@@ -25,7 +25,7 @@ const nextConfig = {
   
   // Enhanced image optimization
   images: {
-    domains: ['staging.eternitty.com', 'woo.local', 'localhost', 'localhost:10008'],
+    domains: ['staging.eternitty.com', 'woo.local', 'woocommerce.local', 'localhost', 'localhost:10008'],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],

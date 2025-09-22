@@ -42,5 +42,6 @@
       "destination": "/products",
       "permanent": true
     }
-  ]
+  ],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./"
 }

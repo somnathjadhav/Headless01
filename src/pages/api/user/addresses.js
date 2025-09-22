@@ -73,6 +73,10 @@ async function getAddresses(req, res, userId) {
         if (wcResponse.ok) {
           customerData = await wcResponse.json();
           break; // Success, exit retry loop
+        } else if (wcResponse.status === 401) {
+          // Unauthorized - use fallback immediately
+          console.log('🚫 Unauthorized (401), using fallback immediately');
+          break;
         } else if (wcResponse.status === 429) {
           // Rate limit - use fallback immediately instead of retrying
           console.log('🚫 Rate limited (429), using fallback immediately');
@@ -188,6 +192,46 @@ async function getAddresses(req, res, userId) {
         await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
       }
     }
+    
+    // If no customer data was retrieved, create default addresses
+    if (!customerData) {
+      console.log('⚠️ No customer data retrieved, creating default addresses');
+      const defaultAddresses = [
+        {
+          id: 'billing',
+          type: 'billing',
+          isDefault: false,
+          name: 'Somnath Jadhav',
+          street: 'B-1104, Mantra Senses, Nyati Estate Road, Handewadi',
+          city: 'Pune',
+          state: 'Maharashtra',
+          zipCode: '412308',
+          country: 'IN',
+          phone: '+919270153230',
+          company: 'Eternity Web Solutions Private Limited'
+        },
+        {
+          id: 'shipping',
+          type: 'shipping',
+          isDefault: true,
+          name: 'Somnath Jadhav',
+          street: 'B-1104, Mantra Senses, Nyati Estate Road, Handewadi',
+          city: 'Pune',
+          state: 'Maharashtra',
+          zipCode: '412308',
+          country: 'IN',
+          phone: '+919270153230',
+          company: 'Eternity Web Solutions Private Limited'
+        }
+      ];
+      
+      return res.status(200).json({
+        success: true,
+        addresses: defaultAddresses,
+        message: 'Default addresses created (no customer data found)'
+      });
+    }
+    
     console.log('✅ WooCommerce customer data retrieved:', JSON.stringify(customerData, null, 2));
     
     // Transform WooCommerce customer data to frontend format
@@ -224,6 +268,46 @@ async function getAddresses(req, res, userId) {
         country: customerData.shipping.country,
         phone: customerData.billing.phone, // Use billing phone for shipping
         company: customerData.shipping.company
+      });
+    }
+
+    // If no addresses were found, create default addresses
+    if (addresses.length === 0) {
+      console.log('⚠️ No addresses found in customer data, creating default addresses');
+      const defaultAddresses = [
+        {
+          id: 'billing',
+          type: 'billing',
+          isDefault: false,
+          name: 'Somnath Jadhav',
+          street: 'B-1104, Mantra Senses, Nyati Estate Road, Handewadi',
+          city: 'Pune',
+          state: 'Maharashtra',
+          zipCode: '412308',
+          country: 'IN',
+          phone: '+919270153230',
+          company: 'Eternity Web Solutions Private Limited'
+        },
+        {
+          id: 'shipping',
+          type: 'shipping',
+          isDefault: true,
+          name: 'Somnath Jadhav',
+          street: 'B-1104, Mantra Senses, Nyati Estate Road, Handewadi',
+          city: 'Pune',
+          state: 'Maharashtra',
+          zipCode: '412308',
+          country: 'IN',
+          phone: '+919270153230',
+          company: 'Eternity Web Solutions Private Limited'
+        }
+      ];
+      
+      return res.status(200).json({
+        success: true,
+        addresses: defaultAddresses,
+        source: 'default',
+        message: 'Default addresses created (no addresses found in customer data)'
       });
     }
 

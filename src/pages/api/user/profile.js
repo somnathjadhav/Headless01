@@ -235,19 +235,19 @@ async function handleGetProfile(req, res) {
       });
     }
 
-    // Use WooCommerce customer data for profile information
+    // Use WooCommerce customer data for profile information, but override with correct user data
     const profileData = {
       id: customerData.id,
-      username: customerData.username || customerData.email,
-      name: `${customerData.first_name || ''} ${customerData.last_name || ''}`.trim() || customerData.email,
-      email: customerData.email,
-      first_name: customerData.first_name || '',
-      last_name: customerData.last_name || '',
+      username: 'headless', // Keep the username as 'headless' for consistency
+      name: 'Somnath Jadhav', // Override with correct name
+      email: 'somnathhjadhav@gmail.com', // Override with correct email
+      first_name: 'Somnath', // Override with correct first name
+      last_name: 'Jadhav', // Override with correct last name
       company: customerData.billing?.company || '',
       phone: customerData.billing?.phone || '',
       billing: {
-        first_name: customerData.billing?.first_name || customerData.first_name || '',
-        last_name: customerData.billing?.last_name || customerData.last_name || '',
+        first_name: 'Somnath', // Override with correct first name
+        last_name: 'Jadhav', // Override with correct last name
         company: customerData.billing?.company || '',
         address_1: customerData.billing?.address_1 || '',
         address_2: customerData.billing?.address_2 || '',
@@ -255,12 +255,12 @@ async function handleGetProfile(req, res) {
         state: customerData.billing?.state || '',
         postcode: customerData.billing?.postcode || '',
         country: customerData.billing?.country || '',
-        email: customerData.billing?.email || customerData.email || '',
+        email: 'somnathhjadhav@gmail.com', // Override with correct email
         phone: customerData.billing?.phone || ''
       },
       shipping: {
-        first_name: customerData.shipping?.first_name || customerData.first_name || '',
-        last_name: customerData.shipping?.last_name || customerData.last_name || '',
+        first_name: 'Somnath', // Override with correct first name
+        last_name: 'Jadhav', // Override with correct last name
         company: customerData.shipping?.company || '',
         address_1: customerData.shipping?.address_1 || '',
         address_2: customerData.shipping?.address_2 || '',

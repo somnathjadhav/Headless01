@@ -45,18 +45,18 @@ export default async function handler(req, res) {
             }
           ],
           billing: {
-            first_name: 'John',
-            last_name: 'Doe',
-            email: 'john@example.com',
-            phone: '+1234567890',
-            address_1: '123 Main St',
-            city: 'New York',
-            state: 'NY',
-            postcode: '10001',
-            country: 'US'
+            first_name: 'Somnath',
+            last_name: 'Jadhav',
+            email: 'somnathhjadhav@gmail.com',
+            phone: '+919270153230',
+            address_1: 'B-1104, Mantra Senses, Nyati Estate Road, Handewadi',
+            city: 'Pune',
+            state: 'Maharashtra',
+            postcode: '412308',
+            country: 'IN'
           },
           shipping: {
-            first_name: 'John',
+            first_name: 'Somnath',
             last_name: 'Doe',
             address_1: '123 Main St',
             city: 'New York',
@@ -89,18 +89,18 @@ export default async function handler(req, res) {
             }
           ],
           billing: {
-            first_name: 'John',
-            last_name: 'Doe',
-            email: 'john@example.com',
-            phone: '+1234567890',
-            address_1: '123 Main St',
-            city: 'New York',
-            state: 'NY',
-            postcode: '10001',
-            country: 'US'
+            first_name: 'Somnath',
+            last_name: 'Jadhav',
+            email: 'somnathhjadhav@gmail.com',
+            phone: '+919270153230',
+            address_1: 'B-1104, Mantra Senses, Nyati Estate Road, Handewadi',
+            city: 'Pune',
+            state: 'Maharashtra',
+            postcode: '412308',
+            country: 'IN'
           },
           shipping: {
-            first_name: 'John',
+            first_name: 'Somnath',
             last_name: 'Doe',
             address_1: '123 Main St',
             city: 'New York',
@@ -137,8 +137,8 @@ export default async function handler(req, res) {
     );
 
     if (!response.ok) {
-      // If WordPress server is not accessible, return mock orders
-      if (response.status === 401 || response.status === 404 || response.status >= 500) {
+      // If WordPress server is not accessible or rate limited, return mock orders
+      if (response.status === 401 || response.status === 404 || response.status === 429 || response.status >= 500) {
         console.log('WordPress server not accessible, returning mock orders');
         
         const mockOrders = [
@@ -168,7 +168,7 @@ export default async function handler(req, res) {
               }
             ],
             billing: {
-              first_name: 'John',
+              first_name: 'Somnath',
               last_name: 'Doe',
               email: 'john@example.com',
               phone: '+1234567890',
@@ -179,7 +179,7 @@ export default async function handler(req, res) {
               country: 'US'
             },
             shipping: {
-              first_name: 'John',
+              first_name: 'Somnath',
               last_name: 'Doe',
               address_1: '123 Main St',
               city: 'New York',
@@ -212,7 +212,7 @@ export default async function handler(req, res) {
               }
             ],
             billing: {
-              first_name: 'John',
+              first_name: 'Somnath',
               last_name: 'Doe',
               email: 'john@example.com',
               phone: '+1234567890',
@@ -223,7 +223,7 @@ export default async function handler(req, res) {
               country: 'US'
             },
             shipping: {
-              first_name: 'John',
+              first_name: 'Somnath',
               last_name: 'Doe',
               address_1: '123 Main St',
               city: 'New York',

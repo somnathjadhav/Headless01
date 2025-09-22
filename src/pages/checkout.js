@@ -18,12 +18,13 @@ import {
 
 export default function Checkout() {
   const router = useRouter();
-  const { cart, cartTotal, appliedCoupon, clearCart, restoreCart, clearCartBackup, cartBackup, loading: globalLoading, setLoading } = useWooCommerce();
+  const { cart, cartTotal, appliedCoupon, clearCart, restoreCart, clearCartBackup, cartBackup, loading: globalLoading } = useWooCommerce();
   const { isAuthenticated, user } = useAuth();
   const { formatPrice } = useCurrency();
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   
   // Address management state
   const [billingAddresses, setBillingAddresses] = useState([]);
@@ -46,7 +47,7 @@ export default function Checkout() {
     state: '',
     postcode: '',
     phone: '',
-    email: user?.email || '',
+    email: user?.email || 'somnathhjadhav@gmail.com',
     shipToDifferent: false,
     orderNotes: '',
     paymentMethod: 'cod',

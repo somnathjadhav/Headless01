@@ -106,6 +106,7 @@ export default function SimpleCaptcha({ onVerify, error, darkMode = false }) {
             </button>
           </div>
           <input
+            key={isClient ? 'client' : 'server'}
             type="number"
             value={userAnswer || ''}
             onChange={handleAnswerChange}

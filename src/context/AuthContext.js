@@ -43,6 +43,7 @@ function authReducer(state, action) {
         token: action.payload.token,
         isAuthenticated: true,
         isLoading: false,
+        isInitializing: false, // Complete initialization when login is successful
         error: null
       };
     
@@ -70,6 +71,7 @@ function authReducer(state, action) {
         token: action.payload.token,
         isAuthenticated: true,
         isLoading: false,
+        isInitializing: false, // Complete initialization when login is successful
         error: null
       };
     
@@ -140,14 +142,28 @@ export function AuthProvider({ children }) {
 
   // Check for existing session on mount
   useEffect(() => {
+    console.log('🔄 AuthContext: Starting initialization...');
+    
+    // Set a timeout to ensure initialization completes
+    const initTimeout = setTimeout(() => {
+      console.log('⏰ AuthContext: Initialization timeout, forcing completion');
+      dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
+    }, 5000); // 5 second timeout
+    
     // Check for stored user session in localStorage
     const storedUser = localStorage.getItem('user');
     const storedUserId = localStorage.getItem('userId');
     
+    console.log('🔍 AuthContext: Stored user:', storedUser ? 'exists' : 'none');
+    console.log('🔍 AuthContext: Stored userId:', storedUserId);
+    
     if (storedUser && storedUserId) {
       try {
         const user = JSON.parse(storedUser);
+        console.log('✅ AuthContext: Parsed user data:', user);
+        
         // Verify the session is still valid
+        console.log('🔍 AuthContext: Verifying session...');
         fetch(`/api/auth/verify?userId=${storedUserId}`, {
           method: 'GET',
           credentials: 'include',
@@ -156,14 +172,18 @@ export function AuthProvider({ children }) {
           },
         })
         .then(response => {
+          console.log('📡 AuthContext: Verify response status:', response.status);
+          clearTimeout(initTimeout); // Clear timeout on successful response
           if (response.ok) {
             return response.json();
           } else {
-            throw new Error('No valid session');
+            throw new Error(`HTTP ${response.status}: No valid session`);
           }
         })
         .then(data => {
+          console.log('📡 AuthContext: Verify response data:', data);
           if (data.success && data.user) {
+            console.log('✅ AuthContext: Session restored successfully');
             dispatch({ 
               type: AUTH_ACTIONS.LOGIN_SUCCESS, 
               payload: { 
@@ -173,26 +193,36 @@ export function AuthProvider({ children }) {
               } 
             });
           } else {
+            console.log('❌ AuthContext: Session verification failed, completing initialization');
             dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
           }
         })
         .catch(error => {
-          console.log('No valid session found:', error.message);
+          console.log('❌ AuthContext: Session verification error:', error.message);
+          clearTimeout(initTimeout); // Clear timeout on error
           // Clear invalid session data
           localStorage.removeItem('user');
           localStorage.removeItem('userId');
           dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
         });
       } catch (error) {
-        console.log('Error parsing stored user:', error.message);
+        console.log('❌ AuthContext: Error parsing stored user:', error.message);
+        clearTimeout(initTimeout); // Clear timeout on error
         localStorage.removeItem('user');
         localStorage.removeItem('userId');
         dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
       }
     } else {
       // No stored session, complete initialization
+      console.log('ℹ️ AuthContext: No stored session, completing initialization');
+      clearTimeout(initTimeout); // Clear timeout
       dispatch({ type: AUTH_ACTIONS.INITIALIZATION_COMPLETE });
     }
+    
+    // Cleanup function
+    return () => {
+      clearTimeout(initTimeout);
+    };
   }, []);
 
   // Login function

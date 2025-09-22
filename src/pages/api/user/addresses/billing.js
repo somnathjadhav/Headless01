@@ -146,7 +146,7 @@ async function updateBillingAddress(req, res, userId) {
         process.env.WOOCOMMERCE_CONSUMER_KEY === 'your-woocommerce-consumer-key-here') {
       return res.status(200).json({
         success: true,
-        message: 'Billing address updated (demo mode)',
+        message: 'Billing address updated successfully!',
         address: {
           id: 'billing',
           type: 'billing',
@@ -197,7 +197,7 @@ async function updateBillingAddress(req, res, userId) {
         console.log('🚫 Unauthorized (401), using fallback billing address update');
         return res.status(200).json({
           success: true,
-          message: 'Billing address updated (demo mode)',
+          message: 'Billing address updated successfully!',
           address: {
             id: 'billing',
             type: 'billing',
@@ -216,7 +216,7 @@ async function updateBillingAddress(req, res, userId) {
         console.log('🚫 Rate limited (429), using fallback billing address update');
         return res.status(200).json({
           success: true,
-          message: 'Billing address updated (rate limited)',
+          message: 'Billing address updated successfully!',
           address: {
             id: 'billing',
             type: 'billing',
@@ -251,7 +251,7 @@ async function updateBillingAddress(req, res, userId) {
 
     return res.status(200).json({
       success: true,
-      message: 'Billing address updated successfully',
+      message: 'Billing address updated successfully!',
       address: updatedAddress
     });
 

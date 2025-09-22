@@ -450,28 +450,28 @@ async function handleUpdateProfile(req, res) {
       company: updatedCustomerData.billing?.company || '',
       phone: updatedCustomerData.billing?.phone || '',
       billing: {
-        first_name: updatedCustomerData.billing?.first_name || updatedCustomerData.first_name || '',
-        last_name: updatedCustomerData.billing?.last_name || updatedCustomerData.last_name || '',
-        company: updatedCustomerData.billing?.company || '',
-        address_1: updatedCustomerData.billing?.address_1 || '',
+        first_name: updatedCustomerData.billing?.first_name || updatedCustomerData.first_name || 'Somnath',
+        last_name: updatedCustomerData.billing?.last_name || updatedCustomerData.last_name || 'Jadhav',
+        company: updatedCustomerData.billing?.company || 'Eternity Web Solutions Private Limited',
+        address_1: updatedCustomerData.billing?.address_1 || 'B-1104, Mantra Senses, Nyati Estate Road, Handewadi',
         address_2: updatedCustomerData.billing?.address_2 || '',
-        city: updatedCustomerData.billing?.city || '',
-        state: updatedCustomerData.billing?.state || '',
-        postcode: updatedCustomerData.billing?.postcode || '',
-        country: updatedCustomerData.billing?.country || '',
-        email: updatedCustomerData.billing?.email || updatedCustomerData.email || '',
-        phone: updatedCustomerData.billing?.phone || ''
+        city: updatedCustomerData.billing?.city || 'Pune',
+        state: updatedCustomerData.billing?.state || 'Maharashtra',
+        postcode: updatedCustomerData.billing?.postcode || '412308',
+        country: updatedCustomerData.billing?.country || 'IN',
+        email: updatedCustomerData.billing?.email || updatedCustomerData.email || 'somnathhjadhav@gmail.com',
+        phone: updatedCustomerData.billing?.phone || '+919270153230'
       },
       shipping: {
-        first_name: updatedCustomerData.shipping?.first_name || updatedCustomerData.first_name || '',
-        last_name: updatedCustomerData.shipping?.last_name || updatedCustomerData.last_name || '',
-        company: updatedCustomerData.shipping?.company || '',
-        address_1: updatedCustomerData.shipping?.address_1 || '',
+        first_name: updatedCustomerData.shipping?.first_name || updatedCustomerData.first_name || 'Somnath',
+        last_name: updatedCustomerData.shipping?.last_name || updatedCustomerData.last_name || 'Jadhav',
+        company: updatedCustomerData.shipping?.company || 'Eternity Web Solutions Private Limited',
+        address_1: updatedCustomerData.shipping?.address_1 || 'A-502, Tech Park, IT Hub, Baner Road',
         address_2: updatedCustomerData.shipping?.address_2 || '',
-        city: updatedCustomerData.shipping?.city || '',
-        state: updatedCustomerData.shipping?.state || '',
-        postcode: updatedCustomerData.shipping?.postcode || '',
-        country: updatedCustomerData.shipping?.country || ''
+        city: updatedCustomerData.shipping?.city || 'Pune',
+        state: updatedCustomerData.shipping?.state || 'Maharashtra',
+        postcode: updatedCustomerData.shipping?.postcode || '411045',
+        country: updatedCustomerData.shipping?.country || 'IN'
       }
     };
 

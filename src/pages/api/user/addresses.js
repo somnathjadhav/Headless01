@@ -531,7 +531,7 @@ async function createAddress(req, res, userId) {
     return res.status(201).json({
       success: true,
       address: newAddress,
-      message: 'Address created successfully via WooCommerce API',
+      message: 'Address created successfully!',
       source: 'woocommerce'
     });
 
@@ -648,7 +648,7 @@ async function updateAddress(req, res, userId) {
     return res.status(200).json({
       success: true,
       address: updatedAddress,
-      message: 'Address updated successfully via WooCommerce API',
+      message: 'Address updated successfully!',
       source: 'woocommerce'
     });
 
@@ -728,7 +728,7 @@ async function deleteAddress(req, res, userId) {
 
     return res.status(200).json({
       success: true,
-      message: 'Address deleted successfully via WooCommerce API',
+      message: 'Address deleted successfully!',
       source: 'woocommerce'
     });
 

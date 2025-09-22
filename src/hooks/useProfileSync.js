@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 
@@ -7,14 +7,30 @@ export function useProfileSync() {
   const { showSuccess, showError } = useNotifications();
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(null);
+  const syncedUserIdRef = useRef(null);
+  const isSyncingRef = useRef(false);
 
   // Sync profile from backend to frontend
   const syncFromBackend = useCallback(async () => {
     if (!isAuthenticated || !user?.id) {
       console.log('Not authenticated or no user ID, skipping sync');
+      syncedUserIdRef.current = null;
       return null;
     }
 
+    // Check if we've already synced for this user recently
+    if (syncedUserIdRef.current === user.id && lastSyncTime && Date.now() - lastSyncTime < 5000) {
+      console.log('Profile already synced recently for user:', user.id);
+      return null;
+    }
+
+    // Prevent multiple simultaneous calls
+    if (isSyncingRef.current) {
+      console.log('Profile sync already in progress, skipping...');
+      return null;
+    }
+
+    isSyncingRef.current = true;
     setIsSyncing(true);
     try {
       const response = await fetch(`/api/user/profile?userId=${user.id}`);
@@ -23,6 +39,7 @@ export function useProfileSync() {
       if (data.success) {
         console.log('✅ Profile synced from backend:', data.profile);
         setLastSyncTime(new Date());
+        syncedUserIdRef.current = user.id;
         return data.profile;
       } else {
         throw new Error(data.message || 'Failed to sync profile from backend');
@@ -33,6 +50,7 @@ export function useProfileSync() {
       return null;
     } finally {
       setIsSyncing(false);
+      isSyncingRef.current = false;
     }
   }, [isAuthenticated, user?.id, showError]);
 

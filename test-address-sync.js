@@ -8,7 +8,7 @@
 const fetch = globalThis.fetch || require('node-fetch');
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const TEST_USER_ID = '1'; // Change this to a valid user ID
+const TEST_USER_ID = '1'; // User ID for "headless" user
 
 async function testAddressSync() {
   console.log('🧪 Testing Address Sync Functionality');

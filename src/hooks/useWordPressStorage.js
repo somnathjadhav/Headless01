@@ -23,6 +23,7 @@ export function useWordPressStorage() {
   const lastCartLength = useRef(0);
   const lastWishlistLength = useRef(0);
   const lastAddressesLength = useRef(0);
+  const lastAddressesContent = useRef('');
   const lastAddressSyncTime = useRef(0);
   const addressSyncTimeout = useRef(null);
 
@@ -34,6 +35,10 @@ export function useWordPressStorage() {
       loadCartFromWordPress(user.id);
       loadWishlistFromWordPress(user.id);
       loadAddresses(); // Load addresses from WordPress
+      
+      // Initialize sync time to prevent immediate sync after load
+      lastAddressSyncTime.current = Date.now();
+      
       // Reset the flag after a short delay to allow data to update
       setTimeout(() => {
         isLoadingFromWordPress.current = false;
@@ -76,14 +81,26 @@ export function useWordPressStorage() {
     // 2. Addresses exist
     // 3. We're not currently loading from WordPress (to prevent loops)
     // 4. Addresses have actually changed (length or content)
+    // 5. We've had enough time since the last load to prevent initial load syncs
     if (isAuthenticated && user?.id && addresses.length > 0 && !isLoadingFromWordPress.current) {
+      const now = Date.now();
+      const timeSinceLastLoad = now - lastAddressSyncTime.current;
+      const minTimeSinceLoad = 5000; // 5 seconds minimum since last load
+      
+      // Don't sync if we just loaded addresses (prevent initial load syncs)
+      if (timeSinceLastLoad < minTimeSinceLoad) {
+        console.log('🏠 Skipping address sync - too soon after load');
+        return;
+      }
+      
       const addressesChanged = addresses.length !== lastAddressesLength.current;
       const addressesContentChanged = JSON.stringify(addresses) !== lastAddressesContent.current;
       
       if (addressesChanged || addressesContentChanged) {
         console.log('🏠 Addresses changed, scheduling sync to WordPress...', {
           lengthChanged: addressesChanged,
-          contentChanged: addressesContentChanged
+          contentChanged: addressesContentChanged,
+          timeSinceLastLoad: timeSinceLastLoad
         });
         
         lastAddressesLength.current = addresses.length;
@@ -95,20 +112,19 @@ export function useWordPressStorage() {
         }
         
         // Throttle sync calls - only sync if it's been at least 2 seconds since last sync
-        const now = Date.now();
         const timeSinceLastSync = now - lastAddressSyncTime.current;
         const minSyncInterval = 2000; // 2 seconds
         
         if (timeSinceLastSync >= minSyncInterval) {
-          // Sync immediately
+          // Sync immediately (without notification)
           lastAddressSyncTime.current = now;
-          syncAddressesToWordPress();
+          syncAddressesToWordPress(false);
         } else {
-          // Schedule sync for later
+          // Schedule sync for later (without notification)
           const delay = minSyncInterval - timeSinceLastSync;
           addressSyncTimeout.current = setTimeout(() => {
             lastAddressSyncTime.current = Date.now();
-            syncAddressesToWordPress();
+            syncAddressesToWordPress(false);
           }, delay);
         }
       }
@@ -130,7 +146,7 @@ export function useWordPressStorage() {
 
   const syncAddressesToWordPressCallback = useCallback(() => {
     if (isAuthenticated && user?.id) {
-      syncAddressesToWordPress();
+      syncAddressesToWordPress(true); // Show notification for manual sync
     }
   }, [isAuthenticated, user?.id, syncAddressesToWordPress]);
 

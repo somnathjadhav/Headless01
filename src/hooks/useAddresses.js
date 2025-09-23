@@ -320,7 +320,7 @@ export function useAddresses() {
   }, [isAuthenticated, user?.id, addresses, updateAddress, showSuccess, showError]);
 
   // Sync addresses to WordPress (for authenticated users)
-  const syncAddressesToWordPress = useCallback(async () => {
+  const syncAddressesToWordPress = useCallback(async (showNotification = false) => {
     if (!isAuthenticated || !user?.id || addresses.length === 0) return;
     
     try {
@@ -343,10 +343,16 @@ export function useAddresses() {
       }
       
       console.log('✅ Addresses synced to WordPress');
-      showSuccess('Addresses synced to backend successfully!');
+      
+      // Only show success message if explicitly requested (e.g., manual sync)
+      if (showNotification) {
+        showSuccess('Addresses synced to backend successfully!');
+      }
     } catch (error) {
       console.error('Error syncing addresses to WordPress:', error);
-      showError(`Failed to sync addresses: ${error.message}`);
+      if (showNotification) {
+        showError(`Failed to sync addresses: ${error.message}`);
+      }
     }
   }, [isAuthenticated, user?.id, addresses, showSuccess, showError]);
 

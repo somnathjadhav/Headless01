@@ -36,7 +36,8 @@ export default function Account() {
     addAddress, 
     updateAddress, 
     deleteAddress, 
-    setDefaultAddress
+    setDefaultAddress,
+    syncAddressesToWordPress
   } = useAddresses();
   
   const { 
@@ -484,6 +485,15 @@ export default function Account() {
   const handleCancelEdit = () => {
     setIsEditingAddress(false);
     setEditingAddress(null);
+  };
+  
+  const syncTemporaryAddresses = async () => {
+    try {
+      await syncAddressesToWordPress(true); // Show notification for manual sync
+    } catch (error) {
+      console.error('Error syncing addresses:', error);
+      showError('Failed to sync addresses');
+    }
   };
   
   // Function to clear all addresses (useful for testing or user request)

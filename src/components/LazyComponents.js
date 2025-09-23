@@ -5,14 +5,16 @@
 
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
-import LoadingSpinner from './ui/LoadingSpinner';
+import OptimizedLoader from './ui/OptimizedLoader';
 
-// Loading component for suspense fallback
+// Optimized loading component for suspense fallback
 const LoadingFallback = ({ message = 'Loading...' }) => (
-  <div className="flex items-center justify-center p-8">
-    <LoadingSpinner />
-    <span className="ml-2 text-gray-600">{message}</span>
-  </div>
+  <OptimizedLoader 
+    variant="smart" 
+    message={message} 
+    timeout={1000}
+    className="p-8"
+  />
 );
 
 // Lazy load heavy components

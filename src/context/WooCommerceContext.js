@@ -316,18 +316,35 @@ export function WooCommerceProvider({ children }) {
    * Fetch products with current filters
    */
   const fetchProducts = useCallback(async (page = 1) => {
+    // Check cache first for better performance
+    const cacheKey = `${state.currentCategory?.id || 'all'}-${state.searchTerm}-${state.sortBy}-${state.sortOrder}-${state.filterType}-${page}`;
+    const cachedData = sessionStorage.getItem(`products-${cacheKey}`);
+    
+    if (cachedData && page === 1) {
+      try {
+        const parsedData = JSON.parse(cachedData);
+        const cacheTime = parsedData.timestamp;
+        const now = Date.now();
+        
+        // Use cache if it's less than 3 minutes old
+        if (now - cacheTime < 3 * 60 * 1000) {
+          console.log('🚀 Using cached products data');
+          dispatch({ type: actionTypes.SET_PRODUCTS, payload: parsedData });
+          dispatch({ type: actionTypes.SET_PAGINATION, payload: page });
+          return;
+        }
+      } catch (error) {
+        console.log('⚠️ Failed to parse cached data, fetching fresh data');
+      }
+    }
+    
     console.log('🔍 fetchProducts called with page:', page);
-    console.log('🔍 Current state:', { 
-      currentCategory: state.currentCategory, 
-      searchTerm: state.searchTerm, 
-      sortBy: state.sortBy, 
-      sortOrder: state.sortOrder,
-      filterType: state.filterType
-    });
-    console.log('🔍 About to make API call to /api/products');
     
     try {
-      dispatch({ type: actionTypes.SET_LOADING, payload: true });
+      // Only show loading for first page or when no products exist
+      if (page === 1 || state.products.length === 0) {
+        dispatch({ type: actionTypes.SET_LOADING, payload: true });
+      }
       
       const params = {
         per_page: 12,
@@ -362,30 +379,38 @@ export function WooCommerceProvider({ children }) {
         }
       }
       
-      console.log('🔍 API params:', params);
-      
       // Build query string
       const queryParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
         if (value) queryParams.append(key, value);
       });
       
-      // Call our API route with retry logic
+      // Call our API route with optimized retry logic
       const response = await fetchWithRetry(`/api/products?${queryParams.toString()}`, {}, {
-        maxRetries: 2,
-        baseDelay: 1000
+        maxRetries: 1, // Reduced retries for faster failure
+        baseDelay: 500  // Reduced delay
       });
       const result = await response.json();
       
       console.log('🔍 API response:', { productsCount: result.products?.length || 0, totalPages: result.totalPages, total: result.total });
+      
+      // Cache the data for future use
+      if (page === 1) {
+        sessionStorage.setItem(`products-${cacheKey}`, JSON.stringify({
+          ...result,
+          timestamp: Date.now()
+        }));
+      }
       
       dispatch({ type: actionTypes.SET_PRODUCTS, payload: result });
       dispatch({ type: actionTypes.SET_PAGINATION, payload: page });
     } catch (error) {
       console.error('Error in fetchProducts:', error);
       dispatch({ type: actionTypes.SET_ERROR, payload: error.message });
+    } finally {
+      dispatch({ type: actionTypes.SET_LOADING, payload: false });
     }
-  }, [dispatch]);
+  }, [state.currentCategory, state.searchTerm, state.sortBy, state.sortOrder, state.filterType, state.products.length, dispatch]);
 
   /**
    * Fetch products with specific category

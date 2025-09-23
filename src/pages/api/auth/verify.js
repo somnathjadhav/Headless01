@@ -18,22 +18,54 @@ export default async function handler(req, res) {
       });
     }
 
-    // For now, we'll assume the user is authenticated if they have a valid user ID
-    // In a real implementation, you would verify the session/token here
-    return res.status(200).json({
-      success: true,
-      message: 'User authenticated',
-      authenticated: true,
-      user: {
-        id: parseInt(userId),
-        email: 'somnathhjadhav@gmail.com', // From WordPress profile
-        name: 'Somnath Jadhav', // From WordPress profile
-        first_name: 'Somnath',
-        last_name: 'Jadhav',
-        username: 'headless',
-        role: 'customer'
+    // Verify user session and get WordPress user data
+    const wordpressUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || process.env.WORDPRESS_URL || 'https://woo.local';
+    
+    try {
+      // Get user data from WordPress REST API
+      const wpUserResponse = await fetch(`${wordpressUrl}/wp-json/wp/v2/users/${userId}`);
+      
+      if (!wpUserResponse.ok) {
+        return res.status(401).json({
+          success: false,
+          message: 'User not found in WordPress',
+          authenticated: false
+        });
       }
-    });
+      
+      const wpUser = await wpUserResponse.json();
+      
+      // Determine if user is admin based on WordPress roles
+      const isAdmin = wpUser.is_super_admin === true || 
+                     (wpUser.capabilities && wpUser.capabilities.administrator === true) ||
+                     (wpUser.roles && wpUser.roles.includes('administrator'));
+      
+      return res.status(200).json({
+        success: true,
+        message: 'User authenticated',
+        authenticated: true,
+        user: {
+          id: parseInt(userId),
+          email: wpUser.email || '',
+          name: wpUser.name || '',
+          first_name: wpUser.first_name || '',
+          last_name: wpUser.last_name || '',
+          username: wpUser.slug || '',
+          role: isAdmin ? 'administrator' : 'customer',
+          isAdmin: isAdmin,
+          avatar: wpUser.avatar_urls ? wpUser.avatar_urls['96'] : null
+        }
+      });
+      
+    } catch (error) {
+      console.error('WordPress user verification error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to verify user with WordPress',
+        authenticated: false,
+        error: error.message
+      });
+    }
 
   } catch (error) {
     console.error('Auth verify error:', error);

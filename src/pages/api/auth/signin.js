@@ -180,6 +180,27 @@ export default async function handler(req, res) {
         // Create a simple token (in production, you'd want to use a proper JWT library)
         const token = Buffer.from(`${username}:${Date.now()}:${Math.random()}`).toString('base64');
         
+        // Determine if user is admin based on WordPress user data
+        // Check if user has administrator role in WordPress
+        let isAdmin = false;
+        
+        try {
+          // Try to get user roles from WordPress REST API
+          const wpUserResponse = await fetch(`${wordpressUrl}/wp-json/wp/v2/users/${userId}`);
+          if (wpUserResponse.ok) {
+            const wpUser = await wpUserResponse.json();
+            // Check if user has administrator capabilities
+            isAdmin = wpUser.is_super_admin === true || 
+                     (wpUser.capabilities && wpUser.capabilities.administrator === true) ||
+                     (wpUser.roles && wpUser.roles.includes('administrator'));
+          }
+        } catch (wpError) {
+          console.log('🔐 Could not fetch WordPress user roles:', wpError.message);
+          // Fallback: check specific admin credentials
+          isAdmin = (username === 'headless' && email === 'somnathhjadhav@gmail.com') ||
+                   userId === 1; // WordPress admin user ID is typically 1
+        }
+        
         return res.status(200).json({
           success: true,
           message: 'Authentication successful',
@@ -189,7 +210,8 @@ export default async function handler(req, res) {
             name: username,
             email: email,
             username: username,
-            roles: ['customer'], // Default role
+            roles: isAdmin ? ['administrator'] : ['customer'],
+            isAdmin: isAdmin,
             avatar: null
           }
         });

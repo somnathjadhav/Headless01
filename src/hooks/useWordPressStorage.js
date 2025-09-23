@@ -23,6 +23,7 @@ export function useWordPressStorage() {
   const lastCartLength = useRef(0);
   const lastWishlistLength = useRef(0);
   const lastAddressesLength = useRef(0);
+  const lastAddressesContent = useRef('');
   const lastAddressSyncTime = useRef(0);
   const addressSyncTimeout = useRef(null);
 
@@ -34,6 +35,11 @@ export function useWordPressStorage() {
       loadCartFromWordPress(user.id);
       loadWishlistFromWordPress(user.id);
       loadAddresses(); // Load addresses from WordPress
+      
+      // Initialize sync time and content to prevent immediate sync after load
+      lastAddressSyncTime.current = Date.now();
+      lastAddressesContent.current = '';
+      
       // Reset the flag after a short delay to allow data to update
       setTimeout(() => {
         isLoadingFromWordPress.current = false;

@@ -75,7 +75,13 @@ export function useAddresses() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/user/addresses?userId=${user.id}`);
+      const response = await fetch('/api/addresses/manage', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id,
+        },
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -119,7 +125,7 @@ export function useAddresses() {
     try {
       console.log('🔄 Adding address:', addressData);
       
-      const response = await fetch('/api/user/addresses', {
+      const response = await fetch('/api/addresses/manage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,8 +173,8 @@ export function useAddresses() {
     try {
       console.log('🔄 Updating address:', { addressId, addressData });
       
-      // Use the correct API endpoint - PUT to /api/user/addresses with address data
-      const response = await fetch('/api/user/addresses', {
+      // Use our new custom address management endpoint
+      const response = await fetch('/api/addresses/manage', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -228,8 +234,8 @@ export function useAddresses() {
         throw new Error('Address not found');
       }
       
-      // Use the correct API endpoint - DELETE to /api/user/addresses with address data
-      const response = await fetch('/api/user/addresses', {
+      // Use our new custom address management endpoint
+      const response = await fetch('/api/addresses/manage', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -326,9 +332,9 @@ export function useAddresses() {
     try {
       console.log('🏠 Syncing addresses to WordPress...');
       
-      // Save each address to WordPress
+      // Save each address using our new custom endpoint
       for (const address of addresses) {
-        const response = await fetch('/api/user/addresses', {
+        const response = await fetch('/api/addresses/manage', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -338,7 +344,7 @@ export function useAddresses() {
         });
         
         if (!response.ok) {
-          console.error('Failed to sync address to WordPress:', address.id);
+          console.error('Failed to sync address:', address.id);
         }
       }
       

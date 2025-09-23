@@ -17,7 +17,13 @@ async function testAddressSync() {
   try {
     // Test 1: Get addresses
     console.log('\n1️⃣ Testing GET addresses...');
-    const getResponse = await fetch(`${BASE_URL}/api/user/addresses?userId=${TEST_USER_ID}`);
+    const getResponse = await fetch(`${BASE_URL}/api/addresses/manage`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': TEST_USER_ID,
+      },
+    });
     const getData = await getResponse.json();
     
     if (getResponse.ok) {
@@ -42,7 +48,7 @@ async function testAddressSync() {
         city: addressToUpdate.city + ' (Updated)'
       };
       
-      const updateResponse = await fetch(`${BASE_URL}/api/user/addresses`, {
+      const updateResponse = await fetch(`${BASE_URL}/api/addresses/manage`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +69,13 @@ async function testAddressSync() {
       
       // Test 3: Verify the update by getting addresses again
       console.log('\n3️⃣ Testing GET addresses after update...');
-      const verifyResponse = await fetch(`${BASE_URL}/api/user/addresses?userId=${TEST_USER_ID}`);
+      const verifyResponse = await fetch(`${BASE_URL}/api/addresses/manage`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': TEST_USER_ID,
+        },
+      });
       const verifyData = await verifyResponse.json();
       
       if (verifyResponse.ok) {

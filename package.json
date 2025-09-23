@@ -18,6 +18,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "format": "prettier --write .",
+    "clear-rate-limits": "node clear-rate-limits.js",
+    "test-address-sync": "node test-address-sync.js",
     "format:check": "prettier --check .",
     "safety-check": "npm run lint && npm run type-check && npm run test",
     "pre-commit": "npm run safety-check",

@@ -117,6 +117,8 @@ export function useAddresses() {
     setError(null);
 
     try {
+      console.log('🔄 Adding address:', addressData);
+      
       const response = await fetch('/api/user/addresses', {
         method: 'POST',
         headers: {
@@ -127,10 +129,16 @@ export function useAddresses() {
       });
 
       const data = await response.json();
+      console.log('🔄 Address add response:', data);
 
       if (data.success) {
         const updatedAddresses = [...addresses, data.address];
         setAddresses(updatedAddresses);
+        
+        // Clear cache to force fresh data on next load
+        const lastFetchKey = `userAddresses_lastFetch_${user.id}`;
+        localStorage.removeItem(lastFetchKey);
+        
         showSuccess('Address added successfully!');
         return data.address;
       } else {
@@ -157,22 +165,35 @@ export function useAddresses() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/user/addresses/${addressId}`, {
+      console.log('🔄 Updating address:', { addressId, addressData });
+      
+      // Use the correct API endpoint - PUT to /api/user/addresses with address data
+      const response = await fetch('/api/user/addresses', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'x-user-id': user.id,
         },
-        body: JSON.stringify(addressData)
+        body: JSON.stringify({
+          id: addressId,
+          ...addressData
+        })
       });
 
       const data = await response.json();
+      console.log('🔄 Address update response:', data);
 
       if (data.success) {
+        // Update the local state with the updated address
         const updatedAddresses = addresses.map(addr => 
           addr.id === addressId ? { ...addr, ...data.address } : addr
         );
         setAddresses(updatedAddresses);
+        
+        // Clear cache to force fresh data on next load
+        const lastFetchKey = `userAddresses_lastFetch_${user.id}`;
+        localStorage.removeItem(lastFetchKey);
+        
         showSuccess('Address updated successfully!');
         return data.address;
       } else {
@@ -187,7 +208,7 @@ export function useAddresses() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.id, showSuccess, showError]);
+  }, [isAuthenticated, user?.id, addresses, showSuccess, showError]);
 
   // Delete address
   const deleteAddress = useCallback(async (addressId) => {
@@ -199,19 +220,38 @@ export function useAddresses() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/user/addresses/${addressId}`, {
+      console.log('🔄 Deleting address:', addressId);
+      
+      // Find the address to get its type
+      const addressToDelete = addresses.find(addr => addr.id === addressId);
+      if (!addressToDelete) {
+        throw new Error('Address not found');
+      }
+      
+      // Use the correct API endpoint - DELETE to /api/user/addresses with address data
+      const response = await fetch('/api/user/addresses', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'x-user-id': user.id,
-        }
+        },
+        body: JSON.stringify({
+          id: addressId,
+          type: addressToDelete.type
+        })
       });
 
       const data = await response.json();
+      console.log('🔄 Address delete response:', data);
 
       if (data.success) {
         const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
         setAddresses(updatedAddresses);
+        
+        // Clear cache to force fresh data on next load
+        const lastFetchKey = `userAddresses_lastFetch_${user.id}`;
+        localStorage.removeItem(lastFetchKey);
+        
         showSuccess('Address deleted successfully!');
         return true;
       } else {
@@ -226,7 +266,7 @@ export function useAddresses() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.id, showSuccess, showError]);
+  }, [isAuthenticated, user?.id, addresses, showSuccess, showError]);
 
   // Set default address
   const setDefaultAddress = useCallback(async (addressId, type = 'billing') => {
@@ -238,30 +278,35 @@ export function useAddresses() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/user/addresses/${addressId}/default`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user.id,
-        },
-        body: JSON.stringify({
-          type
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
+      console.log('🔄 Setting default address:', { addressId, type });
+      
+      // Find the address to update
+      const addressToUpdate = addresses.find(addr => addr.id === addressId);
+      if (!addressToUpdate) {
+        throw new Error('Address not found');
+      }
+      
+      // Update the address with the default flag
+      const updatedAddressData = {
+        ...addressToUpdate,
+        isDefault: true
+      };
+      
+      // Use the updateAddress function to set as default
+      const result = await updateAddress(addressId, updatedAddressData);
+      
+      if (result) {
+        // Update local state to reflect the default status
         const updatedAddresses = addresses.map(addr => ({
           ...addr,
-          is_default_billing: type === 'billing' ? addr.id === addressId : addr.is_default_billing,
-          is_default_shipping: type === 'shipping' ? addr.id === addressId : addr.is_default_shipping
+          isDefault: addr.id === addressId && addr.type === type
         }));
         setAddresses(updatedAddresses);
+        
         showSuccess(`Default ${type} address updated successfully!`);
         return true;
       } else {
-        throw new Error(data.message || 'Failed to set default address');
+        throw new Error('Failed to set default address');
       }
     } catch (error) {
       console.error('Error setting default address:', error);
@@ -272,7 +317,7 @@ export function useAddresses() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user?.id, showSuccess, showError]);
+  }, [isAuthenticated, user?.id, addresses, updateAddress, showSuccess, showError]);
 
   // Sync addresses to WordPress (for authenticated users)
   const syncAddressesToWordPress = useCallback(async () => {

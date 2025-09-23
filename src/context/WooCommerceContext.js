@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { wooCommerceUtils } from '../lib/woocommerce';
+import { fetchWithRetry } from '../lib/apiRetry';
 
 /**
  * WooCommerce Context State
@@ -369,11 +370,11 @@ export function WooCommerceProvider({ children }) {
         if (value) queryParams.append(key, value);
       });
       
-      // Call our API route instead of WooCommerce directly
-      const response = await fetch(`/api/products?${queryParams.toString()}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Call our API route with retry logic
+      const response = await fetchWithRetry(`/api/products?${queryParams.toString()}`, {}, {
+        maxRetries: 2,
+        baseDelay: 1000
+      });
       const result = await response.json();
       
       console.log('🔍 API response:', { productsCount: result.products?.length || 0, totalPages: result.totalPages, total: result.total });

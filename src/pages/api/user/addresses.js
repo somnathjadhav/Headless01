@@ -577,7 +577,7 @@ async function updateAddress(req, res, userId) {
       });
     }
 
-    console.log('🔄 Updating address via WooCommerce API...');
+    console.log('🔄 Updating address via WooCommerce API...', { userId, addressId: id, type, name, street, city });
     
     // Split name into first and last name
     const nameParts = name.split(' ');
@@ -600,9 +600,27 @@ async function updateAddress(req, res, userId) {
       }
     };
     
-    // For billing addresses, include the email
+    // For billing addresses, try to get the existing email from the customer data
     if (type === 'billing') {
-      customerUpdateData[type].email = 'customer1@example.com'; // Use the existing email
+      try {
+        // First, get the existing customer data to preserve the email
+        const existingCustomerResponse = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wc/v3/customers/${userId}`, {
+          headers: {
+            'Authorization': `Basic ${Buffer.from(`${process.env.WOOCOMMERCE_CONSUMER_KEY}:${process.env.WOOCOMMERCE_CONSUMER_SECRET}`).toString('base64')}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (existingCustomerResponse.ok) {
+          const existingCustomer = await existingCustomerResponse.json();
+          customerUpdateData[type].email = existingCustomer.email || existingCustomer.billing?.email || 'customer@example.com';
+        } else {
+          customerUpdateData[type].email = 'customer@example.com';
+        }
+      } catch (error) {
+        console.log('⚠️ Could not fetch existing customer email, using default');
+        customerUpdateData[type].email = 'customer@example.com';
+      }
     }
     
     // WooCommerce API call

@@ -75,32 +75,42 @@ export function useWordPressStorage() {
     // 1. User is authenticated
     // 2. Addresses exist
     // 3. We're not currently loading from WordPress (to prevent loops)
-    // 4. Addresses length actually changed (to prevent unnecessary saves)
-    if (isAuthenticated && user?.id && addresses.length > 0 && !isLoadingFromWordPress.current && addresses.length !== lastAddressesLength.current) {
-      console.log('🏠 Addresses changed, scheduling sync to WordPress...');
-      lastAddressesLength.current = addresses.length;
+    // 4. Addresses have actually changed (length or content)
+    if (isAuthenticated && user?.id && addresses.length > 0 && !isLoadingFromWordPress.current) {
+      const addressesChanged = addresses.length !== lastAddressesLength.current;
+      const addressesContentChanged = JSON.stringify(addresses) !== lastAddressesContent.current;
       
-      // Clear any existing timeout
-      if (addressSyncTimeout.current) {
-        clearTimeout(addressSyncTimeout.current);
-      }
-      
-      // Throttle sync calls - only sync if it's been at least 2 seconds since last sync
-      const now = Date.now();
-      const timeSinceLastSync = now - lastAddressSyncTime.current;
-      const minSyncInterval = 2000; // 2 seconds
-      
-      if (timeSinceLastSync >= minSyncInterval) {
-        // Sync immediately
-        lastAddressSyncTime.current = now;
-        syncAddressesToWordPress();
-      } else {
-        // Schedule sync for later
-        const delay = minSyncInterval - timeSinceLastSync;
-        addressSyncTimeout.current = setTimeout(() => {
-          lastAddressSyncTime.current = Date.now();
+      if (addressesChanged || addressesContentChanged) {
+        console.log('🏠 Addresses changed, scheduling sync to WordPress...', {
+          lengthChanged: addressesChanged,
+          contentChanged: addressesContentChanged
+        });
+        
+        lastAddressesLength.current = addresses.length;
+        lastAddressesContent.current = JSON.stringify(addresses);
+        
+        // Clear any existing timeout
+        if (addressSyncTimeout.current) {
+          clearTimeout(addressSyncTimeout.current);
+        }
+        
+        // Throttle sync calls - only sync if it's been at least 2 seconds since last sync
+        const now = Date.now();
+        const timeSinceLastSync = now - lastAddressSyncTime.current;
+        const minSyncInterval = 2000; // 2 seconds
+        
+        if (timeSinceLastSync >= minSyncInterval) {
+          // Sync immediately
+          lastAddressSyncTime.current = now;
           syncAddressesToWordPress();
-        }, delay);
+        } else {
+          // Schedule sync for later
+          const delay = minSyncInterval - timeSinceLastSync;
+          addressSyncTimeout.current = setTimeout(() => {
+            lastAddressSyncTime.current = Date.now();
+            syncAddressesToWordPress();
+          }, delay);
+        }
       }
     }
   }, [addresses, isAuthenticated, user?.id, syncAddressesToWordPress]);

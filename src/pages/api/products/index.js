@@ -21,8 +21,12 @@ async function productsHandler(req, res) {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  // Apply rate limiting
-  if (!apiRateLimit(req, res)) {
+  // Apply rate limiting with more generous limits for development
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const rateLimit = isDevelopment ? 60 : 10; // 60 requests per minute in dev, 10 in production
+  const rateWindow = 60000; // 1 minute
+  
+  if (!apiRateLimit(req, res, rateLimit, rateWindow)) {
     return; // Rate limit exceeded, response already sent
   }
 

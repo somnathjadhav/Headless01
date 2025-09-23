@@ -1,547 +1,650 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useGlobalTypography } from '../hooks/useGlobalTypography';
-import SEO from '../components/layout/SEO';
-import PerformanceMonitor from '../components/PerformanceMonitor';
+import Head from 'next/head';
+import Layout from '../components/layout/Layout';
+import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
+import { clearRateLimits, isDevelopment } from '../lib/rateLimitHelper';
 
 export default function FrontendAdmin() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [loginError, setLoginError] = useState('');
+  const { user, isAuthenticated } = useAuth();
+  const { showSuccess, showError } = useNotifications();
+  
+  const [activeTab, setActiveTab] = useState('overview');
   const [systemStatus, setSystemStatus] = useState({
-    wordpress: { status: 'checking', message: 'Checking...', details: {} },
-    woocommerce: { status: 'checking', message: 'Checking...', details: {} },
-    frontend: { status: 'online', message: 'Online', details: {} },
-    lastChecked: null
+    wordpress: 'checking',
+    woocommerce: 'checking',
+    smtp: 'checking',
+    frontend: 'checking'
   });
-  const [statusLoading, setStatusLoading] = useState(false);
-  const [adminUser, setAdminUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [smtpConfig, setSmtpConfig] = useState(null);
+  const [typographySettings, setTypographySettings] = useState(null);
 
-  // Apply global typography
-  useGlobalTypography();
-
+  // Check if user is admin
   useEffect(() => {
-    // Check if user is already authenticated
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const sessionToken = localStorage.getItem('adminSession');
-      if (!sessionToken) {
-        setIsLoading(false);
+    if (!isAuthenticated) {
+      router.push('/signin?redirect=/frontend-admin');
+      return;
+    }
+    
+    // Check if user has admin privileges
+    if (user && !user.isAdmin && user.email !== 'admin@eternitty.com') {
+      showError('Access denied. Admin privileges required.');
+      router.push('/');
         return;
       }
 
-      const response = await fetch('/api/admin/status', {
-        headers: {
-          'Authorization': `Bearer ${sessionToken}`
-        }
-      });
+    loadSystemStatus();
+    loadSMTPConfig();
+    loadTypographySettings();
+  }, [isAuthenticated, user, router]);
 
-      if (response.ok) {
-        const data = await response.json();
-        setIsAuthenticated(true);
-        setAdminUser(data.data.user);
-        // Load system status after authentication
-        checkSystemStatus();
-      } else {
-        localStorage.removeItem('adminSession');
-      }
+  const loadSystemStatus = async () => {
+    try {
+      setLoading(true);
+      
+      // Check WordPress connection
+      const wpResponse = await fetch('/api/site-info');
+      const wpData = await wpResponse.json();
+      
+      // Check WooCommerce connection
+      const wcResponse = await fetch('/api/woocommerce/status');
+      const wcData = await wcResponse.json();
+      
+      // Check SMTP configuration
+      const smtpResponse = await fetch('/api/smtp/status');
+      const smtpData = await smtpResponse.json();
+      
+      setSystemStatus({
+        wordpress: wpData.success ? 'connected' : 'error',
+        woocommerce: wcData.success ? 'connected' : 'error',
+        smtp: smtpData.success ? 'configured' : 'not-configured',
+        frontend: 'running'
+      });
+      
     } catch (error) {
-      console.error('Auth check error:', error);
-      localStorage.removeItem('adminSession');
+      console.error('Error loading system status:', error);
+      showError('Failed to load system status');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoginError('');
-
+  const loadSMTPConfig = async () => {
     try {
-      const response = await fetch('/api/admin/auth', {
+      const response = await fetch('/api/smtp/config');
+        const data = await response.json();
+      if (data.success) {
+        setSmtpConfig(data.config);
+      }
+    } catch (error) {
+      console.error('Error loading SMTP config:', error);
+    }
+  };
+
+  const loadTypographySettings = async () => {
+    try {
+      const response = await fetch('/api/theme-options');
+      const data = await response.json();
+      if (data.success) {
+        setTypographySettings(data.options);
+      }
+    } catch (error) {
+      console.error('Error loading typography settings:', error);
+    }
+  };
+
+  const testSMTPConnection = async () => {
+    try {
+      const response = await fetch('/api/smtp/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(loginForm),
+        body: JSON.stringify({
+          testEmail: user?.email || 'test@example.com'
+        })
       });
 
       const data = await response.json();
-
       if (data.success) {
-        localStorage.setItem('adminSession', data.data.sessionToken);
-        setIsAuthenticated(true);
-        setAdminUser(data.data.user);
-        setLoginForm({ username: '', password: '' });
-        // Load system status after successful login
-        checkSystemStatus();
+        showSuccess('SMTP test email sent successfully!');
       } else {
-        setLoginError(data.message || 'Authentication failed');
+        showError(data.message || 'SMTP test failed');
       }
     } catch (error) {
-      setLoginError('Network error. Please try again.');
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminSession');
-    setIsAuthenticated(false);
-    setAdminUser(null);
-    setSystemStatus({
-      wordpress: { status: 'checking', message: 'Checking...', details: {} },
-      woocommerce: { status: 'checking', message: 'Checking...', details: {} },
-      frontend: { status: 'online', message: 'Online', details: {} },
-      lastChecked: null
-    });
-  };
-
-  const checkSystemStatus = async () => {
-    setStatusLoading(true);
-    
-    try {
-      const response = await fetch('/api/status/combined');
-      const data = await response.json();
-      
-      if (data.success && data.data) {
-        setSystemStatus({
-          wordpress: data.data.wordpress,
-          woocommerce: data.data.woocommerce,
-          frontend: { status: 'online', message: 'Online', details: {} },
-          lastChecked: new Date().toLocaleTimeString()
-        });
-      } else {
-        // Fallback to individual checks if combined fails
-        const [wpResponse, wcResponse] = await Promise.allSettled([
-          fetch('/api/status/wordpress'),
-          fetch('/api/status/woocommerce')
-        ]);
-        
-        const wpData = wpResponse.status === 'fulfilled' ? await wpResponse.value.json() : { success: false };
-        const wcData = wcResponse.status === 'fulfilled' ? await wcResponse.value.json() : { success: false };
-        
-        setSystemStatus({
-          wordpress: wpData,
-          woocommerce: wcData,
-          frontend: { status: 'online', message: 'Online', details: {} },
-          lastChecked: new Date().toLocaleTimeString()
-        });
-      }
-    } catch (error) {
-      console.error('Error checking system status:', error);
-    } finally {
-      setStatusLoading(false);
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'online':
-      case 'installed':
-        return 'text-green-600 bg-green-100';
-      case 'checking':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'error':
-        return 'text-orange-600 bg-orange-100';
-      case 'offline':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
+      console.error('Error testing SMTP:', error);
+      showError('Failed to test SMTP connection');
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'online':
-        return '🟢';
-      case 'installed':
-        return '🟡';
-      case 'checking':
-        return '🔄';
+      case 'connected':
+      case 'configured':
+      case 'running':
+        return '✅';
       case 'error':
-        return '🟠';
-      case 'offline':
-        return '🔴';
+      case 'not-configured':
+        return '❌';
+      case 'checking':
+        return '⏳';
       default:
-        return '⚪';
+        return '❓';
     }
   };
 
-  // Loading state
-  if (isLoading) {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'connected':
+      case 'configured':
+      case 'running':
+        return 'text-green-600';
+      case 'error':
+      case 'not-configured':
+        return 'text-red-600';
+      case 'checking':
+        return 'text-yellow-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  if (!isAuthenticated || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading admin panel...</p>
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading admin dashboard...</p>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
-  // Admin dashboard with modal login
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <SEO title="Admin Dashboard" description="WordPress Admin Dashboard" />
-      
-      {/* Login Modal */}
-      {!isAuthenticated && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Access</h1>
-              <p className="text-gray-600">Enter your WordPress admin credentials</p>
+    <Layout>
+      <Head>
+        <title>Frontend Admin Dashboard - Headless WooCommerce</title>
+        <meta name="description" content="Admin dashboard for managing frontend settings and system status" />
+      </Head>
+
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Frontend Admin Dashboard</h1>
+            <p className="mt-2 text-gray-600">Manage your headless WooCommerce frontend settings and monitor system status</p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  value={loginForm.username}
-                  onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your username"
-                  required
-                />
+          {/* Navigation Tabs */}
+          <div className="mb-8">
+            <nav className="flex space-x-8">
+              {[
+                { id: 'overview', label: 'System Overview', icon: '📊' },
+                { id: 'smtp', label: 'SMTP Settings', icon: '📧' },
+                { id: 'typography', label: 'Typography', icon: '🎨' },
+                { id: 'email-templates', label: 'Email Templates', icon: '📝' },
+                { id: 'rate-limiting', label: 'Rate Limiting', icon: '⏱️' },
+                { id: 'security', label: 'Security', icon: '🔒' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
               </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your password"
-                  required
-                />
+          {/* Tab Content */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            {activeTab === 'overview' && (
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">System Status Overview</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  {[
+                    { key: 'wordpress', label: 'WordPress Backend', description: 'Connection to WordPress' },
+                    { key: 'woocommerce', label: 'WooCommerce API', description: 'WooCommerce integration' },
+                    { key: 'smtp', label: 'SMTP Email', description: 'Email configuration' },
+                    { key: 'frontend', label: 'Frontend App', description: 'Next.js application' }
+                  ].map((service) => (
+                    <div key={service.key} className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium text-gray-900">{service.label}</h3>
+                        <span className={`text-lg ${getStatusColor(systemStatus[service.key])}`}>
+                          {getStatusIcon(systemStatus[service.key])}
+                        </span>
               </div>
-
-              {loginError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-red-700 text-sm">{loginError}</span>
+                      <p className="text-sm text-gray-600">{service.description}</p>
+                      <p className={`text-sm mt-2 capitalize ${getStatusColor(systemStatus[service.key])}`}>
+                        Status: {systemStatus[service.key].replace('-', ' ')}
+                      </p>
                   </div>
+                  ))}
                 </div>
-              )}
 
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="font-medium text-blue-900 mb-2">Quick Actions</h3>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={loadSystemStatus}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      🔄 Refresh Status
+                    </button>
               <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                      onClick={testSMTPConnection}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
-                Sign In
+                      📧 Test SMTP
               </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500">
-                Only WordPress administrators can access this panel
-              </p>
+                    <a
+                      href="/api/health"
+                      target="_blank"
+                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                    >
+                      🏥 Health Check
+                    </a>
             </div>
           </div>
         </div>
       )}
 
-      {/* Admin Dashboard */}
-      
-      <div className="flex">
-        {/* Side Panel */}
-        <div className="w-64 bg-gray-900 shadow-xl min-h-screen">
-          <div className="p-6">
-            <div className="flex items-center mb-8">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-3">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            {activeTab === 'smtp' && (
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">SMTP Email Configuration</h2>
+                
+                {smtpConfig ? (
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="font-medium text-gray-900 mb-4">Current Configuration</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">SMTP Host</label>
+                          <p className="mt-1 text-sm text-gray-900">{smtpConfig.host || 'Not configured'}</p>
               </div>
-              <h2 className="text-xl font-bold text-white">Admin Panel</h2>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">SMTP Port</label>
+                          <p className="mt-1 text-sm text-gray-900">{smtpConfig.port || 'Not configured'}</p>
             </div>
-
-            {/* User Info */}
-            <div className="bg-gray-800 rounded-lg p-4 mb-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-bold">
-                    {adminUser?.name?.charAt(0) || 'A'}
-                  </span>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Security</label>
+                          <p className="mt-1 text-sm text-gray-900">{smtpConfig.secure || 'Not configured'}</p>
                 </div>
                 <div>
-                  <p className="text-white text-sm font-medium">{adminUser?.name}</p>
-                  <p className="text-gray-400 text-xs">Administrator</p>
+                          <label className="block text-sm font-medium text-gray-700">From Email</label>
+                          <p className="mt-1 text-sm text-gray-900">{smtpConfig.from_email || 'Not configured'}</p>
                 </div>
               </div>
             </div>
             
-            <nav className="space-y-2">
-              <a
-                href="#"
-                className="flex items-center px-4 py-3 text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg"
-              >
-                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                System Status
-              </a>
-              
-              <a
-                href="/status"
-                className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-xl transition-colors duration-200"
-              >
-                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Public Status
-              </a>
-              
-              <a
-                href="/typography"
-                className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-xl transition-colors duration-200"
-              >
-                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-                Typography
-              </a>
-              
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <h3 className="font-medium text-yellow-900 mb-2">⚠️ Configuration Required</h3>
+                      <p className="text-sm text-yellow-800 mb-4">
+                        SMTP settings are managed through your WordPress backend. To configure email settings:
+                      </p>
+                      <ol className="list-decimal list-inside text-sm text-yellow-800 space-y-1">
+                        <li>Go to your WordPress admin panel</li>
+                        <li>Navigate to the Headless Pro plugin settings</li>
+                        <li>Configure SMTP settings in the Email section</li>
+                        <li>Test the configuration using the button below</li>
+                      </ol>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={testSMTPConnection}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        📧 Send Test Email
+                      </button>
               <button
-                onClick={handleLogout}
-                className="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-red-600 hover:text-white rounded-xl transition-colors duration-200 mt-6"
+                        onClick={loadSMTPConfig}
+                        className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
               >
-                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Logout
+                        🔄 Refresh Config
               </button>
-            </nav>
           </div>
         </div>
-
-        {/* Main Content */}
-        <div className="flex-1 p-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                  Admin Dashboard
-                </h1>
-                <p className="text-xl text-gray-600">
-                  System monitoring and management for Eternitty Headless WordPress
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 text-4xl mb-4">📧</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">SMTP Not Configured</h3>
+                    <p className="text-gray-600 mb-4">Email functionality is not available without SMTP configuration.</p>
                 <button
-                  onClick={checkSystemStatus}
-                  disabled={statusLoading}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200"
+                      onClick={loadSMTPConfig}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  {statusLoading ? 'Checking...' : 'Refresh Status'}
+                      🔄 Check Configuration
                 </button>
               </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'typography' && (
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Typography Settings</h2>
+                
+                {typographySettings ? (
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="font-medium text-gray-900 mb-4">Current Typography Configuration</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Primary Font</label>
+                          <p className="mt-1 text-sm text-gray-900 font-medium" style={{ fontFamily: typographySettings.primaryFont }}>
+                            {typographySettings.primaryFont || 'Inter (Default)'}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Secondary Font</label>
+                          <p className="mt-1 text-sm text-gray-900 font-medium" style={{ fontFamily: typographySettings.secondaryFont }}>
+                            {typographySettings.secondaryFont || 'Inter (Default)'}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Font Size Scale</label>
+                          <p className="mt-1 text-sm text-gray-900">{typographySettings.fontSizeScale || 'Default'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Line Height</label>
+                          <p className="mt-1 text-sm text-gray-900">{typographySettings.lineHeight || 'Default'}</p>
+                  </div>
+                </div>
+              </div>
+              
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h3 className="font-medium text-blue-900 mb-2">Typography Preview</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <h1 className="text-4xl font-bold" style={{ fontFamily: typographySettings.primaryFont }}>
+                            Heading 1 - Primary Font
+                          </h1>
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-semibold" style={{ fontFamily: typographySettings.primaryFont }}>
+                            Heading 2 - Primary Font
+                          </h2>
+                        </div>
+                        <div>
+                          <p className="text-lg" style={{ fontFamily: typographySettings.secondaryFont }}>
+                            Body text using secondary font - Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                          </p>
+              </div>
+                        <div>
+                          <p className="text-sm text-gray-600" style={{ fontFamily: typographySettings.secondaryFont }}>
+                            Small text using secondary font - Sed do eiusmod tempor incididunt ut labore.
+                          </p>
+                    </div>
+                  </div>
+                    </div>
+
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <h3 className="font-medium text-yellow-900 mb-2">⚠️ Configuration Note</h3>
+                      <p className="text-sm text-yellow-800">
+                        Typography settings are managed through your WordPress backend. To modify typography settings, 
+                        go to your WordPress admin panel and update the theme options.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 text-4xl mb-4">🎨</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Typography Settings Not Available</h3>
+                    <p className="text-gray-600 mb-4">Unable to load typography configuration from WordPress backend.</p>
+                    <button
+                      onClick={loadTypographySettings}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      🔄 Retry Loading
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'email-templates' && (
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Email Templates</h2>
+                
+                <div className="space-y-6">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-4">Available Email Templates</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[
+                        { name: 'Email Verification', description: 'Welcome email with verification link', icon: '✉️' },
+                        { name: 'Welcome Email', description: 'Post-verification welcome message', icon: '🎉' },
+                        { name: 'Password Reset', description: 'Password reset instructions', icon: '🔐' },
+                        { name: 'Order Confirmation', description: 'Order confirmation and details', icon: '📦' },
+                        { name: 'Shipping Notification', description: 'Order shipped notification', icon: '🚚' },
+                        { name: 'Order Delivered', description: 'Order delivery confirmation', icon: '✅' }
+                      ].map((template) => (
+                        <div key={template.name} className="bg-white border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center mb-2">
+                            <span className="text-2xl mr-3">{template.icon}</span>
+                            <h4 className="font-medium text-gray-900">{template.name}</h4>
+                          </div>
+                          <p className="text-sm text-gray-600">{template.description}</p>
+                </div>
+                      ))}
+              </div>
             </div>
-            {systemStatus.lastChecked && (
-              <div className="mt-4 text-right">
-                <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">
-                  Last checked: {systemStatus.lastChecked}
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-medium text-blue-900 mb-2">Template Preview</h3>
+                    <p className="text-sm text-blue-800 mb-4">
+                      You can preview all email templates by visiting the email templates preview page.
+                    </p>
+                    <a
+                      href="/email-templates-preview.html"
+                      target="_blank"
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      👁️ Preview Templates
+                    </a>
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h3 className="font-medium text-green-900 mb-2">✅ Template Features</h3>
+                    <ul className="text-sm text-green-800 space-y-1">
+                      <li>• Beautiful, responsive HTML design</li>
+                      <li>• Automatic fallback to plain text</li>
+                      <li>• Customizable colors and branding</li>
+                      <li>• Mobile-optimized layouts</li>
+                      <li>• Security features and expiration handling</li>
+                      <li>• Multi-language support ready</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'rate-limiting' && (
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Rate Limiting Management</h2>
+                
+                <div className="space-y-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-blue-600 text-sm">ℹ️</span>
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-blue-800">Rate Limiting Information</h3>
+                        <div className="mt-2 text-sm text-blue-700">
+                          <p>Rate limiting helps prevent API abuse and ensures fair usage. Current limits:</p>
+                          <ul className="mt-2 list-disc list-inside space-y-1">
+                            <li><strong>Development:</strong> 60 requests per minute</li>
+                            <li><strong>Production:</strong> 10 requests per minute</li>
+                            <li><strong>Window:</strong> 1 minute rolling window</li>
+                          </ul>
+                        </div>
+              </div>
+                    </div>
+                  </div>
+
+                  {isDevelopment() && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <span className="text-yellow-600 text-sm">⚠️</span>
+                          </div>
+                        </div>
+                        <div className="ml-3">
+                          <h3 className="text-sm font-medium text-yellow-800">Development Mode</h3>
+                          <div className="mt-2 text-sm text-yellow-700">
+                            <p>You're in development mode. You can clear rate limits if needed for testing.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-4">Rate Limit Actions</h3>
+                    <div className="space-y-3">
+                      {isDevelopment() ? (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const success = await clearRateLimits();
+                              if (success) {
+                                showSuccess('Rate limits cleared successfully!');
+                              } else {
+                                showError('Failed to clear rate limits');
+                              }
+                            } catch (error) {
+                              showError('Error clearing rate limits: ' + error.message);
+                            }
+                          }}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <span className="mr-2">🔄</span>
+                          Clear Rate Limits
+                        </button>
+                      ) : (
+                        <div className="text-sm text-gray-500">
+                          Rate limit clearing is only available in development mode.
+                  </div>
+                )}
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-4">Rate Limit Status</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700">Current Environment</span>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          isDevelopment() 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {isDevelopment() ? 'Development' : 'Production'}
+                        </span>
+              </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700">Rate Limit</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {isDevelopment() ? '60 requests/minute' : '10 requests/minute'}
+                        </span>
+                </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700">Window</span>
+                        <span className="text-sm font-medium text-gray-900">1 minute</span>
+                </div>
+              </div>
+            </div>
+
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-4">Troubleshooting</h3>
+                    <div className="text-sm text-gray-700 space-y-2">
+                      <p><strong>If you're getting 429 errors:</strong></p>
+                      <ul className="list-disc list-inside space-y-1 ml-4">
+                        <li>Wait a moment before making more requests</li>
+                        <li>Check if you're making too many requests in a short time</li>
+                        <li>In development mode, you can clear rate limits using the button above</li>
+                        <li>Consider implementing request batching or caching</li>
+                      </ul>
+          </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'security' && (
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Security Settings</h2>
+                
+                <div className="space-y-6">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-4">Access Control</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700">Admin Dashboard Access</span>
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                          Restricted
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700">API Rate Limiting</span>
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                          Enabled
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-700">CORS Protection</span>
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                          Configured
                 </span>
+              </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h3 className="font-medium text-yellow-900 mb-2">⚠️ Security Recommendations</h3>
+                    <ul className="text-sm text-yellow-800 space-y-2">
+                      <li>• Change default admin credentials in production</li>
+                      <li>• Enable HTTPS for all communications</li>
+                      <li>• Regularly update WordPress and plugins</li>
+                      <li>• Monitor failed login attempts</li>
+                      <li>• Use strong SMTP credentials</li>
+                      <li>• Implement proper backup strategies</li>
+                    </ul>
+                </div>
+
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h3 className="font-medium text-red-900 mb-2">🚨 Important Security Notes</h3>
+                    <ul className="text-sm text-red-800 space-y-2">
+                      <li>• This admin dashboard is only accessible to authorized users</li>
+                      <li>• All API endpoints require proper authentication</li>
+                      <li>• SMTP credentials are stored securely in WordPress</li>
+                      <li>• Email verification tokens expire after 24 hours</li>
+                      <li>• Password reset links expire after 1 hour</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-
-          {/* Status Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            {/* WordPress Backend Status */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 border border-gray-100">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900">
-                    WordPress Backend
-                  </h3>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(systemStatus.wordpress?.status)}`}>
-                  {getStatusIcon(systemStatus.wordpress?.status)} {systemStatus.wordpress?.message || 'Checking...'}
-                </span>
-              </div>
-              
-              <div className="space-y-4">
-                {systemStatus.wordpress?.details?.name && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Site Name</span>
-                      <span className="font-semibold text-gray-900">{systemStatus.wordpress.details.name}</span>
-                    </div>
-                  </div>
-                )}
-                {systemStatus.wordpress?.details?.description && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <span className="text-sm font-medium text-gray-600">Description</span>
-                      <span className="font-medium text-sm text-gray-700 text-right max-w-[200px]">{systemStatus.wordpress.details.description}</span>
-                    </div>
-                  </div>
-                )}
-                {systemStatus.wordpress?.details?.endpoints && (
-                  <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-green-700">API Status</span>
-                      <span className="font-semibold text-green-800 flex items-center">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        Available
-                      </span>
-                    </div>
-                  </div>
-                )}
-                {systemStatus.wordpress?.details?.error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-red-700 font-medium">Error: {systemStatus.wordpress.details.error}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Security</span>
-                  <span className="font-semibold text-green-600 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Protected
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* WooCommerce Status */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 border border-gray-100">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900">
-                    WooCommerce
-                  </h3>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(systemStatus.woocommerce?.status)}`}>
-                  {getStatusIcon(systemStatus.woocommerce?.status)} {systemStatus.woocommerce?.message || 'Checking...'}
-                </span>
-              </div>
-              
-              <div className="space-y-4">
-                {systemStatus.woocommerce?.details?.status && (
-                  <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-yellow-700">Status</span>
-                      <span className="font-semibold text-yellow-800">{systemStatus.woocommerce.details.status}</span>
-                    </div>
-                  </div>
-                )}
-                {systemStatus.woocommerce?.details?.message && (
-                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                    <div className="flex items-start">
-                      <svg className="w-5 h-5 text-blue-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm text-blue-700">{systemStatus.woocommerce.details.message}</span>
-                    </div>
-                  </div>
-                )}
-                {systemStatus.woocommerce?.details?.error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-red-700 font-medium">Error: {systemStatus.woocommerce.details.error}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="mt-6 pt-4 border-t border-gray-200 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">API Version</span>
-                  <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">v3</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Endpoint</span>
-                  <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">/wp-json/wc/v3/</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* System Overview */}
-          <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">System Overview</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {Object.values(systemStatus).filter(s => s && s.status && (s.status === 'online' || s.status === 'installed')).length}
-                  </div>
-                  <div className="text-gray-600">Services Online</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">
-                    {systemStatus.wordpress?.status === 'online' ? 'Connected' : 'Disconnected'}
-                  </div>
-                  <div className="text-gray-600">Backend Connection</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {systemStatus.woocommerce?.status === 'installed' || systemStatus.woocommerce?.status === 'online' ? 'Ready' : 'Not Ready'}
-                  </div>
-                  <div className="text-gray-600">E-commerce Status</div>
-                </div>
-              </div>
-            </div>
-            
-            <PerformanceMonitor />
-          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }

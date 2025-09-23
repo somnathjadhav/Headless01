@@ -1,4 +1,3 @@
-
 # SMTP Configuration Instructions
 # ==============================
 # 
@@ -22,4 +21,3 @@
 # - Custom: your-provider-smtp-host:port
 #
 # Note: For Gmail, you need to use an App Password, not your regular password
-

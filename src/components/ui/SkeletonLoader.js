@@ -127,11 +127,58 @@ export function SearchResultsSkeleton({ className = "" }) {
   );
 }
 
+// Modern Product Card Skeleton
+export function ProductCardSkeleton({ className = "" }) {
+  return (
+    <div className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300 ${className}`}>
+      {/* Image Skeleton */}
+      <div className="relative">
+        <SkeletonBox className="h-48 w-full" />
+        <div className="absolute top-3 right-3">
+          <SkeletonBox className="h-6 w-6 rounded-full" />
+        </div>
+      </div>
+      
+      {/* Content Skeleton */}
+      <div className="p-4 space-y-3">
+        {/* Title */}
+        <SkeletonBox className="h-5 w-3/4" />
+        
+        {/* Description */}
+        <SkeletonBox className="h-4 w-full" />
+        <SkeletonBox className="h-4 w-2/3" />
+        
+        {/* Price and Button */}
+        <div className="flex justify-between items-center pt-2">
+          <div className="space-y-1">
+            <SkeletonBox className="h-6 w-16" />
+            <SkeletonBox className="h-4 w-12" />
+          </div>
+          <SkeletonBox className="h-9 w-24 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Modern Product Grid Skeleton
+export function ProductGridSkeleton({ count = 8, className = "" }) {
+  return (
+    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ${className}`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <ProductCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
 export default {
   SkeletonBox,
   SkeletonText,
   SkeletonCard,
   SkeletonStatusCard,
   SkeletonSpinner,
-  SearchResultsSkeleton
+  SearchResultsSkeleton,
+  ProductCardSkeleton,
+  ProductGridSkeleton
 };

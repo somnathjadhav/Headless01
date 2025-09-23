@@ -1,260 +1,219 @@
 /**
- * Enhanced Error Handling Utilities
- * Production-ready error handling with external logging support
+ * Comprehensive Error Handling System
+ * Provides consistent error responses and logging
  */
 
-import { logger } from './logger.js';
-
-// Safe error messages for different environments
-const SAFE_ERROR_MESSAGES = {
-  // Authentication errors
-  AUTH_ERROR: 'Authentication failed. Please check your credentials.',
-  UNAUTHORIZED: 'You are not authorized to perform this action.',
-  FORBIDDEN: 'Access denied.',
-  
-  // API errors
-  API_ERROR: 'Service temporarily unavailable. Please try again later.',
-  API_NOT_FOUND: 'The requested resource was not found.',
-  API_TIMEOUT: 'Request timeout. Please try again.',
-  
-  // Validation errors
-  VALIDATION_ERROR: 'Invalid input provided.',
-  REQUIRED_FIELD: 'Required field is missing.',
-  INVALID_FORMAT: 'Invalid data format.',
-  
-  // Rate limiting
-  RATE_LIMIT: 'Too many requests. Please try again later.',
-  
-  // Generic errors
-  INTERNAL_ERROR: 'An internal error occurred. Please try again later.',
-  NOT_FOUND: 'The requested resource was not found.',
-  BAD_REQUEST: 'Invalid request.',
-  CONFLICT: 'Resource conflict occurred.',
+/**
+ * Error types for consistent error handling
+ */
+export const ERROR_TYPES = {
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  AUTHENTICATION_ERROR: 'AUTHENTICATION_ERROR',
+  AUTHORIZATION_ERROR: 'AUTHORIZATION_ERROR',
+  NOT_FOUND: 'NOT_FOUND',
+  RATE_LIMIT_ERROR: 'RATE_LIMIT_ERROR',
+  WORDPRESS_ERROR: 'WORDPRESS_ERROR',
+  WOOCOMMERCE_ERROR: 'WOOCOMMERCE_ERROR',
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
+  NETWORK_ERROR: 'NETWORK_ERROR'
 };
 
-// Enhanced error logging with external service support
-export const logError = (error, context = {}) => {
-  const errorInfo = {
+/**
+ * HTTP status codes mapping
+ */
+export const HTTP_STATUS = {
+  OK: 200,
+  CREATED: 201,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  RATE_LIMITED: 429,
+  INTERNAL_ERROR: 500,
+  BAD_GATEWAY: 502,
+  SERVICE_UNAVAILABLE: 503
+};
+
+/**
+ * Create standardized error response
+ * @param {Object} res - Express response object
+ * @param {number} statusCode - HTTP status code
+ * @param {string} message - Error message
+ * @param {string} error - Error type or details
+ * @param {Object} details - Additional error details
+ * @returns {Object} Error response
+ */
+export function createErrorResponse(res, statusCode, message, error = null, details = null) {
+  const errorResponse = {
+    success: false,
+    message,
     timestamp: new Date().toISOString(),
-    message: error.message,
-    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-    context: {
-      ...context,
-      // Remove sensitive data from context
-      ...(context.body && { body: sanitizeContext(context.body) }),
-      ...(context.query && { query: sanitizeContext(context.query) }),
-    },
-    type: error.constructor.name,
-    severity: getErrorSeverity(error),
+    statusCode
   };
-  
-  // Use our logger utility
-  logger.error(error.message, error, errorInfo.context);
-  
-  // Send to external logging service in production
-  if (process.env.NODE_ENV === 'production') {
-    sendToExternalService(errorInfo);
-  }
-};
 
-// Determine error severity for better categorization
-const getErrorSeverity = (error) => {
-  if (error.name === 'ValidationError') return 'low';
-  if (error.name === 'AuthenticationError') return 'medium';
-  if (error.name === 'DatabaseError') return 'high';
-  if (error.name === 'NetworkError') return 'medium';
-  return 'medium';
-};
-
-// Send to external logging service
-const sendToExternalService = async (errorInfo) => {
-  try {
-    // Example: Send to Sentry
-    // if (process.env.SENTRY_DSN) {
-    //   Sentry.captureException(errorInfo.error, {
-    //     extra: errorInfo.context,
-    //     tags: { 
-    //       section: errorInfo.context.section,
-    //       severity: errorInfo.severity 
-    //     }
-    //   });
-    // }
-    
-    // Example: Send to custom logging endpoint
-    if (process.env.LOGGING_ENDPOINT) {
-      await fetch(process.env.LOGGING_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(errorInfo)
-      });
-    }
-  } catch (loggingError) {
-    // Fallback to console if external logging fails
-    console.error('Failed to send error to external service:', loggingError);
+  if (error) {
+    errorResponse.error = error;
   }
-};
 
-// Sanitize context data to remove sensitive information
-const sanitizeContext = (data) => {
-  if (!data || typeof data !== 'object') return data;
-  
-  const sensitiveKeys = [
-    'password', 'token', 'secret', 'key', 'auth', 'authorization',
-    'credit', 'card', 'ssn', 'social', 'security', 'pin', 'cvv'
-  ];
-  
-  const sanitized = { ...data };
-  
-  for (const key in sanitized) {
-    const lowerKey = key.toLowerCase();
-    if (sensitiveKeys.some(sensitive => lowerKey.includes(sensitive))) {
-      sanitized[key] = '[REDACTED]';
-    } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
-      sanitized[key] = sanitizeContext(sanitized[key]);
-    }
+  if (details) {
+    errorResponse.details = details;
   }
-  
-  return sanitized;
-};
 
-// Create safe error response
-export const createErrorResponse = (error, context = {}) => {
-  // Log the error securely
-  logError(error, context);
-  
-  // Determine error type and status code
-  let statusCode = 500;
-  let errorCode = 'INTERNAL_ERROR';
-  let message = SAFE_ERROR_MESSAGES.INTERNAL_ERROR;
-  
-  // Handle specific error types
-  if (error.response) {
-    const status = error.response.status;
-    
-    switch (status) {
-      case 400:
-        statusCode = 400;
-        errorCode = 'BAD_REQUEST';
-        message = SAFE_ERROR_MESSAGES.BAD_REQUEST;
-        break;
-      case 401:
-        statusCode = 401;
-        errorCode = 'AUTH_ERROR';
-        message = SAFE_ERROR_MESSAGES.AUTH_ERROR;
-        break;
-      case 403:
-        statusCode = 403;
-        errorCode = 'FORBIDDEN';
-        message = SAFE_ERROR_MESSAGES.FORBIDDEN;
-        break;
-      case 404:
-        statusCode = 404;
-        errorCode = 'NOT_FOUND';
-        message = SAFE_ERROR_MESSAGES.NOT_FOUND;
-        break;
-      case 409:
-        statusCode = 409;
-        errorCode = 'CONFLICT';
-        message = SAFE_ERROR_MESSAGES.CONFLICT;
-        break;
-      case 429:
-        statusCode = 429;
-        errorCode = 'RATE_LIMIT';
-        message = SAFE_ERROR_MESSAGES.RATE_LIMIT;
-        break;
-      default:
-        if (status >= 500) {
-          statusCode = 500;
-          errorCode = 'API_ERROR';
-          message = SAFE_ERROR_MESSAGES.API_ERROR;
-        }
-    }
-  } else if (error.code) {
-    // Handle specific error codes
-    switch (error.code) {
-      case 'DEPTH_ZERO_SELF_SIGNED_CERT':
-        statusCode = 500;
-        errorCode = 'SSL_CERT_ERROR';
-        message = process.env.NODE_ENV === 'development' 
-          ? 'SSL certificate error - please check your local development setup'
-          : 'SSL certificate verification failed';
-        break;
-      case 'ECONNREFUSED':
-        statusCode = 500;
-        errorCode = 'API_ERROR';
-        message = SAFE_ERROR_MESSAGES.API_ERROR;
-        break;
-      case 'ETIMEDOUT':
-        statusCode = 500;
-        errorCode = 'API_TIMEOUT';
-        message = SAFE_ERROR_MESSAGES.API_TIMEOUT;
-        break;
-    }
-  }
-  
-  // Create response object
+  // Log error for monitoring
+  logError(statusCode, message, error, details);
+
+  return res.status(statusCode).json(errorResponse);
+}
+
+/**
+ * Create success response
+ * @param {Object} res - Express response object
+ * @param {Object} data - Response data
+ * @param {string} message - Success message
+ * @param {number} statusCode - HTTP status code
+ * @returns {Object} Success response
+ */
+export function createSuccessResponse(res, data = null, message = 'Success', statusCode = HTTP_STATUS.OK) {
   const response = {
-    success: false,
-    message: message,
-    error: errorCode,
-  };
-  
-  // Add retry information for rate limiting
-  if (errorCode === 'RATE_LIMIT') {
-    response.retryAfter = 60; // seconds
-  }
-  
-  // Add request ID for tracking (in production)
-  if (process.env.NODE_ENV === 'production') {
-    response.requestId = context.requestId || generateRequestId();
-  }
-  
-  return { statusCode, response };
-};
-
-// Generate unique request ID
-const generateRequestId = () => {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15);
-};
-
-// Middleware for secure error handling
-export const secureErrorHandler = (handler) => {
-  return async (req, res) => {
-    try {
-      await handler(req, res);
-    } catch (error) {
-      const { statusCode, response } = createErrorResponse(error, {
-        method: req.method,
-        url: req.url,
-        body: req.body,
-        query: req.query,
-        headers: {
-          'user-agent': req.headers['user-agent'],
-          'x-forwarded-for': req.headers['x-forwarded-for'],
-        },
-      });
-      
-      res.status(statusCode).json(response);
-    }
-  };
-};
-
-// Validation error handler
-export const handleValidationError = (errors) => {
-  return {
-    success: false,
-    message: 'Validation failed',
-    errors: errors,
-    error: 'VALIDATION_ERROR'
-  };
-};
-
-// Success response helper
-export const createSuccessResponse = (data, message = 'Success') => {
-  return {
     success: true,
-    message: message,
-    data: data
+    message,
+    timestamp: new Date().toISOString(),
+    statusCode
   };
+
+  if (data !== null) {
+    response.data = data;
+  }
+
+  return res.status(statusCode).json(response);
+}
+
+/**
+ * Log error for monitoring and debugging
+ * @param {number} statusCode - HTTP status code
+ * @param {string} message - Error message
+ * @param {string} error - Error type
+ * @param {Object} details - Additional details
+ */
+function logError(statusCode, message, error, details) {
+  const logData = {
+    level: getLogLevel(statusCode),
+    timestamp: new Date().toISOString(),
+    statusCode,
+    message,
+    error,
+    details
+  };
+
+  // Log to console in development
+  if (process.env.NODE_ENV === 'development') {
+    console.error('🚨 Error:', logData);
+  }
+
+  // In production, you would send this to a logging service
+  // like Winston, LogRocket, Sentry, etc.
+}
+
+/**
+ * Get log level based on status code
+ * @param {number} statusCode - HTTP status code
+ * @returns {string} Log level
+ */
+function getLogLevel(statusCode) {
+  if (statusCode >= 500) return 'error';
+  if (statusCode >= 400) return 'warn';
+  return 'info';
+}
+
+/**
+ * Handle async errors in route handlers
+ * @param {Function} fn - Async function to wrap
+ * @returns {Function} Wrapped function with error handling
+ */
+export function asyncHandler(fn) {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
+
+/**
+ * Global error handler middleware
+ * @param {Error} err - Error object
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Next middleware function
+ */
+export function globalErrorHandler(err, req, res, next) {
+  console.error('🚨 Global error handler:', err);
+
+  // Default error
+  let statusCode = HTTP_STATUS.INTERNAL_ERROR;
+  let message = 'Internal server error';
+  let error = ERROR_TYPES.INTERNAL_ERROR;
+
+  // Handle specific error types
+  if (err.name === 'ValidationError') {
+    statusCode = HTTP_STATUS.BAD_REQUEST;
+    message = 'Validation failed';
+    error = ERROR_TYPES.VALIDATION_ERROR;
+  } else if (err.name === 'UnauthorizedError') {
+    statusCode = HTTP_STATUS.UNAUTHORIZED;
+    message = 'Authentication required';
+    error = ERROR_TYPES.AUTHENTICATION_ERROR;
+  } else if (err.name === 'ForbiddenError') {
+    statusCode = HTTP_STATUS.FORBIDDEN;
+    message = 'Access denied';
+    error = ERROR_TYPES.AUTHORIZATION_ERROR;
+  } else if (err.name === 'NotFoundError') {
+    statusCode = HTTP_STATUS.NOT_FOUND;
+    message = 'Resource not found';
+    error = ERROR_TYPES.NOT_FOUND;
+  } else if (err.message && err.message.includes('Rate limit')) {
+    statusCode = HTTP_STATUS.RATE_LIMITED;
+    message = 'Too many requests';
+    error = ERROR_TYPES.RATE_LIMIT_ERROR;
+  }
+
+  // Use custom error properties if available
+  if (err.statusCode) {
+    statusCode = err.statusCode;
+  }
+  if (err.message) {
+    message = err.message;
+  }
+  if (err.type) {
+    error = err.type;
+  }
+
+  createErrorResponse(res, statusCode, message, error, {
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+}
+
+/**
+ * Create custom error class
+ * @param {string} message - Error message
+ * @param {number} statusCode - HTTP status code
+ * @param {string} type - Error type
+ */
+export class AppError extends Error {
+  constructor(message, statusCode = HTTP_STATUS.INTERNAL_ERROR, type = ERROR_TYPES.INTERNAL_ERROR) {
+    super(message);
+    this.statusCode = statusCode;
+    this.type = type;
+    this.isOperational = true;
+
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export default {
+  createErrorResponse,
+  createSuccessResponse,
+  asyncHandler,
+  globalErrorHandler,
+  AppError,
+  ERROR_TYPES,
+  HTTP_STATUS
 };

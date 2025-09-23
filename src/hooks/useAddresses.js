@@ -27,13 +27,48 @@ export function useAddresses() {
       return;
     }
 
+    // Check if we have recent data in localStorage to avoid unnecessary API calls
+    const lastFetchKey = `userAddresses_lastFetch_${user.id}`;
+    const lastFetch = localStorage.getItem(lastFetchKey);
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+    
+    if (lastFetch && (now - parseInt(lastFetch)) < fiveMinutes) {
+      console.log('Using cached addresses (less than 5 minutes old)');
+      const savedAddresses = localStorage.getItem(`userAddresses_${user.id}`);
+      if (savedAddresses) {
+        try {
+          const parsedAddresses = JSON.parse(savedAddresses);
+          setAddresses(parsedAddresses);
+          loadedUserIdRef.current = user.id;
+          return;
+        } catch (parseError) {
+          console.error('Error parsing cached addresses:', parseError);
+        }
+      }
+    }
+
+    // Clear old localStorage data for other users and generic key
+    const allKeys = Object.keys(localStorage);
+    allKeys.forEach(key => {
+      if (key.startsWith('userAddresses_') && key !== `userAddresses_${user.id}`) {
+        localStorage.removeItem(key);
+        console.log('Cleared old address data for key:', key);
+      }
+    });
+    
+    // Also clear the old generic key if it exists
+    if (localStorage.getItem('userAddresses')) {
+      localStorage.removeItem('userAddresses');
+      console.log('Cleared old generic userAddresses key');
+    }
+
     // Check if we've already loaded addresses for this user
     if (loadedUserIdRef.current === user.id && addresses.length > 0) {
       console.log('Addresses already loaded for user:', user.id);
       return;
     }
 
-    // Always fetch fresh data from server - no localStorage caching
     console.log('Loading addresses for user:', user.id);
     isLoadingRef.current = true;
     setLoading(true);
@@ -48,6 +83,12 @@ export function useAddresses() {
         console.log('Setting addresses:', addresses);
         setAddresses(addresses);
         loadedUserIdRef.current = user.id;
+        
+        // Update localStorage for caching
+        if (addresses.length > 0) {
+          localStorage.setItem(`userAddresses_${user.id}`, JSON.stringify(addresses));
+          localStorage.setItem(`userAddresses_lastFetch_${user.id}`, Date.now().toString());
+        }
       } else {
         throw new Error(data.message || 'Failed to load addresses');
       }
@@ -236,42 +277,33 @@ export function useAddresses() {
   // Sync addresses to WordPress (for authenticated users)
   const syncAddressesToWordPress = useCallback(async () => {
     if (!isAuthenticated || !user?.id || addresses.length === 0) return;
-
+    
     try {
-      const response = await fetch(`/api/user/addresses/sync?userId=${user.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user.id,
-        },
-        body: JSON.stringify({
-          addresses
-        })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        console.log('✅ Addresses synced to WordPress successfully');
-        showSuccess('Addresses synced to backend successfully!');
-      } else {
-        console.error('❌ Failed to sync addresses to WordPress:', data.message);
+      console.log('🏠 Syncing addresses to WordPress...');
+      
+      // Save each address to WordPress
+      for (const address of addresses) {
+        const response = await fetch('/api/user/addresses', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user.id,
+          },
+          body: JSON.stringify(address),
+        });
         
-        // Handle rate limiting specifically
-        if (response.status === 429 || data.error === 'rate_limit_exceeded') {
-          showError('Rate limit exceeded. Addresses will sync automatically in a moment.');
-        } else if (response.status === 403 || response.status === 401 || 
-                   data.message?.includes('not allowed to edit') || 
-                   data.message?.includes('permission')) {
-          showError('Permission denied. Addresses will be saved locally and synced when permissions are available.');
-        } else {
-          showError(`Failed to sync addresses: ${data.message}`);
+        if (!response.ok) {
+          console.error('Failed to sync address to WordPress:', address.id);
         }
       }
+      
+      console.log('✅ Addresses synced to WordPress');
+      showSuccess('Addresses synced to backend successfully!');
     } catch (error) {
-      console.error('❌ Error syncing addresses to WordPress:', error);
+      console.error('Error syncing addresses to WordPress:', error);
       showError(`Failed to sync addresses: ${error.message}`);
     }
-  }, [isAuthenticated, user?.id, showSuccess, showError]);
+  }, [isAuthenticated, user?.id, addresses, showSuccess, showError]);
 
   return {
     addresses,

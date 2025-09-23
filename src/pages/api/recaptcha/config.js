@@ -110,6 +110,7 @@ export default async function handler(req, res) {
     const envSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
     const envSecretKey = process.env.RECAPTCHA_SECRET_KEY;
     
+    const isLocalDevelopment = process.env.NODE_ENV === 'development';
     const fallbackConfig = {
       enabled: !isLocalDevelopment, // Disable reCAPTCHA for local development
       site_key: envSiteKey || null,

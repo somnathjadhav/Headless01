@@ -88,10 +88,10 @@ const ReviewForm = ({ productId, productName, onReviewSubmit, onCancel }) => {
       <form id="review-form" onSubmit={handleSubmit} className="space-y-4">
         {/* Rating */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-2">
             Rating *
           </label>
-          <div className="flex space-x-1">
+          <div id="rating" className="flex space-x-1" role="radiogroup" aria-label="Rating">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
@@ -102,6 +102,9 @@ const ReviewForm = ({ productId, productName, onReviewSubmit, onCancel }) => {
                     ? 'text-yellow-400 hover:text-yellow-500'
                     : 'text-gray-300 hover:text-yellow-400'
                 }`}
+                role="radio"
+                aria-checked={star === rating}
+                aria-label={`${star} star rating`}
               >
                 <StarIcon className="w-6 h-6 fill-current" />
               </button>

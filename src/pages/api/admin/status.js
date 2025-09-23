@@ -32,4 +32,4 @@ async function adminStatusHandler(req, res) {
   }
 }
 
-export default secureErrorHandler(adminAuthMiddleware(adminStatusHandler));
+export default asyncHandler(adminAuthMiddleware(adminStatusHandler));

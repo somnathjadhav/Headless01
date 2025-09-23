@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router';
 import { useAuth } from '../../context/AuthContext';
 import { useModal } from '../../context/ModalContext';
 import { useGlobalTypography } from '../../hooks/useGlobalTypography';
 import { useSiteInfo } from '../../hooks/useSiteInfo';
 import { useRecaptchaConfig } from '../../hooks/useRecaptchaConfig';
 import { 
-  UserIcon, 
-  LockClosedIcon, 
   EyeIcon, 
   EyeSlashIcon,
   XMarkIcon,
@@ -17,16 +15,16 @@ import {
 import SimpleCaptcha from '../ui/SimpleCaptcha';
 import PasswordStrengthMeter from '../ui/PasswordStrengthMeter';
 import { signinSchema, signupSchema, safeParseWithZod } from '../../lib/zodSchemas';
-import { Suspense, lazy } from 'react';
+// import { Suspense, lazy } from 'react';
 
 // Lazy load reCAPTCHA component
-const LazyGoogleReCaptcha = lazy(() => import('../ui/GoogleReCaptcha'));
+// const LazyGoogleReCaptcha = lazy(() => import('../ui/GoogleReCaptcha'));
 
 export default function AuthModal() {
-  const router = useRouter();
+  // const router = useRouter();
   const { login, register, isAuthenticated, isLoading, error, clearError } = useAuth();
   const { authModal, closeAuthModal } = useModal();
-  const { name: siteName, loading: siteLoading } = useSiteInfo();
+  // const { } = useSiteInfo();
   const { isEnabled: isRecaptchaEnabled, isLoading: isRecaptchaLoading } = useRecaptchaConfig();
   
   const [mode, setMode] = useState(authModal.mode); // 'signin' or 'signup'
@@ -101,7 +99,6 @@ export default function AuthModal() {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const formData = mode === 'signin' ? signinData : signupData;
     const setFormData = mode === 'signin' ? setSigninData : setSignupData;
     
     setFormData(prev => ({
@@ -226,16 +223,16 @@ export default function AuthModal() {
     }
   };
 
-  const handleRecaptchaExpire = () => {
-    setCaptchaVerified(false);
-    setRecaptchaToken(null);
-  };
+  // const handleRecaptchaExpire = () => {
+  //   setCaptchaVerified(false);
+  //   setRecaptchaToken(null);
+  // };
 
-  const handleRecaptchaError = (error) => {
-    console.error('reCAPTCHA error:', error);
-    setCaptchaVerified(false);
-    setRecaptchaToken(null);
-  };
+  // const handleRecaptchaError = (error) => {
+  //   console.error('reCAPTCHA error:', error);
+  //   setCaptchaVerified(false);
+  //   setRecaptchaToken(null);
+  // };
 
   if (!authModal.isOpen) return null;
 
@@ -396,15 +393,6 @@ export default function AuthModal() {
                           <span className="text-sm text-white/60">Loading security check...</span>
                         </div>
                       </div>
-                    ) : false ? (
-                      <Suspense fallback={<div className="h-16 bg-white/10 rounded-global animate-pulse"></div>}>
-                        <LazyGoogleReCaptcha 
-                          onVerify={verifyRecaptcha}
-                          onExpire={handleRecaptchaExpire}
-                          onError={handleRecaptchaError}
-                          error={formErrors.captcha}
-                        />
-                      </Suspense>
                     ) : (
                       <SimpleCaptcha 
                         onVerify={verifyRecaptcha}
@@ -622,15 +610,6 @@ export default function AuthModal() {
                           <span className="text-sm text-white/60">Loading security check...</span>
                         </div>
                       </div>
-                    ) : false ? (
-                      <Suspense fallback={<div className="h-16 bg-white/10 rounded-global animate-pulse"></div>}>
-                        <LazyGoogleReCaptcha 
-                          onVerify={verifyRecaptcha}
-                          onExpire={handleRecaptchaExpire}
-                          onError={handleRecaptchaError}
-                          error={formErrors.captcha}
-                        />
-                      </Suspense>
                     ) : (
                       <SimpleCaptcha 
                         onVerify={verifyRecaptcha}

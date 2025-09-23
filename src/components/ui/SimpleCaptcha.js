@@ -59,7 +59,7 @@ export default function SimpleCaptcha({ onVerify, error, darkMode = false }) {
   if (!isClient) {
     return (
       <div className="space-y-3">
-        <label className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-700'}`}>
+        <label htmlFor="simple-captcha-loading" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-700'}`}>
           Security Check *
         </label>
         <div className="flex items-center space-x-3">
@@ -85,7 +85,7 @@ export default function SimpleCaptcha({ onVerify, error, darkMode = false }) {
 
   return (
     <div className="space-y-3">
-      <label className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-700'}`}>
+      <label htmlFor="simple-captcha-input" className={`block text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-700'}`}>
         Security Check *
       </label>
       <div className="flex items-center space-x-3">

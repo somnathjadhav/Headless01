@@ -15,8 +15,9 @@ const DesignSystemDemo = () => {
         </div>
         <div className="card-body space-y-4">
           <div className="form-group">
-            <label className="form-label">Standard Input</label>
+            <label htmlFor="standard-input" className="form-label">Standard Input</label>
             <input 
+              id="standard-input"
               type="text" 
               className="form-input" 
               placeholder="Enter text here..."
@@ -24,8 +25,9 @@ const DesignSystemDemo = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Input with Error</label>
+            <label htmlFor="error-input" className="form-label">Input with Error</label>
             <input 
+              id="error-input"
               type="text" 
               className="form-input error" 
               placeholder="This field has an error"
@@ -34,8 +36,9 @@ const DesignSystemDemo = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Input with Help Text</label>
+            <label htmlFor="help-input" className="form-label">Input with Help Text</label>
             <input 
+              id="help-input"
               type="text" 
               className="form-input" 
               placeholder="Enter your username"
@@ -45,16 +48,18 @@ const DesignSystemDemo = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">First Name</label>
+              <label htmlFor="first-name" className="form-label">First Name</label>
               <input 
+                id="first-name"
                 type="text" 
                 className="form-input" 
                 placeholder="John"
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Last Name</label>
+              <label htmlFor="last-name" className="form-label">Last Name</label>
               <input 
+                id="last-name"
                 type="text" 
                 className="form-input" 
                 placeholder="Doe"
@@ -63,8 +68,8 @@ const DesignSystemDemo = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Select Dropdown</label>
-            <select className="form-select">
+            <label htmlFor="select-dropdown" className="form-label">Select Dropdown</label>
+            <select id="select-dropdown" className="form-select">
               <option>Choose an option</option>
               <option>Option 1</option>
               <option>Option 2</option>
@@ -72,8 +77,9 @@ const DesignSystemDemo = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Textarea</label>
+            <label htmlFor="textarea-input" className="form-label">Textarea</label>
             <textarea 
+              id="textarea-input"
               className="form-textarea" 
               placeholder="Enter your message here..."
             ></textarea>

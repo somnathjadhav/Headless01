@@ -84,4 +84,4 @@ async function adminAuthHandler(req, res) {
   }
 }
 
-export default secureErrorHandler(adminAuthHandler);
+export default asyncHandler(adminAuthHandler);

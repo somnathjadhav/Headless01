@@ -50,7 +50,7 @@ export default function GoogleReCaptcha({ onVerify, onExpire, onError, error }) 
   if (isConfigLoading || !isLoaded) {
     return (
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-700">
+        <label htmlFor="recaptcha-loading" className="block text-sm font-medium text-gray-700">
           Security Check *
         </label>
         <div className="flex items-center space-x-3">
@@ -69,7 +69,7 @@ export default function GoogleReCaptcha({ onVerify, onExpire, onError, error }) 
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-700">
+      <label htmlFor="recaptcha-container" className="block text-sm font-medium text-gray-700">
         Security Check *
       </label>
       <div className="flex items-center space-x-3">

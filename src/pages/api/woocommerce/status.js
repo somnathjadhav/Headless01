@@ -7,7 +7,9 @@ export default async function handler(req, res) {
 
   try {
     // Test WooCommerce API connection by fetching system status
-    const wcStatus = await getWordPressData('/wp-json/wc/v3/system_status');
+    const wordpressUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || process.env.WORDPRESS_URL;
+    const response = await fetch(`${wordpressUrl}/wp-json/wc/v3/system_status`);
+    const wcStatus = response.ok ? await response.json() : null;
     
     if (wcStatus && wcStatus.environment) {
       return res.status(200).json({

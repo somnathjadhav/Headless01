@@ -32,6 +32,7 @@ export default function Account() {
   const { showSuccess, showError, showInfo } = useNotifications();
   const { 
     addresses, 
+    setAddresses,
     loading: addressesLoading, 
     addAddress, 
     updateAddress, 

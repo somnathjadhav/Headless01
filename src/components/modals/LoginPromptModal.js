@@ -15,6 +15,14 @@ export default function LoginPromptModal({ isOpen, onClose, title = "Sign in to 
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
           onClick={onClose}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              onClose();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Close modal"
         />
         
         {/* Modal */}
@@ -86,7 +94,7 @@ export default function LoginPromptModal({ isOpen, onClose, title = "Sign in to 
             {/* Footer */}
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-500">
-                Don't worry, creating an account is quick and free!
+                Don&apos;t worry, creating an account is quick and free!
               </p>
             </div>
           </div>

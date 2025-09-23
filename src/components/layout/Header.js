@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useGlobalTypography } from '../../hooks/useGlobalTypography';
 import { useWooCommerce } from '../../context/WooCommerceContext';
@@ -9,10 +8,8 @@ import { useModal } from '../../context/ModalContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useThemeOptions } from '../../hooks/useThemeOptions';
 import { useSiteInfo } from '../../hooks/useSiteInfo';
-import { useFavicon } from '../../hooks/useFavicon';
 import { useHeaderFooter } from '../../hooks/useHeaderFooter';
 import { useMainMenu } from '../../hooks/useMainMenu';
-import { wooCommerceUtils } from '../../lib/woocommerce';
 import { 
   ChevronLeftIcon, 
   ChevronRightIcon, 
@@ -26,8 +23,7 @@ import {
   LogoutIcon,
   EditIcon,
   CreditCardIcon,
-  TruckIcon,
-  ShieldIcon
+  TruckIcon
 } from '../icons';
 
 export default function Header() {
@@ -60,11 +56,11 @@ export default function Header() {
   const headerFooterData = useHeaderFooter();
   
   // WordPress main menu
-  const { menuData: mainMenu, loading: menuLoading } = useMainMenu();
+  const { menuData: mainMenu } = useMainMenu();
   
   // Direct logo state for immediate loading
   const [directLogo, setDirectLogo] = useState('http://localhost/wp-content/uploads/2025/09/logoipsum-373.svg');
-  const [logoLoading, setLogoLoading] = useState(false);
+  const [logoLoading] = useState(false);
   
 
   // Fetch logo from WordPress backend
@@ -137,13 +133,13 @@ export default function Header() {
   };
 
   // Default navigation items (fallback) - matches WordPress menu structure
-  const defaultNavigationItems = [
-    { name: 'Shop', href: '/products', hasDropdown: false },
-    { name: 'Kids', href: '/products?category=kids', hasDropdown: false },
-    { name: 'Men', href: '/products?category=men', hasDropdown: false },
-    { name: 'Women', href: '/products?category=women', hasDropdown: false },
-    { name: 'Contact Us', href: '/contact', hasDropdown: false }
-  ];
+  // const defaultNavigationItems = [
+  //   { name: 'Shop', href: '/products', hasDropdown: false },
+  //   { name: 'Kids', href: '/products?category=kids', hasDropdown: false },
+  //   { name: 'Men', href: '/products?category=men', hasDropdown: false },
+  //   { name: 'Women', href: '/products?category=women', hasDropdown: false },
+  //   { name: 'Contact Us', href: '/contact', hasDropdown: false }
+  // ];
 
   // Use WordPress menu if available, otherwise use default
   const navigationItems = mainMenu && mainMenu.items && mainMenu.items.length > 0 

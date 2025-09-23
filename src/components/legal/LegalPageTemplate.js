@@ -11,7 +11,7 @@ export default function LegalPageTemplate({
   title, 
   excerpt, 
   content, 
-  modified, 
+  // modified, 
   loading = false, 
   error = null 
 }) {

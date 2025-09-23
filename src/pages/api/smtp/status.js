@@ -7,7 +7,9 @@ export default async function handler(req, res) {
 
   try {
     // Check if SMTP is configured by looking for SMTP settings
-    const smtpConfig = await getWordPressData('/wp-json/eternitty/v1/smtp-config');
+    const wordpressUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || process.env.WORDPRESS_URL;
+    const response = await fetch(`${wordpressUrl}/wp-json/eternitty/v1/smtp-config`);
+    const smtpConfig = response.ok ? await response.json() : null;
     
     if (smtpConfig && smtpConfig.enabled) {
       return res.status(200).json({

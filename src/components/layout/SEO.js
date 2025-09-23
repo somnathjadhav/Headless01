@@ -25,7 +25,6 @@ const SEO = memo(function SEO({
   // Fetch Yoast SEO data if enabled
   const { 
     seoData: yoastData, 
-    loading: yoastLoading, 
     error: yoastError,
     hasYoastData,
     isFallback: yoastIsFallback 

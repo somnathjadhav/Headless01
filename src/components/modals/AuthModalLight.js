@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router';
 import { useAuth } from '../../context/AuthContext';
 import { useModal } from '../../context/ModalContext';
 import { useGlobalTypography } from '../../hooks/useGlobalTypography';
 import { useSiteInfo } from '../../hooks/useSiteInfo';
 import { useRecaptchaConfig } from '../../hooks/useRecaptchaConfig';
 import { 
-  UserIcon, 
-  LockClosedIcon, 
   EyeIcon, 
   EyeSlashIcon,
   XMarkIcon,
@@ -17,17 +15,17 @@ import {
 import SimpleCaptcha from '../ui/SimpleCaptcha';
 import PasswordStrengthMeter from '../ui/PasswordStrengthMeter';
 import { signinSchema, signupSchema, safeParseWithZod } from '../../lib/zodSchemas';
-import { Suspense, lazy } from 'react';
+// import { Suspense, lazy } from 'react';
 
 // Lazy load reCAPTCHA component
-const LazyGoogleReCaptcha = lazy(() => import('../ui/GoogleReCaptcha'));
+// const LazyGoogleReCaptcha = lazy(() => import('../ui/GoogleReCaptcha'));
 
 export default function AuthModalLight() {
-  const router = useRouter();
+  // const router = useRouter();
   const { login, register, isAuthenticated, isLoading, error, clearError } = useAuth();
   const { authModal, closeAuthModal } = useModal();
-  const { name: siteName, loading: siteLoading } = useSiteInfo();
-  const { isEnabled: isRecaptchaEnabled, isLoading: isRecaptchaLoading } = useRecaptchaConfig();
+  // const { } = useSiteInfo();
+  const { isLoading: isRecaptchaLoading } = useRecaptchaConfig();
   
   const [mode, setMode] = useState(authModal.mode); // 'signin', 'signup', or 'forgot-password'
   const [successMessage, setSuccessMessage] = useState('');
@@ -107,15 +105,12 @@ export default function AuthModalLight() {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    let formData, setFormData;
+    let setFormData;
     if (mode === 'signin') {
-      formData = signinData;
       setFormData = setSigninData;
     } else if (mode === 'signup') {
-      formData = signupData;
       setFormData = setSignupData;
     } else if (mode === 'forgot-password') {
-      formData = forgotPasswordData;
       setFormData = setForgotPasswordData;
     }
     
@@ -241,16 +236,16 @@ export default function AuthModalLight() {
     }
   };
 
-  const handleRecaptchaExpire = () => {
-    setCaptchaVerified(false);
-    setRecaptchaToken(null);
-  };
+  // const handleRecaptchaExpire = () => {
+  //   setCaptchaVerified(false);
+  //   setRecaptchaToken(null);
+  // };
 
-  const handleRecaptchaError = (error) => {
-    console.error('reCAPTCHA error:', error);
-    setCaptchaVerified(false);
-    setRecaptchaToken(null);
-  };
+  // const handleRecaptchaError = (error) => {
+  //   console.error('reCAPTCHA error:', error);
+  //   setCaptchaVerified(false);
+  //   setRecaptchaToken(null);
+  // };
 
   if (!authModal.isOpen) return null;
 
@@ -260,6 +255,14 @@ export default function AuthModalLight() {
       <div 
         className="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 transition-opacity duration-300 animate-in fade-in"
         onClick={closeAuthModal}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            closeAuthModal();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Close modal"
       />
       
       {/* Modal */}
@@ -399,15 +402,6 @@ export default function AuthModalLight() {
                           <span className="text-sm text-gray-600">Loading security check...</span>
                         </div>
                       </div>
-                    ) : false ? (
-                      <Suspense fallback={<div className="h-16 bg-gray-100 rounded-global animate-pulse"></div>}>
-                        <LazyGoogleReCaptcha 
-                          onVerify={verifyRecaptcha}
-                          onExpire={handleRecaptchaExpire}
-                          onError={handleRecaptchaError}
-                          error={formErrors.captcha}
-                        />
-                      </Suspense>
                     ) : (
                       <SimpleCaptcha 
                         onVerify={verifyRecaptcha}
@@ -613,15 +607,6 @@ export default function AuthModalLight() {
                           <span className="text-sm text-gray-600">Loading security check...</span>
                         </div>
                       </div>
-                    ) : false ? (
-                      <Suspense fallback={<div className="h-16 bg-gray-100 rounded-global animate-pulse"></div>}>
-                        <LazyGoogleReCaptcha 
-                          onVerify={verifyRecaptcha}
-                          onExpire={handleRecaptchaExpire}
-                          onError={handleRecaptchaError}
-                          error={formErrors.captcha}
-                        />
-                      </Suspense>
                     ) : (
                       <SimpleCaptcha 
                         onVerify={verifyRecaptcha}

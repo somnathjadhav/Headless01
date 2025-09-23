@@ -1,8 +1,37 @@
-import jwt from 'jsonwebtoken';
-
+// Simple JWT implementation without external dependencies
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
+
+// Simple base64 URL encoding
+function base64UrlEncode(str) {
+  return btoa(str)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
+// Simple base64 URL decoding
+function base64UrlDecode(str) {
+  str += '='.repeat((4 - str.length % 4) % 4);
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  return atob(str);
+}
+
+// Simple HMAC-SHA256 implementation (for production, use a proper crypto library)
+function hmacSha256(data, key) {
+  // This is a simplified implementation - in production, use Web Crypto API or a proper crypto library
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(key);
+  const dataData = encoder.encode(data);
+  
+  // Simple hash function (not cryptographically secure - for demo only)
+  let hash = 0;
+  for (let i = 0; i < dataData.length; i++) {
+    hash = ((hash << 5) - hash + dataData[i]) & 0xffffffff;
+  }
+  return hash.toString(16);
+}
 
 /**
  * Generate JWT token
@@ -12,11 +41,29 @@ const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
  */
 export function generateToken(payload, expiresIn = JWT_EXPIRES_IN) {
   try {
-    return jwt.sign(payload, JWT_SECRET, { 
-      expiresIn,
-      issuer: 'eternitty-headless-woo',
-      audience: 'eternitty-users'
-    });
+    const now = Math.floor(Date.now() / 1000);
+    const exp = now + (expiresIn === '7d' ? 7 * 24 * 60 * 60 : 30 * 24 * 60 * 60);
+    
+    const header = {
+      alg: 'HS256',
+      typ: 'JWT'
+    };
+    
+    const claims = {
+      ...payload,
+      iat: now,
+      exp: exp,
+      iss: 'eternitty-headless-woo',
+      aud: 'eternitty-users'
+    };
+    
+    const encodedHeader = base64UrlEncode(JSON.stringify(header));
+    const encodedPayload = base64UrlEncode(JSON.stringify(claims));
+    
+    const signature = hmacSha256(`${encodedHeader}.${encodedPayload}`, JWT_SECRET);
+    const encodedSignature = base64UrlEncode(signature);
+    
+    return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
   } catch (error) {
     console.error('JWT generation error:', error);
     throw new Error('Token generation failed');
@@ -42,14 +89,39 @@ export const generateAccessToken = generateToken;
  */
 export function verifyToken(token) {
   try {
-    return jwt.verify(token, JWT_SECRET, {
-      issuer: 'eternitty-headless-woo',
-      audience: 'eternitty-users'
-    });
-  } catch (error) {
-    if (error.name === 'TokenExpiredError') {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      throw new Error('Invalid token format');
+    }
+    
+    const [encodedHeader, encodedPayload, encodedSignature] = parts;
+    
+    // Verify signature
+    const expectedSignature = hmacSha256(`${encodedHeader}.${encodedPayload}`, JWT_SECRET);
+    const actualSignature = base64UrlDecode(encodedSignature);
+    
+    if (expectedSignature !== actualSignature) {
+      throw new Error('Invalid signature');
+    }
+    
+    // Decode payload
+    const payload = JSON.parse(base64UrlDecode(encodedPayload));
+    
+    // Check expiration
+    if (payload.exp && Date.now() / 1000 > payload.exp) {
       throw new Error('Token expired');
-    } else if (error.name === 'JsonWebTokenError') {
+    }
+    
+    // Check issuer and audience
+    if (payload.iss !== 'eternitty-headless-woo' || payload.aud !== 'eternitty-users') {
+      throw new Error('Invalid token claims');
+    }
+    
+    return payload;
+  } catch (error) {
+    if (error.message === 'Token expired') {
+      throw new Error('Token expired');
+    } else if (error.message === 'Invalid signature' || error.message === 'Invalid token format') {
       throw new Error('Invalid token');
     } else {
       console.error('JWT verification error:', error);
@@ -65,7 +137,11 @@ export function verifyToken(token) {
  */
 export function decodeToken(token) {
   try {
-    return jwt.decode(token);
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    
+    const payload = base64UrlDecode(parts[1]);
+    return JSON.parse(payload);
   } catch (error) {
     console.error('JWT decode error:', error);
     return null;

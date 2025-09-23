@@ -202,7 +202,6 @@ export default function ProductOptions({
                             : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                         }`}
                         aria-label={`Select ${option} for ${attribute.name}`}
-                        aria-pressed={selectedAttributes[attribute.name] === option}
                         role="radio"
                         aria-checked={selectedAttributes[attribute.name] === option}
                       >

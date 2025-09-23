@@ -6,6 +6,7 @@ import BlogHeader from '../../components/layout/BlogHeader'
 import Footer from '../../components/layout/Footer'
 import LoadingSpinner from '../../components/ui/LoadingSpinner'
 import ErrorMessage from '../../components/ui/ErrorMessage'
+import Layout from '../../components/layout/Layout'
 
 export async function getServerSideProps({ params, req }) {
   const { slug } = params
@@ -77,20 +78,20 @@ export default function BlogPost({ post: initialPost, slug: initialSlug }) {
 
   if (loading) {
     return (
-      <PageLayout>
+      <Layout>
         <div className="flex justify-center items-center min-h-96">
           <LoadingSpinner />
         </div>
-      </PageLayout>
+      </Layout>
     )
   }
 
   if (error || !post) {
     console.log('Blog post error:', { error, post, currentSlug })
     return (
-      <PageLayout>
+      <Layout>
         <ErrorMessage message="Blog post not found or failed to load." />
-      </PageLayout>
+      </Layout>
     )
   }
 

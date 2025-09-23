@@ -20,7 +20,7 @@ export default function Footer() {
   const siteInfo = useSiteInfo();
   
   // Header/footer settings from WordPress backend
-  const { footerCopyrightText, refresh } = useHeaderFooter();
+  const { refresh } = useHeaderFooter();
   
   // Menu items from WordPress backend
   const { menuItems, loading: menuItemsLoading } = useLegalPages();

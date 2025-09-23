@@ -31,7 +31,7 @@ const AddressSelector = ({
     return parts.join(', ');
   };
 
-  const getAddressDisplayName = (address, index) => {
+  const getAddressDisplayName = (address) => {
     if (address.nickname) return address.nickname;
     if (address.company) return `${address.company} - ${address.city}`;
     return `${address.first_name} ${address.last_name} - ${address.city}`;

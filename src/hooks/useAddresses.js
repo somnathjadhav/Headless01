@@ -75,10 +75,8 @@ export function useAddresses() {
     setError(null);
 
     try {
-      const response = await fetch('/api/addresses/manage', {
-        method: 'GET',
+      const response = await fetch(`/api/user/addresses?userId=${user.id}`, {
         headers: {
-          'Content-Type': 'application/json',
           'x-user-id': user.id,
         },
       });
@@ -125,7 +123,7 @@ export function useAddresses() {
     try {
       console.log('🔄 Adding address:', addressData);
       
-      const response = await fetch('/api/addresses/manage', {
+      const response = await fetch('/api/user/addresses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +172,7 @@ export function useAddresses() {
       console.log('🔄 Updating address:', { addressId, addressData });
       
       // Use our new custom address management endpoint
-      const response = await fetch('/api/addresses/manage', {
+      const response = await fetch('/api/user/addresses', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -235,7 +233,7 @@ export function useAddresses() {
       }
       
       // Use our new custom address management endpoint
-      const response = await fetch('/api/addresses/manage', {
+      const response = await fetch('/api/user/addresses', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -334,7 +332,7 @@ export function useAddresses() {
       
       // Save each address using our new custom endpoint
       for (const address of addresses) {
-        const response = await fetch('/api/addresses/manage', {
+        const response = await fetch('/api/user/addresses', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

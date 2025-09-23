@@ -17,6 +17,9 @@ build/
 .env.production.local
 .env.vercel
 
+# Data storage
+data/
+
 # IDE
 .vscode/
 .idea/

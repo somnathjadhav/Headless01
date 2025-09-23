@@ -71,6 +71,11 @@ export default function Account() {
   // Order details modal state
   const [selectedOrder, setSelectedOrder] = useState(null);
   
+  // Backend address state
+  const [backendAddresses, setBackendAddresses] = useState([]);
+  const [backendAddressesLoading, setBackendAddressesLoading] = useState(false);
+  const [backendAddressesError, setBackendAddressesError] = useState(null);
+  
   // User data - will be populated from profile API
   const [userData, setUserData] = useState({
     firstName: '',
@@ -159,6 +164,37 @@ export default function Account() {
   };
 
   // Address management is now handled by useAddresses hook
+  
+  // Function to fetch backend addresses
+  const fetchBackendAddresses = async () => {
+    if (!isAuthenticated || !user?.id) return;
+    
+    try {
+      setBackendAddressesLoading(true);
+      setBackendAddressesError(null);
+      
+      const response = await fetch(`/api/addresses/backend?userId=${user.id}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setBackendAddresses(data.addresses);
+        if (data.addresses.length > 0) {
+          showSuccess(`Found ${data.addresses.length} backend address(es)`);
+        } else {
+          showInfo('No backend addresses found');
+        }
+      } else {
+        setBackendAddressesError(data.message || 'Failed to fetch backend addresses');
+        showError(data.message || 'Failed to fetch backend addresses');
+      }
+    } catch (error) {
+      console.error('Error fetching backend addresses:', error);
+      setBackendAddressesError('Failed to fetch backend addresses');
+      showError('Failed to fetch backend addresses');
+    } finally {
+      setBackendAddressesLoading(false);
+    }
+  };
   
   const [newAddress, setNewAddress] = useState({
     type: 'shipping',
@@ -1524,6 +1560,20 @@ export default function Account() {
                     )}
                   </div>
                   <div className="flex items-center space-x-3">
+                    <button
+                      onClick={fetchBackendAddresses}
+                      disabled={backendAddressesLoading}
+                      className="inline-flex items-center px-3 py-2 rounded-lg font-medium text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors disabled:opacity-50"
+                    >
+                      {backendAddressesLoading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
+                      ) : (
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      )}
+                      Check Backend
+                    </button>
                     {addresses.some(addr => addr.isTemporary && !addr.synced) && (
                       <button 
                         onClick={syncTemporaryAddresses}

@@ -3,14 +3,41 @@
 /**
  * WooCommerce API Diagnostic Script
  * Diagnoses WooCommerce API permission issues
+ * 
+ * SECURITY WARNING: Never hardcode API credentials in this file!
+ * Always use environment variables from .env.local
  */
 
 const fetch = globalThis.fetch || require('node-fetch');
 
-// Use hardcoded values from .env.local for diagnosis
-const WORDPRESS_URL = 'http://woocommerce.local';
-const CONSUMER_KEY = 'ck_609af559e29fe87aff4bf1137d0aa9b8019c40b6';
-const CONSUMER_SECRET = 'cs_54eb331143c9e80a6b19e58bcf3ecf0c7dadf4cf';
+// Load environment variables from .env.local
+const fs = require('fs');
+const path = require('path');
+
+// Read .env.local file manually since we can't use dotenv
+let WORDPRESS_URL = 'http://woocommerce.local';
+let CONSUMER_KEY = '';
+let CONSUMER_SECRET = '';
+
+try {
+  const envPath = path.join(__dirname, '.env.local');
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    const lines = envContent.split('\n');
+    
+    lines.forEach(line => {
+      if (line.startsWith('NEXT_PUBLIC_WORDPRESS_URL=')) {
+        WORDPRESS_URL = line.split('=')[1] || 'http://woocommerce.local';
+      } else if (line.startsWith('WOOCOMMERCE_CONSUMER_KEY=')) {
+        CONSUMER_KEY = line.split('=')[1] || '';
+      } else if (line.startsWith('WOOCOMMERCE_CONSUMER_SECRET=')) {
+        CONSUMER_SECRET = line.split('=')[1] || '';
+      }
+    });
+  }
+} catch (error) {
+  console.log('⚠️ Could not read .env.local file, using defaults');
+}
 
 async function diagnoseWooCommerceAPI() {
   console.log('🔍 WooCommerce API Diagnostic');

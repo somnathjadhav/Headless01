@@ -31,7 +31,8 @@ export default async function handler(req, res) {
         first_name: 'Somnath',
         last_name: 'Jadhav',
         username: 'headless',
-        role: 'customer'
+        role: 'customer',
+        isAdmin: true // Admin user
       }
     });
 

@@ -32,6 +32,10 @@ Thumbs.db
 
 # Logs
 *.log
+auto-commit.log
+
+# Temporary files
+.directory-lock
 
 # Runtime data
 pids

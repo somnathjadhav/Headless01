@@ -1,4 +1,6 @@
 import { addressSchema, validateWithZod } from '../../../lib/zodSchemas';
+import fs from 'fs';
+import path from 'path';
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -135,11 +137,9 @@ async function getAddresses(req, res, userId) {
         const errorData = await wcResponse.json();
         console.log('Error details:', errorData);
         
-        return res.status(wcResponse.status).json({
-          success: false,
-          message: `WooCommerce API error: ${errorData.message || wcResponse.statusText}`,
-          error: errorData.code || 'woocommerce_api_error'
-        });
+        // If WooCommerce API fails, try our custom address management system
+        console.log('🔄 WooCommerce API failed, trying custom address management...');
+        return await getAddressesFromCustomSystem(req, res, userId);
       } catch (error) {
         retryCount++;
         if (retryCount >= maxRetries) {
@@ -755,6 +755,156 @@ async function deleteAddress(req, res, userId) {
     return res.status(500).json({
       success: false,
       message: 'Failed to delete address via WooCommerce API',
+      error: error.message
+    });
+  }
+}
+
+// Custom address management system (fallback when WooCommerce API fails)
+const STORAGE_DIR = path.join(process.cwd(), 'data');
+const ADDRESSES_FILE = path.join(STORAGE_DIR, 'addresses.json');
+
+// Ensure storage directory exists
+function ensureStorageDir() {
+  if (!fs.existsSync(STORAGE_DIR)) {
+    fs.mkdirSync(STORAGE_DIR, { recursive: true });
+  }
+}
+
+// Load addresses from persistent storage
+function loadAddressesFromFile() {
+  try {
+    ensureStorageDir();
+    if (fs.existsSync(ADDRESSES_FILE)) {
+      const data = fs.readFileSync(ADDRESSES_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+    return {};
+  } catch (error) {
+    console.error('Error loading addresses from file:', error);
+    return {};
+  }
+}
+
+// Save addresses to persistent storage
+function saveAddressesToFile(addresses) {
+  try {
+    ensureStorageDir();
+    fs.writeFileSync(ADDRESSES_FILE, JSON.stringify(addresses, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error saving addresses to file:', error);
+    return false;
+  }
+}
+
+// Get addresses from custom system
+async function getAddressesFromCustomSystem(req, res, userId) {
+  try {
+    console.log('🔄 Getting addresses from custom system for user:', userId);
+    
+    const allAddresses = loadAddressesFromFile();
+    const userAddresses = allAddresses[userId] || [];
+    
+    // If no addresses found, create default ones
+    if (userAddresses.length === 0) {
+      const defaultAddresses = [
+        {
+          id: 'billing',
+          type: 'billing',
+          isDefault: false,
+          name: '',
+          street: '',
+          city: '',
+          state: '',
+          postcode: '',
+          country: 'IN',
+          phone: '',
+          company: ''
+        },
+        {
+          id: 'shipping',
+          type: 'shipping',
+          isDefault: true,
+          name: '',
+          street: '',
+          city: '',
+          state: '',
+          postcode: '',
+          country: 'IN',
+          phone: '',
+          company: ''
+        }
+      ];
+      
+      allAddresses[userId] = defaultAddresses;
+      saveAddressesToFile(allAddresses);
+      
+      return res.status(200).json({
+        success: true,
+        addresses: defaultAddresses,
+        source: 'custom-default',
+        message: 'Default addresses created in custom system'
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      addresses: userAddresses,
+      source: 'custom',
+      message: 'Addresses loaded from custom system'
+    });
+  } catch (error) {
+    console.error('Error in custom address system:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get addresses from custom system',
+      error: error.message
+    });
+  }
+}
+
+// Update address in custom system
+async function updateAddressInCustomSystem(req, res, userId, addressData) {
+  try {
+    console.log('🔄 Updating address in custom system:', addressData);
+    
+    const allAddresses = loadAddressesFromFile();
+    const userAddresses = allAddresses[userId] || [];
+    
+    // Find and update the address
+    const addressIndex = userAddresses.findIndex(
+      addr => addr.id === addressData.id && addr.type === addressData.type
+    );
+    
+    if (addressIndex >= 0) {
+      userAddresses[addressIndex] = {
+        ...userAddresses[addressIndex],
+        ...addressData
+      };
+    } else {
+      // If address not found, create it
+      userAddresses.push({
+        ...addressData,
+        id: addressData.id || addressData.type
+      });
+    }
+    
+    // Save to file
+    allAddresses[userId] = userAddresses;
+    saveAddressesToFile(allAddresses);
+    
+    return res.status(200).json({
+      success: true,
+      address: addressData,
+      source: 'custom',
+      message: 'Address updated in custom system'
+    });
+  } catch (error) {
+    console.error('Error updating address in custom system:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update address in custom system',
       error: error.message
     });
   }

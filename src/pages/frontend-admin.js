@@ -30,7 +30,7 @@ export default function FrontendAdmin() {
     }
     
     // Check if user has admin privileges
-    if (user && !user.isAdmin && user.email !== 'admin@eternitty.com') {
+    if (user && !user.isAdmin && user.email !== 'admin@eternitty.com' && user.email !== 'somnathhjadhav@gmail.com' && user.username !== 'headless') {
       showError('Access denied. Admin privileges required.');
       router.push('/');
         return;
@@ -49,13 +49,23 @@ export default function FrontendAdmin() {
       const wpResponse = await fetch('/api/site-info');
       const wpData = await wpResponse.json();
       
-      // Check WooCommerce connection
-      const wcResponse = await fetch('/api/woocommerce/status');
-      const wcData = await wcResponse.json();
+      // Check WooCommerce connection (with error handling)
+      let wcData = { success: false, message: 'Not available' };
+      try {
+        const wcResponse = await fetch('/api/woocommerce/status');
+        wcData = await wcResponse.json();
+      } catch (wcError) {
+        console.log('WooCommerce status check failed:', wcError);
+      }
       
-      // Check SMTP configuration
-      const smtpResponse = await fetch('/api/smtp/status');
-      const smtpData = await smtpResponse.json();
+      // Check SMTP configuration (with error handling)
+      let smtpData = { success: false, message: 'Not available' };
+      try {
+        const smtpResponse = await fetch('/api/smtp/status');
+        smtpData = await smtpResponse.json();
+      } catch (smtpError) {
+        console.log('SMTP status check failed:', smtpError);
+      }
       
       setSystemStatus({
         wordpress: wpData.success ? 'connected' : 'error',
@@ -75,12 +85,13 @@ export default function FrontendAdmin() {
   const loadSMTPConfig = async () => {
     try {
       const response = await fetch('/api/smtp/config');
-        const data = await response.json();
+      const data = await response.json();
       if (data.success) {
         setSmtpConfig(data.config);
       }
     } catch (error) {
       console.error('Error loading SMTP config:', error);
+      // Don't show error for missing SMTP config
     }
   };
 

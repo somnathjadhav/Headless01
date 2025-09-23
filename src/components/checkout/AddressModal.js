@@ -121,10 +121,11 @@ const AddressModal = ({
         <div className="p-6 space-y-4">
           {/* Nickname */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1">
               Address Nickname (optional)
             </label>
             <input
+              id="nickname"
               type="text"
               value={formData.nickname}
               onChange={(e) => handleInputChange('nickname', e.target.value)}
@@ -136,10 +137,11 @@ const AddressModal = ({
           {/* First Name and Last Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
                 First name <span className="text-red-500">*</span>
               </label>
               <input
+                id="first_name"
                 type="text"
                 value={formData.first_name}
                 onChange={(e) => handleInputChange('first_name', e.target.value)}
@@ -148,10 +150,11 @@ const AddressModal = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
                 Last name <span className="text-red-500">*</span>
               </label>
               <input
+                id="last_name"
                 type="text"
                 value={formData.last_name}
                 onChange={(e) => handleInputChange('last_name', e.target.value)}
@@ -164,10 +167,11 @@ const AddressModal = ({
           {/* Company and Phone */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
                 Company (optional)
               </label>
               <input
+                id="company"
                 type="text"
                 value={formData.company}
                 onChange={(e) => handleInputChange('company', e.target.value)}
@@ -175,10 +179,11 @@ const AddressModal = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
                 Phone (optional)
               </label>
               <input
+                id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -189,10 +194,11 @@ const AddressModal = ({
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email address <span className="text-red-500">*</span>
             </label>
             <input
+              id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
@@ -203,10 +209,11 @@ const AddressModal = ({
 
           {/* Country */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
               Country / Region <span className="text-red-500">*</span>
             </label>
             <select
+              id="country"
               value={formData.country}
               onChange={(e) => handleInputChange('country', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -224,11 +231,12 @@ const AddressModal = ({
 
           {/* Street Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="address_1" className="block text-sm font-medium text-gray-700 mb-1">
               Street address <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
+                id="address_1"
                 type="text"
                 value={formData.address_1}
                 onChange={(e) => handleInputChange('address_1', e.target.value)}
@@ -237,6 +245,7 @@ const AddressModal = ({
                 required
               />
               <input
+                id="address_2"
                 type="text"
                 value={formData.address_2}
                 onChange={(e) => handleInputChange('address_2', e.target.value)}
@@ -249,10 +258,11 @@ const AddressModal = ({
           {/* City and State */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
                 Town / City <span className="text-red-500">*</span>
               </label>
               <input
+                id="city"
                 type="text"
                 value={formData.city}
                 onChange={(e) => handleInputChange('city', e.target.value)}
@@ -261,10 +271,11 @@ const AddressModal = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
                 State <span className="text-red-500">*</span>
               </label>
               <select
+                id="state"
                 value={formData.state}
                 onChange={(e) => handleInputChange('state', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -286,10 +297,11 @@ const AddressModal = ({
 
           {/* ZIP Code */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="postcode" className="block text-sm font-medium text-gray-700 mb-1">
               ZIP Code <span className="text-red-500">*</span>
             </label>
             <input
+              id="postcode"
               type="text"
               value={formData.postcode}
               onChange={(e) => handleInputChange('postcode', e.target.value)}

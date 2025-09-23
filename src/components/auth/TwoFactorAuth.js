@@ -220,7 +220,7 @@ const TwoFactorAuth = ({ isEnabled = false, onToggle }) => {
             <div>
               <h5 className="font-medium text-gray-900 text-sm">How it works</h5>
               <p className="text-xs text-gray-600 mt-1">
-                After enabling 2FA, you'll need to enter a 6-digit code from your authenticator app every time you sign in.
+                After enabling 2FA, you&apos;ll need to enter a 6-digit code from your authenticator app every time you sign in.
               </p>
             </div>
           </div>

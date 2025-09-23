@@ -47,7 +47,23 @@ const nextConfig = {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
+        crypto: false,
+        stream: false,
+        util: false,
+        buffer: false,
+        process: false,
       };
+    }
+    
+    // Ensure jsonwebtoken is properly resolved
+    try {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'jsonwebtoken': require.resolve('jsonwebtoken'),
+      };
+    } catch (error) {
+      // jsonwebtoken not available, skip alias
+      console.warn('jsonwebtoken not found, skipping alias');
     }
     
     // Production optimizations

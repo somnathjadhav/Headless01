@@ -1,5 +1,5 @@
 import { adminAuthMiddleware } from '../../../lib/adminMiddleware';
-import { secureErrorHandler, createErrorResponse } from '../../../lib/errorHandler';
+import { asyncHandler, createErrorResponse } from '../../../lib/errorHandler';
 import { logger } from '../../../lib/logger';
 
 async function adminStatusHandler(req, res) {

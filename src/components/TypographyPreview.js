@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function TypographyPreview() {
   const [isOpen, setIsOpen] = useState(false);
@@ -156,12 +157,12 @@ export default function TypographyPreview() {
 
             {/* View Full Page */}
             <div className="pt-2 border-t">
-              <a
+              <Link
                 href="/typography"
                 className="block w-full text-center text-xs text-blue-600 hover:text-blue-800 transition-colors"
               >
                 View Full Typography Page →
-              </a>
+              </Link>
             </div>
           </div>
         ) : (

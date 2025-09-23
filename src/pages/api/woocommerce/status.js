@@ -1,4 +1,4 @@
-import { getWordPressData } from '../../../lib/wordpress-api';
+// Removed getWordPressData import - using direct fetch instead
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

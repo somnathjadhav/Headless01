@@ -52,7 +52,7 @@ export default function LegalPageTemplate({
         <div className="text-center">
           <div className="text-gray-400 text-6xl mb-4">📄</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">No Content Available</h1>
-          <p className="text-gray-600 mb-4">This page doesn't have any content yet.</p>
+          <p className="text-gray-600 mb-4">This page doesn&apos;t have any content yet.</p>
           <button 
             onClick={() => router.back()}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"

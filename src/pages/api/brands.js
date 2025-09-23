@@ -220,7 +220,7 @@ export default async function handler(req, res) {
     );
 
     // Sort brands based on orderby parameter
-    let sortedBrands = [...brandsWithCounts];
+    const sortedBrands = [...brandsWithCounts];
     if (orderby === 'name') {
       sortedBrands.sort((a, b) => {
         const comparison = a.name.localeCompare(b.name);

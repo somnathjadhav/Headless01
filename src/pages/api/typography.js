@@ -111,9 +111,9 @@ export default async function handler(req, res) {
     };
 
     // Try to get custom typography from WordPress
-    let customTypography = null;
+    const customTypography = null;
     let wordpressStatus = 'disconnected';
-    let customTypographyFound = false;
+    const customTypographyFound = false;
     
     try {
       // First, check if WordPress is accessible

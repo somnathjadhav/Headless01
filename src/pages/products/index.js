@@ -155,9 +155,16 @@ export default function ProductsPage() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
-            <p className="text-xl text-gray-600">Loading products...</p>
-            <div className="mt-4">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="relative mb-6">
+              <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+              <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-r-purple-500 rounded-full animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading Products</h3>
+            <p className="text-gray-600 text-sm">Discovering amazing products for you...</p>
+            <div className="mt-4 flex justify-center space-x-1">
+              <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+              <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
             </div>
           </div>
         </div>
@@ -194,11 +201,11 @@ export default function ProductsPage() {
       description={`${pageInfo.description}${totalProducts > 0 ? ` (${totalProducts} products available)` : ''}`}
       breadcrumbs={breadcrumbs}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="lg:grid lg:grid-cols-4 lg:gap-6 xl:gap-8">
-          {/* Sidebar Filters */}
-          <div className="lg:col-span-1 mb-6 lg:mb-0">
-            <div className="lg:sticky lg:top-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="lg:grid lg:grid-cols-4 lg:gap-8">
+          {/* Sidebar Filters - Hidden on mobile, visible on desktop */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-8">
               <ProductFilters
                 categories={categories}
                 onCategoryFilter={handleCategoryFilter}
@@ -214,9 +221,9 @@ export default function ProductsPage() {
           {/* Main Content */}
           <div className="lg:col-span-3">
 
-            {/* Products Grid */}
+            {/* Products Grid - 2 columns on mobile, 3 on desktop */}
             {products && products.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

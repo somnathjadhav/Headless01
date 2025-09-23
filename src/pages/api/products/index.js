@@ -1,5 +1,5 @@
 import { wooCommerceAPI } from '../../../lib/woocommerce';
-import { secureErrorHandler, createSuccessResponse, createErrorResponse } from '../../../lib/errorHandler';
+import { asyncHandler, createSuccessResponse, createErrorResponse } from '../../../lib/errorHandler';
 import { validateApiInput } from '../../../lib/validation';
 import { apiRateLimit } from '../../../lib/rateLimiter';
 import { configureSSL } from '../../../lib/sslConfig';
@@ -121,15 +121,14 @@ async function productsHandler(req, res) {
     });
 
   } catch (error) {
-    const { statusCode, response } = createErrorResponse(error, {
+    console.error('Products API error:', error);
+    return createErrorResponse(res, 500, 'Failed to fetch products', 'WOOCOMMERCE_ERROR', {
       method: req.method,
       url: req.url,
       query: req.query,
     });
-    
-    return res.status(statusCode).json(response);
   }
 }
 
-// Export with secure error handling
-export default secureErrorHandler(productsHandler);
+// Export with async error handling
+export default asyncHandler(productsHandler);

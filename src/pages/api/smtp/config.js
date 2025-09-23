@@ -1,5 +1,3 @@
-import { getWordPressData } from '../../../lib/wordpress-api';
-
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
@@ -7,7 +5,8 @@ export default async function handler(req, res) {
 
   try {
     // Get SMTP configuration from WordPress
-    const smtpConfig = await getWordPressData('/wp-json/eternitty/v1/smtp-config');
+    const response = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/eternitty/v1/smtp-config`);
+    const smtpConfig = await response.json();
     
     if (smtpConfig) {
       return res.status(200).json({

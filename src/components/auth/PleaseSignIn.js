@@ -57,7 +57,7 @@ export default function PleaseSignIn({
           {/* Additional Info */}
           <div className="mt-10 pt-8 border-t border-gray-200">
             <p className="text-lg text-gray-500">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link 
                 href="/signup" 
                 className="font-semibold text-black hover:text-gray-700 transition-colors underline decoration-2 underline-offset-2"

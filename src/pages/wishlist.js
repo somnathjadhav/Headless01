@@ -28,7 +28,7 @@ export default function WishlistPage() {
 
   // Sort wishlist items
   const sortedWishlist = React.useMemo(() => {
-    let sorted = [...wishlist];
+    const sorted = [...wishlist];
     
     switch (sortBy) {
       case 'price-low':

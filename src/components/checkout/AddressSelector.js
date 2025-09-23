@@ -136,6 +136,15 @@ const AddressSelector = ({
                   : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
               }`}
               onClick={() => onSelectAddress(address)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectAddress(address);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Select address: ${address.nickname || 'Default address'}`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">

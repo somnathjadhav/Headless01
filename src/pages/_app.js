@@ -13,6 +13,7 @@ import WordPressStorageSync from '../components/WordPressStorageSync';
 import AuthModal from '../components/modals/AuthModal';
 import AuthModalLight from '../components/modals/AuthModalLight';
 import GlobalLoader from '../components/ui/GlobalLoader';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 /**
  * Main App Component
@@ -22,31 +23,33 @@ function MyApp({ Component, pageProps, router }) {
   const isBlogDetailPage = router.pathname === '/blog/[slug]';
   
   return (
-    <TypographyProvider>
-      <AuthProvider>
-        <WooCommerceProvider>
-          <CurrencyProvider>
-            <NotificationProvider>
-              <ModalProvider>
-                  <DynamicFavicon />
-                  <DynamicGoogleFonts />
-                  <WordPressStorageSync />
-                  {isBlogDetailPage ? (
-                    <Component {...pageProps} />
-                  ) : (
-                    <Layout>
+    <ErrorBoundary>
+      <TypographyProvider>
+        <AuthProvider>
+          <WooCommerceProvider>
+            <CurrencyProvider>
+              <NotificationProvider>
+                <ModalProvider>
+                    <DynamicFavicon />
+                    <DynamicGoogleFonts />
+                    <WordPressStorageSync />
+                    {isBlogDetailPage ? (
                       <Component {...pageProps} />
-                    </Layout>
-                  )}
-                  <AuthModal />
-                  <AuthModalLight />
-                  <GlobalLoader />
-                </ModalProvider>
-            </NotificationProvider>
-          </CurrencyProvider>
-        </WooCommerceProvider>
-      </AuthProvider>
-    </TypographyProvider>
+                    ) : (
+                      <Layout>
+                        <Component {...pageProps} />
+                      </Layout>
+                    )}
+                    <AuthModal />
+                    <AuthModalLight />
+                    <GlobalLoader />
+                  </ModalProvider>
+              </NotificationProvider>
+            </CurrencyProvider>
+          </WooCommerceProvider>
+        </AuthProvider>
+      </TypographyProvider>
+    </ErrorBoundary>
   );
 }
 

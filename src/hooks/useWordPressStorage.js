@@ -36,8 +36,9 @@ export function useWordPressStorage() {
       loadWishlistFromWordPress(user.id);
       loadAddresses(); // Load addresses from WordPress
       
-      // Initialize sync time to prevent immediate sync after load
+      // Initialize sync time and content to prevent immediate sync after load
       lastAddressSyncTime.current = Date.now();
+      lastAddressesContent.current = '';
       
       // Reset the flag after a short delay to allow data to update
       setTimeout(() => {

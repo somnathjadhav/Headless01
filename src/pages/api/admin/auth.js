@@ -1,4 +1,4 @@
-import { secureErrorHandler, createErrorResponse } from '../../../lib/errorHandler';
+import { asyncHandler, createErrorResponse } from '../../../lib/errorHandler';
 import { logger } from '../../../lib/logger';
 import { createAdminSession } from '../../../lib/adminMiddleware';
 

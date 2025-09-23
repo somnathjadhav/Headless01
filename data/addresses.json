@@ -1,0 +1,30 @@
+{
+  "1": [
+    {
+      "id": "billing",
+      "type": "billing",
+      "isDefault": false,
+      "name": "Test User",
+      "street": "123 Test Street (Updated)",
+      "city": "Test City (Updated)",
+      "state": "",
+      "postcode": "",
+      "country": "IN",
+      "phone": "",
+      "company": ""
+    },
+    {
+      "id": "shipping",
+      "type": "shipping",
+      "isDefault": true,
+      "name": "",
+      "street": "",
+      "city": "",
+      "state": "",
+      "postcode": "",
+      "country": "IN",
+      "phone": "",
+      "company": ""
+    }
+  ]
+}

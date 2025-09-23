@@ -46,7 +46,7 @@ export function useYoastSEO(type, identifier, idType = 'SLUG', options = {}) {
 
     try {
       const wordpressUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://woo.local';
-      let endpoint = '';
+      const endpoint = '';
 
       // Build REST API endpoints to try (in order of preference)
       let endpoints = [];

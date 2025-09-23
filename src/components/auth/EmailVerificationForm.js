@@ -97,7 +97,7 @@ export default function EmailVerificationForm({ email, onVerificationSuccess, on
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Verify Your Email</h2>
         <p className="text-gray-600">
-          We've sent a 6-digit verification code to
+          We&apos;ve sent a 6-digit verification code to
         </p>
         <p className="font-semibold text-gray-900">{email}</p>
       </div>
@@ -153,7 +153,7 @@ export default function EmailVerificationForm({ email, onVerificationSuccess, on
 
       <div className="text-center space-y-2">
         <p className="text-sm text-gray-600">
-          Didn't receive the code?
+          Didn&apos;t receive the code?
         </p>
         <button
           onClick={handleResendCode}

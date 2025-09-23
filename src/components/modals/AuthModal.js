@@ -245,6 +245,14 @@ export default function AuthModal() {
       <div 
         className="fixed inset-0 bg-gradient-to-br from-gray-900 via-purple-900 to-violet-600 transition-opacity duration-300 animate-in fade-in"
         onClick={closeAuthModal}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            closeAuthModal();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Close modal"
       />
       
       {/* Modal */}

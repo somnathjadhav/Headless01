@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const wordpressUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://woo.local';
     
     // Use WordPress SMTP configuration by calling WordPress email endpoints
-    let emailData = {
+    const emailData = {
       to: to,
       type: type,
       data: data

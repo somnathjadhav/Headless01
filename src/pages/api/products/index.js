@@ -21,13 +21,15 @@ async function productsHandler(req, res) {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  // Apply rate limiting with more generous limits for development
+  // Skip rate limiting completely in development
   const isDevelopment = process.env.NODE_ENV === 'development';
-  const rateLimit = isDevelopment ? 60 : 10; // 60 requests per minute in dev, 10 in production
-  const rateWindow = 60000; // 1 minute
-  
-  if (!apiRateLimit(req, res, rateLimit, rateWindow)) {
-    return; // Rate limit exceeded, response already sent
+  if (!isDevelopment) {
+    const rateLimit = 10; // 10 requests per minute in production
+    const rateWindow = 60000; // 1 minute
+    
+    if (!apiRateLimit(req, res, rateLimit, rateWindow)) {
+      return; // Rate limit exceeded, response already sent
+    }
   }
 
   // Configure SSL based on environment

@@ -62,6 +62,24 @@ export class UserService {
 
     } catch (error) {
       console.error('User authentication error:', error);
+      
+      // Handle specific error types
+      if (error.message && error.message.includes('rate_limit_exceeded')) {
+        return {
+          success: false,
+          error: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many requests. Please wait a moment and try again.'
+        };
+      }
+      
+      if (error.message && error.message.includes('fetch failed')) {
+        return {
+          success: false,
+          error: 'NETWORK_ERROR',
+          message: 'Network error. Please check your connection and try again.'
+        };
+      }
+      
       return {
         success: false,
         error: 'AUTHENTICATION_FAILED',
@@ -132,6 +150,16 @@ export class UserService {
 
     } catch (error) {
       console.error('WordPress login error:', error);
+      
+      // Handle specific error types
+      if (error.message && error.message.includes('rate_limit_exceeded')) {
+        throw new Error('rate_limit_exceeded');
+      }
+      
+      if (error.message && error.message.includes('fetch failed')) {
+        throw new Error('fetch failed');
+      }
+      
       return { success: false };
     }
   }
